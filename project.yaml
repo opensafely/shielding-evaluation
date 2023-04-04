@@ -1,0 +1,27 @@
+version: '3.0'
+
+expectations:
+  population_size: 1000
+
+actions:
+
+  generate_dataset:
+    run: >
+      databuilder:v0 
+        generate-dataset analysis/databuilder_definition.py --output output/dataset_all.csv.gz
+    outputs:
+      highly_sensitive:
+        dataset_all: output/dataset_all.csv.gz
+  
+  clean_the_data: 
+    run: > 
+      r:latest
+        analysis/010_import_data.R
+    needs: [generate_dataset]
+    outputs: 
+      highly_sensitive:
+        cleandata: output/data_edited.gz.parquet
+      moderately_sensitive: 
+        txt1: output/data_properties/clean_dataset_skim.txt
+        txt2: output/data_properties/clean_dataset_tabulate.txt
+      
