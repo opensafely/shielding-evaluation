@@ -20,8 +20,8 @@ actions:
     needs: [generate_dataset]
     outputs: 
       highly_sensitive:
-        cleandata: output/data_edited.csv
-      #moderately_sensitive: 
-      #  txt1: output/data_properties/clean_dataset_skim.txt
-      #  txt2: output/data_properties/clean_dataset_tabulate.txt
+        cleandata: output/data_edited.gz.parquet
+      moderately_sensitive: 
+        txt1: output/data_properties/clean_dataset_skim.txt
+        txt2: output/data_properties/clean_dataset_tabulate.txt
       
