@@ -37,7 +37,17 @@ cleaned_data <- data %>%
       )),
     # age centred (for modelling purposes)
     age_centred = age - mean(age, na.rm = TRUE),
-  ) %>% 
+  ethnicity = factor(
+    ethnicity,
+    levels = 1:6, 
+    labels = c(
+      "White",
+      "Mixed", 
+      "South Asian", 
+      "Black",
+      "Other",
+      "Not stated"
+    ))) %>% 
   # only keep people with recorded sex
   filter(
     sex %in% c("male", "female")
@@ -52,8 +62,36 @@ cleaned_data <- data %>%
       breaks = c(-Inf, 0:1, Inf),
       labels = c(as.character(0:1), "2+")
     )
-  ) 
-
+  ) %>% 
+  # create number of hospitalisations as factor (0-5+)
+  mutate(covid_hosp_cat = cut(
+    all_covid_hosp, 
+    breaks = c(-Inf, 0:3, Inf),
+    labels = c(as.character(0:2), "3+", "3+"))
+  ) %>% 
+  # create number of covid records as factor (0-5+)
+  mutate(covid_primary_cat = cut(
+    total_primarycare_covid, 
+    breaks = c(-Inf, 0:5, Inf),
+    labels = c(as.character(0:4), "5+", "5+"))
+  ) %>% 
+  # create number of covid positive Tests as factor (0-20+)
+  mutate(test_positive_cat = cut(
+    all_test_positive, 
+    breaks = c(-Inf, 0:5, Inf),
+    labels = c(as.character(0:4), "5+", "5+"))
+  ) %>% 
+  # create number of covid Tests as factor (0-20+)
+  mutate(test_total_cat = cut(
+    all_tests, 
+    breaks = c(-Inf, 0:5, Inf),
+    labels = c(as.character(0:4), "5+", "5+"))
+  ) %>% 
+  mutate(fracture = !is.na(first_fracture_hosp)) %>% 
+  mutate(highrisk_shield_bin = !is.na(highrisk_shield)) %>% 
+  mutate(lowrisk_shield_bin = !is.na(lowrisk_shield)) 
+  
+  
 arrow::write_parquet(cleaned_data,
                      sink = here::here("output/data_edited.gz.parquet"),
                      compression = "gzip", compression_level = 5)

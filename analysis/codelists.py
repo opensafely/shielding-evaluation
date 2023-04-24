@@ -1,5 +1,12 @@
 from databuilder.ehrql import codelist_from_csv
 
+# some demographic codelists:
+ethnicity = codelist_from_csv(
+    "codelists/opensafely-ethnicity.csv",
+    column="Code",
+    category_column="Grouping_6",
+)
+
 # covid identification
 hosp_covid = codelist_from_csv(
     "codelists/opensafely-covid-identification.csv",

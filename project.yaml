@@ -25,3 +25,12 @@ actions:
         txt1: output/data_properties/clean_dataset_skim.txt
         txt2: output/data_properties/clean_dataset_tabulate.txt
       
+  create_table1: 
+    run: > 
+      r:latest
+        analysis/020_create_table1.R
+    needs: [clean_the_data]
+    outputs: 
+      moderately_sensitive: 
+        table1: output/tables/shielding_table1.html
+        table1_data: output/table1_data.csv
