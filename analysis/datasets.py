@@ -26,17 +26,6 @@ minimum_registration = 90
 
 
 def add_common_variables(dataset, study_start_date, study_end_date):
-    dataset.pt_start_date = case(
-        when(dataset.start_date + days(minimum_registration) > study_start_date).then(dataset.start_date + days(minimum_registration)),
-        default=study_start_date,
-    )
-
-    dataset.pt_end_date = case(
-        when(dataset.end_date.is_null()).then(study_end_date),
-        when(dataset.end_date > study_end_date).then(study_end_date),
-        default=dataset.end_date,
-    )
-
     # Demographic variables
     dataset.sex = patients.sex
     dataset.age = age_as_of(study_start_date)
@@ -45,6 +34,12 @@ def add_common_variables(dataset, study_start_date, study_end_date):
     dataset.imd = address_as_of(study_start_date).imd_rounded
     dataset.death_date = patients.date_of_death
 
+    # Ethnicity in 6 categories ------------------------------------------------------------
+    dataset.ethnicity = clinical_events.where(clinical_events.ctv3_code.is_in(codelists.ethnicity)) \
+        .sort_by(clinical_events.date) \
+        .last_for_patient() \
+        .ctv3_code.to_category(codelists.ethnicity)
+    
     # covid tests
     dataset.first_test_positive = sgss_covid_all_tests \
         .where(sgss_covid_all_tests.is_positive) \
@@ -57,6 +52,11 @@ def add_common_variables(dataset, study_start_date, study_end_date):
         .except_where(sgss_covid_all_tests.specimen_taken_date >= dataset.pt_end_date)
 
     dataset.all_test_positive = all_test_positive.count_for_patient()
+
+    dataset.all_tests = sgss_covid_all_tests \
+        .except_where(sgss_covid_all_tests.specimen_taken_date <= study_start_date) \
+        .except_where(sgss_covid_all_tests.specimen_taken_date >= dataset.pt_end_date) \
+        .count_for_patient()
 
     # get the date of each of up to 5 test positives
     create_sequential_variables(
@@ -124,7 +124,7 @@ def add_common_variables(dataset, study_start_date, study_end_date):
             .sort_by(prior_events.date)
             .last_for_patient().date
         )
-    
+
     def has_prior_event_numeric(codelist, where=True):
         prior_events_exists = prior_events.where(where) \
             .where(prior_events.ctv3_code.is_in(codelist)) \
@@ -211,5 +211,5 @@ def add_common_variables(dataset, study_start_date, study_end_date):
         .care_home_requires_nursing.if_null_then(False)
 
     # final age restriction
-    pop_restrict = (dataset.age > 0) & (dataset.age < 110) & (dataset.sex.contains("male"))
+    pop_restrict = (dataset.age <= 100) & (dataset.age >= 18) & (dataset.sex.contains("male"))
     dataset.define_population(pop_restrict)
