@@ -8,7 +8,6 @@ from databuilder.tables.beta.tpp import (
   sgss_covid_all_tests,
   hospital_admissions
 )
-import datetime
 
 from variable_lib import (
   age_as_of,
@@ -20,9 +19,7 @@ from variable_lib import (
 )
 import codelists
 
-study_start_date = datetime.date(2020, 3, 1)
-study_end_date = datetime.date(2021, 3, 1)
-minimum_registration = 90
+
 
 
 def add_common_variables(dataset, study_start_date, study_end_date):
@@ -39,22 +36,17 @@ def add_common_variables(dataset, study_start_date, study_end_date):
         .sort_by(clinical_events.date) \
         .last_for_patient() \
         .ctv3_code.to_category(codelists.ethnicity)
-    
-    # covid tests
-    dataset.first_test_positive = sgss_covid_all_tests \
-        .where(sgss_covid_all_tests.is_positive) \
-        .except_where(sgss_covid_all_tests.specimen_taken_date >= dataset.pt_end_date) \
-        .sort_by(sgss_covid_all_tests.specimen_taken_date).first_for_patient().specimen_taken_date
 
+    # covid tests
     all_test_positive = sgss_covid_all_tests \
         .where(sgss_covid_all_tests.is_positive) \
-        .except_where(sgss_covid_all_tests.specimen_taken_date <= study_start_date) \
+        .except_where(sgss_covid_all_tests.specimen_taken_date <= dataset.pt_start_date) \
         .except_where(sgss_covid_all_tests.specimen_taken_date >= dataset.pt_end_date)
 
     dataset.all_test_positive = all_test_positive.count_for_patient()
 
     dataset.all_tests = sgss_covid_all_tests \
-        .except_where(sgss_covid_all_tests.specimen_taken_date <= study_start_date) \
+        .except_where(sgss_covid_all_tests.specimen_taken_date <= dataset.pt_start_date) \
         .except_where(sgss_covid_all_tests.specimen_taken_date >= dataset.pt_end_date) \
         .count_for_patient()
 
@@ -70,12 +62,16 @@ def add_common_variables(dataset, study_start_date, study_end_date):
     # covid hospitalisation
     covid_hospitalisations = hospitalisation_diagnosis_matches(hospital_admissions, codelists.hosp_covid)
 
+    all_covid_hosp = covid_hospitalisations \
+        .where(covid_hospitalisations.admission_date >= dataset.pt_start_date) \
+        .except_where(covid_hospitalisations.admission_date >= dataset.pt_end_date)
+
     # get the date of each of up to 3 COVID hospitalisations
     create_sequential_variables(
       dataset,
       "covid_hosp_admitted_{n}",
       num_variables=3,
-      events=covid_hospitalisations,
+      events=all_covid_hosp,
       column="admission_date"
     )
 
@@ -84,25 +80,21 @@ def add_common_variables(dataset, study_start_date, study_end_date):
       dataset,
       "covid_hosp_discharge_{n}",
       num_variables=3,
-      events=covid_hospitalisations,
+      events=all_covid_hosp,
       column="discharge_date"
     )
 
-    dataset.first_covid_hosp = covid_hospitalisations \
-        .sort_by(covid_hospitalisations.admission_date) \
-        .first_for_patient().admission_date
-
-    dataset.all_covid_hosp = covid_hospitalisations \
-        .except_where(covid_hospitalisations.admission_date >= dataset.pt_end_date) \
+    dataset.all_covid_hosp = all_covid_hosp \
         .count_for_patient()
 
     # Any covid identification
     primarycare_covid = clinical_events \
         .where(clinical_events.ctv3_code.is_in(codelists.any_primary_care_code)) \
+        .where(clinical_events.date >= dataset.pt_start_date) \
         .except_where(clinical_events.date >= dataset.pt_end_date)
 
     dataset.latest_primarycare_covid = primarycare_covid \
-        .sort_by(clinical_events.date) \
+        .sort_by(primarycare_covid.date) \
         .last_for_patient().date
 
     dataset.total_primarycare_covid = primarycare_covid \
@@ -183,12 +175,12 @@ def add_common_variables(dataset, study_start_date, study_end_date):
         binary_psychosis_schizophrenia_bipolar + \
         binary_permanent_immune + \
         binary_temp_immune
-    
+
     # negative control - hospital fractures
     fracture_hospitalisations = hospitalisation_diagnosis_matches(hospital_admissions, codelists.hosp_fractures)
 
     dataset.first_fracture_hosp = fracture_hospitalisations \
-        .where(fracture_hospitalisations.admission_date.is_between(study_start_date, study_end_date)) \
+        .where(fracture_hospitalisations.admission_date.is_between(dataset.p_start_date, dataset.pt_end_date)) \
         .sort_by(fracture_hospitalisations.admission_date) \
         .first_for_patient().admission_date
 
