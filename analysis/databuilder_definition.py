@@ -216,7 +216,7 @@ dataset.comorbid_count = binary_diabetes + \
 fracture_hospitalisations = hospitalisation_diagnosis_matches(hospital_admissions, codelists.hosp_fractures)
 
 dataset.first_fracture_hosp = fracture_hospitalisations \
-    .where(fracture_hospitalisations.admission_date.is_between(dataset.p_start_date, dataset.pt_end_date)) \
+    .where(fracture_hospitalisations.admission_date.is_between(dataset.pt_start_date, dataset.pt_end_date)) \
     .sort_by(fracture_hospitalisations.admission_date) \
     .first_for_patient().admission_date
 
