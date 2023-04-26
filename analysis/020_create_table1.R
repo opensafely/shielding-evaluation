@@ -68,8 +68,8 @@ var_labels <- list(
   care_home ~ "Resident in care home",
   care_home_nursing ~ "Resident in care home (with nursing)",
   shielding ~ "Shielding category",
-  hirisk_shield_count ~ "Codes for high-risk shielding (n)"
-  lorisk_shield_count ~ "Codes for low/moderate-risk shielding (n)"
+  hirisk_shield_count ~ "Codes for high-risk shielding (n)",
+  lorisk_shield_count ~ "Codes for low/moderate-risk shielding (n)",
   fracture ~ "Hospitalised for fracture",
   covid_hosp_cat ~ "COVID-19 hospitalisations (n)",
   covid_primary_cat ~ "COVID-19 primary care record (n)", 
@@ -154,10 +154,10 @@ table2 <- shielding_cohort %>%
     digits = all_continuous() ~ 1
   )
 
-table1 %>%
+table2 %>%
   as_gt() %>%
   gt::gtsave(
-    filename = "shielding_table1.html",
+    filename = "shielding_table2.html",
     path = fs::path(output_dir_tab)
   )
 

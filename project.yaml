@@ -35,6 +35,7 @@ actions:
         table1: output/tables/shielding_table1.html
         table1_r: output/tables/shielding_table1_redacted.html
         table1_data: output/table1_data.csv
+        table2: output/tables/shielding_table2.html
 
   plot0_hospitalisations: 
     run: > 

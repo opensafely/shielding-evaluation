@@ -1,10 +1,11 @@
-from databuilder.ehrql import Dataset, days, case, when
+from databuilder.ehrql import Dataset, days, case, when, years
 
 # from datasets import add_common_variables, study_end_date, study_start_date
 
 # this is where we import the schema to run the study with
 from databuilder.tables.beta.tpp import (
   practice_registrations,
+  appointments,
   patients,
   clinical_events,
   sgss_covid_all_tests,
@@ -24,15 +25,55 @@ import codelists
 
 import datetime
 
+
+# ------- Variable lib
+def has_prior_event(codelist, where=True):
+    return (
+        prior_events.where(where)
+        .where(prior_events.ctv3_code.is_in(codelist))
+        .sort_by(prior_events.date)
+        .last_for_patient().date
+    )
+
+
+def has_prior_event_numeric(codelist, where=True):
+    prior_events_exists = prior_events.where(where) \
+        .where(prior_events.ctv3_code.is_in(codelist)) \
+        .exists_for_patient()
+    return (
+        case(
+            when(prior_events_exists).then(1),
+            when(~prior_events_exists).then(0)
+            )
+    )
+
+
+# Function codes for extracting monthly GP visit from `appointments` table
+def add_visits(from_date, to_date):
+    # Number of GP visits between `from_date` and `to_date`
+    return appointments \
+        .where(appointments.start_date.is_between(from_date, to_date)) \
+        .count_for_patient()
+
+
+def add_hospitalisations(from_date, to_date):
+    # Hospitalisation within `num_months` of `from_date`
+    return hospital_admissions \
+        .where(hospital_admissions.admission_date.is_between(from_date, to_date)) \
+        .count_for_patient()
+
+
+# -------
 dataset = Dataset()
 
-study_start_date = datetime.date(2020, 3, 1)
+study_start_date = datetime.date(2020, 1, 1)
 study_end_date = datetime.date(2021, 3, 1)
 minimum_registration = 90
 
 # get eligible registrations
 registrations = practice_registrations \
-    .except_where(practice_registrations.end_date <= study_start_date)
+    .except_where(practice_registrations.end_date <= study_start_date) \
+    .except_where(practice_registrations.start_date > study_end_date)
 
 # get the number of registrations in this period to exclude anyone with >1 in the `set_population` later
 registrations_number = registrations.count_for_patient()
@@ -73,8 +114,7 @@ dataset.ethnicity = clinical_events.where(clinical_events.ctv3_code.is_in(codeli
 # covid tests
 all_test_positive = sgss_covid_all_tests \
     .where(sgss_covid_all_tests.is_positive) \
-    .except_where(sgss_covid_all_tests.specimen_taken_date <= dataset.pt_start_date) \
-    .except_where(sgss_covid_all_tests.specimen_taken_date >= dataset.pt_end_date)
+    .where(sgss_covid_all_tests.specimen_taken_date.is_between(dataset.pt_start_date, dataset.pt_end_date))
 
 dataset.all_test_positive = all_test_positive.count_for_patient()
 
@@ -99,20 +139,21 @@ all_covid_hosp = covid_hospitalisations \
     .where(covid_hospitalisations.admission_date >= dataset.pt_start_date) \
     .except_where(covid_hospitalisations.admission_date >= dataset.pt_end_date)
 
-# get the date of each of up to 3 COVID hospitalisations
+# get the date of each of up to 12 COVID hospitalisations - note only counting upto 12 covid hospitalisations in a 
+#  year for data memory reasons
 create_sequential_variables(
     dataset,
     "covid_hosp_admitted_{n}",
-    num_variables=3,
+    num_variables=6,
     events=all_covid_hosp,
     column="admission_date"
 )
 
-# get the discharge date of each of up to 3 COVID hospitalisations
+# get the discharge date of each of up to 12 COVID hospitalisations
 create_sequential_variables(
     dataset,
     "covid_hosp_discharge_{n}",
-    num_variables=3,
+    num_variables=6,
     events=all_covid_hosp,
     column="discharge_date"
 )
@@ -135,34 +176,11 @@ dataset.total_primarycare_covid = primarycare_covid \
 
 # comorbidities - unique per comorbidity
 
-# We define baseline variables on the day _before_ the study date (start date = day of
-# first possible booster vaccination)
+# We define baseline variables on the day _before_ the study date (start date = day of study entry for each patient)
 baseline_date = dataset.pt_start_date - days(1)
 
 events = clinical_events
 prior_events = events.where(events.date.is_on_or_before(baseline_date))
-
-
-def has_prior_event(codelist, where=True):
-    return (
-        prior_events.where(where)
-        .where(prior_events.ctv3_code.is_in(codelist))
-        .sort_by(prior_events.date)
-        .last_for_patient().date
-    )
-
-
-def has_prior_event_numeric(codelist, where=True):
-    prior_events_exists = prior_events.where(where) \
-        .where(prior_events.ctv3_code.is_in(codelist)) \
-        .exists_for_patient()
-    return (
-        case(
-            when(prior_events_exists).then(1),
-            when(~prior_events_exists).then(0)
-            )
-    )
-
 
 dataset.diabetes = has_prior_event(codelists.diabetes_codes)
 dataset.haem_cancer = has_prior_event(codelists.haem_cancer_codes)
@@ -220,17 +238,6 @@ dataset.first_fracture_hosp = fracture_hospitalisations \
     .sort_by(fracture_hospitalisations.admission_date) \
     .first_for_patient().admission_date
 
-# shielding codes
-dataset.highrisk_shield = clinical_events \
-    .where(clinical_events.snomedct_code.is_in(codelists.high_risk_shield)) \
-    .sort_by(clinical_events.date) \
-    .first_for_patient().date
-
-dataset.lowrisk_shield = clinical_events \
-    .where(clinical_events.snomedct_code.is_in(codelists.low_risk_shield)) \
-    .sort_by(clinical_events.date) \
-    .first_for_patient().date
-
 # care home flag
 dataset.care_home = address_as_of(dataset.pt_start_date) \
     .care_home_is_potential_match.if_null_then(False)
@@ -238,6 +245,44 @@ dataset.care_home = address_as_of(dataset.pt_start_date) \
 dataset.care_home_nursing = address_as_of(dataset.pt_start_date) \
     .care_home_requires_nursing.if_null_then(False)
 
+# Measure of healtchare utilisation - appointments
+dataset.appts_in_study = add_visits(dataset.pt_start_date, dataset.pt_end_date)
+dataset.appts_1yr_before = add_visits(dataset.pt_start_date - years(1), dataset.pt_start_date)
+dataset.allhosp_in_study = add_hospitalisations(dataset.pt_start_date, dataset.pt_end_date)
+dataset.allhosp_1yr_before = add_hospitalisations(dataset.pt_start_date - years(1), dataset.pt_start_date)
+
+# shielding codes
+hirisk_shield_codes = clinical_events \
+    .where(clinical_events.snomedct_code.is_in(codelists.high_risk_shield))
+
+lorisk_shield_codes = clinical_events \
+    .where(clinical_events.snomedct_code.is_in(codelists.low_risk_shield))
+
+dataset.highrisk_shield = hirisk_shield_codes \
+    .sort_by(hirisk_shield_codes.date) \
+    .first_for_patient().date
+dataset.hirisk_shield_count = hirisk_shield_codes.count_for_patient()
+
+dataset.lowrisk_shield = lorisk_shield_codes \
+    .sort_by(lorisk_shield_codes.date) \
+    .first_for_patient().date
+dataset.lorisk_shield_count = lorisk_shield_codes.count_for_patient()
+
+create_sequential_variables(
+    dataset,
+    "hirisk_codedate_{n}",
+    num_variables=3,
+    events=hirisk_shield_codes,
+    column="date"
+)
+create_sequential_variables(
+    dataset,
+    "lorisk_codedate_{n}",
+    num_variables=3,
+    events=lorisk_shield_codes,
+    column="date"
+)
+
 # final age restriction
-pop_restrict = (registrations_number == 1) & (dataset.age <= 100) & (dataset.age >= 18) & (dataset.sex.contains("male"))
+pop_restrict = (registrations_number == 1) & (dataset.age <= 100) & (dataset.age >= 0) & (dataset.sex.contains("male"))
 dataset.define_population(pop_restrict)
