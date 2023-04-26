@@ -29,12 +29,7 @@ shielding_hosp <- shielding_cohort %>%
 
 shielding_hosp <- shielding_hosp %>% 
   mutate(hosp_week = lubridate::week(admission_date),
-         hosp_year = lubridate::year(admission_date),
-         shielding = factor(ifelse(highrisk_shield_bin, 2, ifelse(lowrisk_shield_bin, 1, 0)),
-                            levels = 0:2,
-                            labels = c("No shielding", "Low/Moderate risk", "High Risk")
-                            )
-         )
+         hosp_year = lubridate::year(admission_date))
 shiedling_dt <- setDT(shielding_hosp)
 hirisk_hosp <- shiedling_dt[order(hosp_year, hosp_week), .(weekly_admissions=.N), by = .(hosp_week, hosp_year, shielding)]
 

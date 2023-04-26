@@ -41,14 +41,14 @@ shielding_data <- shielding_cohort %>%
                 comorbidities_factor,
                 care_home, 
                 care_home_nursing,
-                highrisk_shield_bin, 
-                lowrisk_shield_bin,
-                fracture,
+                shielding,
+                hirisk_shield_count,
+                lorisk_shield_count,
                 covid_hosp_cat, 
                 covid_primary_cat, 
                 test_positive_cat,
                 test_total_cat) %>% 
-  # calculate year of study enrolment
+  # calculate year of study enrollment
   dplyr::mutate(pt_start_year = factor(year(pt_start_date))) %>% 
   dplyr::select(-pt_start_date,
                 -pt_end_date) %>% 
@@ -67,8 +67,9 @@ var_labels <- list(
   comorbidities_factor ~ "Comorbidities",
   care_home ~ "Resident in care home",
   care_home_nursing ~ "Resident in care home (with nursing)",
-  highrisk_shield_bin ~ "High risk shielding category",
-  lowrisk_shield_bin ~ "Low/moderate risk shielding category",
+  shielding ~ "Shielding category",
+  hirisk_shield_count ~ "Codes for high-risk shielding (n)"
+  lorisk_shield_count ~ "Codes for low/moderate-risk shielding (n)"
   fracture ~ "Hospitalised for fracture",
   covid_hosp_cat ~ "COVID-19 hospitalisations (n)",
   covid_primary_cat ~ "COVID-19 primary care record (n)", 
@@ -138,3 +139,26 @@ table1_review <- table1_data %>%
 
 # table to help reviewing
 kableExtra::save_kable(table1_review, file = fs::path(output_dir_tab, glue("shielding_table1_redacted.html")))
+
+
+# table 2 - by shielding status -------------------------------------------
+table2 <- shielding_cohort %>% 
+  dplyr::select(any_of(names(var_labels))) %>% 
+  tbl_summary(
+    by = shielding, 
+    label = unname(var_labels[names(.)]),
+    statistic = list(
+      all_continuous() ~ "{p50} ({p25}-{p75})",
+      all_categorical() ~ "{n} ({p}%)"
+    ),
+    digits = all_continuous() ~ 1
+  )
+
+table1 %>%
+  as_gt() %>%
+  gt::gtsave(
+    filename = "shielding_table1.html",
+    path = fs::path(output_dir_tab)
+  )
+
+
