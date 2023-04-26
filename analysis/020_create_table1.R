@@ -8,7 +8,7 @@ library(glue)
 
 source(here::here("analysis/functions/redaction.R"))
 
-shiedling_cohort <- arrow::read_parquet(file = here::here("output/data_edited.gz.parquet"),
+shielding_cohort <- arrow::read_parquet(file = here::here("output/data_edited.gz.parquet"),
                                          compression = "gzip", compression_level = 5)
 output_dir_tab <- here("output/tables")
 fs::dir_create(output_dir_tab)
@@ -20,9 +20,9 @@ roundmid_any <- function(x, to=1){
 }
 
 # will update this when releasing outputs
-threshold <- 1
+threshold <- 10
 
-shielding_data <- shiedling_cohort %>%
+shielding_data <- shielding_cohort %>%
   # select only baseline variables 
   dplyr::select(pt_start_date, 
                 pt_end_date,
@@ -70,7 +70,7 @@ var_labels <- list(
   highrisk_shield_bin ~ "High risk shielding category",
   lowrisk_shield_bin ~ "Low/moderate risk shielding category",
   fracture ~ "Hospitalised for fracture",
-  all_covid_hosp ~ "COVID-19 hospitalisations (n)",
+  covid_hosp_cat ~ "COVID-19 hospitalisations (n)",
   covid_primary_cat ~ "COVID-19 primary care record (n)", 
   test_positive_cat ~ "COVID-19 positive tests (n)",
   test_total_cat ~ "COVID-19 tests (n)",
@@ -81,7 +81,7 @@ var_labels <- var_labels %>%
   set_names(., map_chr(., all.vars))
 
 # make table 1 ------------------------------------------------------------
-table1 <- shiedling_cohort %>% 
+table1 <- shielding_cohort %>% 
   dplyr::select(any_of(names(var_labels))) %>% 
   tbl_summary(
     label = unname(var_labels[names(.)]),
@@ -95,7 +95,7 @@ table1 <- shiedling_cohort %>%
 table1 %>%
   as_gt() %>%
   gt::gtsave(
-    filename = "tab1_baseline_description.html",
+    filename = "shielding_table1.html",
     path = fs::path(output_dir_tab)
   )
 
@@ -137,5 +137,4 @@ table1_review <- table1_data %>%
   )
 
 # table to help reviewing
-kableExtra::save_kable(table1_review, file = fs::path(output_dir_tab, glue("shielding_table1.html")))
-
+kableExtra::save_kable(table1_review, file = fs::path(output_dir_tab, glue("shielding_table1_redacted.html")))

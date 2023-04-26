@@ -33,4 +33,15 @@ actions:
     outputs: 
       moderately_sensitive: 
         table1: output/tables/shielding_table1.html
+        table1_r: output/tables/shielding_table1_redacted.html
         table1_data: output/table1_data.csv
+
+  plot0_hospitalisations: 
+    run: > 
+      r:latest
+        analysis/030_plot_hospitalisations.R
+    needs: [clean_the_data]
+    outputs: 
+      moderately_sensitive: 
+        fig1: output/figures/covid_hosp_over_time.pdf
+        fig2: output/figures/covid_hosp_over_time_cumsum.pdf
