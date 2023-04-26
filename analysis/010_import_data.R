@@ -6,7 +6,44 @@ library(arrow)
 
 source(here::here("analysis/functions/redaction.R"))
 
-data <- readr::read_csv(here("output/dataset_all.csv.gz")) %>% 
+data <- readr::read_csv(here("output/dataset_all.csv.gz"),
+                        col_types = cols(
+                          covid_testdate_1 = col_date(),
+                          covid_testdate_2 = col_date(),
+                          covid_testdate_3 = col_date(),
+                          covid_testdate_4 = col_date(),
+                          covid_testdate_5 = col_date(),
+                          covid_hosp_admitted_1 = col_date(),
+                          covid_hosp_admitted_2 = col_date(),
+                          covid_hosp_admitted_3 = col_date(),
+                          covid_hosp_admitted_4 = col_date(),
+                          covid_hosp_admitted_5 = col_date(),
+                          covid_hosp_admitted_6 = col_date(),
+                          covid_hosp_admitted_7 = col_date(),
+                          covid_hosp_admitted_8 = col_date(),
+                          covid_hosp_admitted_9 = col_date(),
+                          covid_hosp_admitted_10 = col_date(),
+                          covid_hosp_admitted_11 = col_date(),
+                          covid_hosp_admitted_12 = col_date(),
+                          covid_hosp_discharge_1 = col_date(),
+                          covid_hosp_discharge_2 = col_date(),
+                          covid_hosp_discharge_3 = col_date(),
+                          covid_hosp_discharge_4 = col_date(),
+                          covid_hosp_discharge_5 = col_date(),
+                          covid_hosp_discharge_6 = col_date(),
+                          covid_hosp_discharge_7 = col_date(),
+                          covid_hosp_discharge_8 = col_date(),
+                          covid_hosp_discharge_9 = col_date(),
+                          covid_hosp_discharge_10 = col_date(),
+                          covid_hosp_discharge_11 = col_date(),
+                          covid_hosp_discharge_12 = col_date(),
+                          hirisk_codedate_1 = col_date(),
+                          hirisk_codedate_2 = col_date(),
+                          hirisk_codedate_3 = col_date(),
+                          lorisk_codedate_1 = col_date(),
+                          lorisk_codedate_2 = col_date(),
+                          lorisk_codedate_3 = col_date()
+                        )) %>% 
   janitor::clean_names()
 spec(data) %>% print()
 
@@ -26,8 +63,11 @@ cleaned_data <- data %>%
     # create an age category variable for easy stratification
     age_cat = cut(
       age, 
-      breaks = c(0, 31, 41, 51, 61, 71, Inf),
+      breaks = c(0, 4, 11, 17, seq(29, 69, 10), Inf),
       labels = c(
+        "0-4",
+        "5-11",
+        "12-17",
         "18-29",
         "30-39",
         "40-49",
@@ -63,7 +103,7 @@ cleaned_data <- data %>%
       labels = c(as.character(0:1), "2+")
     )
   ) %>% 
-  # create number of hospitalisations as factor (0-5+)
+  # create number of hospitalisations as factor (0-3+)
   mutate(covid_hosp_cat = cut(
     all_covid_hosp, 
     breaks = c(-Inf, 0:3, Inf),
@@ -75,13 +115,13 @@ cleaned_data <- data %>%
     breaks = c(-Inf, 0:5, Inf),
     labels = c(as.character(0:4), "5+", "5+"))
   ) %>% 
-  # create number of covid positive Tests as factor (0-20+)
+  # create number of covid positive Tests as factor (0-5+)
   mutate(test_positive_cat = cut(
     all_test_positive, 
     breaks = c(-Inf, 0:5, Inf),
     labels = c(as.character(0:4), "5+", "5+"))
   ) %>% 
-  # create number of covid Tests as factor (0-20+)
+  # create number of covid Tests as factor (0-5+)
   mutate(test_total_cat = cut(
     all_tests, 
     breaks = c(-Inf, 0:5, Inf),
@@ -89,9 +129,15 @@ cleaned_data <- data %>%
   ) %>% 
   mutate(fracture = !is.na(first_fracture_hosp)) %>% 
   mutate(highrisk_shield_bin = !is.na(highrisk_shield)) %>% 
-  mutate(lowrisk_shield_bin = !is.na(lowrisk_shield)) 
-  
-  
+  mutate(lowrisk_shield_bin = !is.na(lowrisk_shield)) %>% 
+  mutate(shielding = factor(
+    case_when(
+      highrisk_shield_bin ~ 2,
+      lowrisk_shield_bin ~ 1),
+    levels = 0:2,
+    labels = c("No shielding", "Low/Moderate risk", "High Risk")
+  ))
+
 arrow::write_parquet(cleaned_data,
                      sink = here::here("output/data_edited.gz.parquet"),
                      compression = "gzip", compression_level = 5)
