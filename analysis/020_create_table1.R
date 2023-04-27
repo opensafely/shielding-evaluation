@@ -47,7 +47,9 @@ shielding_data <- shielding_cohort %>%
                 covid_hosp_cat, 
                 covid_primary_cat, 
                 test_positive_cat,
-                test_total_cat) %>% 
+                test_total_cat,
+                appts_1yr_before, 
+                allhosp_1yr_before) %>% 
   # calculate year of study enrollment
   dplyr::mutate(pt_start_year = factor(year(pt_start_date))) %>% 
   dplyr::select(-pt_start_date,
@@ -71,11 +73,14 @@ var_labels <- list(
   hirisk_shield_count ~ "Codes for high-risk shielding (n)",
   lorisk_shield_count ~ "Codes for low/moderate-risk shielding (n)",
   fracture ~ "Hospitalised for fracture",
-  covid_hosp_cat ~ "COVID-19 hospitalisations (n)",
+  all_covid_hosp ~ "Total COVID-19 hospitalisations (n)",
+  covid_hosp_cat ~ "COVID-19 hospitalisations per person (n)",
   covid_primary_cat ~ "COVID-19 primary care record (n)", 
   test_positive_cat ~ "COVID-19 positive tests (n)",
   test_total_cat ~ "COVID-19 tests (n)",
-  vaccine_schedule_detail ~ "Vaccination schedule received"
+  vaccine_schedule_detail ~ "Vaccination schedule received",
+  appts_1yr_before ~ "Healthcare use: appointments 1 year before study entry (n)",
+  allhosp_1yr_before ~ "Healthcare use: hospital admissions 1 year before study entry (n)"
 )
 
 var_labels <- var_labels %>%
@@ -87,7 +92,7 @@ table1 <- shielding_cohort %>%
   tbl_summary(
     label = unname(var_labels[names(.)]),
     statistic = list(
-      all_continuous() ~ "{p50} ({p25}-{p75})",
+      all_continuous() ~ "{mean} ({sd})",
       all_categorical() ~ "{n} ({p}%)"
     ),
     digits = all_continuous() ~ 1
@@ -148,7 +153,7 @@ table2 <- shielding_cohort %>%
     by = shielding, 
     label = unname(var_labels[names(.)]),
     statistic = list(
-      all_continuous() ~ "{p50} ({p25}-{p75})",
+      all_continuous() ~ "{mean} ({sd})",
       all_categorical() ~ "{n} ({p}%)"
     ),
     digits = all_continuous() ~ 1
