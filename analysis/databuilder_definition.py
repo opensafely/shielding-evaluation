@@ -6,6 +6,7 @@ from databuilder.ehrql import Dataset, days, case, when, years
 from databuilder.tables.beta.tpp import (
   practice_registrations,
   appointments,
+  vaccinations,
   patients,
   clinical_events,
   sgss_covid_all_tests,
@@ -66,8 +67,9 @@ def add_hospitalisations(from_date, to_date):
 # -------
 dataset = Dataset()
 
+# start in 
 study_start_date = datetime.date(2020, 1, 1)
-study_end_date = datetime.date(2021, 3, 1)
+study_end_date = datetime.date(2021, 9, 1)
 minimum_registration = 90
 
 # get eligible registrations
@@ -133,13 +135,14 @@ create_sequential_variables(
 )
 
 # covid hospitalisation
+# Aiming to mathc previous OS methods on COVID hosp identification https://github.com/opensafely/post-covid-outcomes-research/blob/f3b58c7167659873c74fbc4694bbb542682711e2/analysis/study_definition_covid.py#L34-L41
 covid_hospitalisations = hospitalisation_diagnosis_matches(hospital_admissions, codelists.hosp_covid)
 
 all_covid_hosp = covid_hospitalisations \
     .where(covid_hospitalisations.admission_date >= dataset.pt_start_date) \
     .except_where(covid_hospitalisations.admission_date >= dataset.pt_end_date)
 
-# get the date of each of up to 12 COVID hospitalisations - note only counting upto 12 covid hospitalisations in a 
+# get the date of each of up to 6 COVID hospitalisations - note only counting upto 12 covid hospitalisations in a \
 #  year for data memory reasons
 create_sequential_variables(
     dataset,
@@ -149,7 +152,7 @@ create_sequential_variables(
     column="admission_date"
 )
 
-# get the discharge date of each of up to 12 COVID hospitalisations
+# get the discharge date of each of up to 6 COVID hospitalisations
 create_sequential_variables(
     dataset,
     "covid_hosp_discharge_{n}",
@@ -251,11 +254,40 @@ dataset.appts_1yr_before = add_visits(dataset.pt_start_date - years(1), dataset.
 dataset.allhosp_in_study = add_hospitalisations(dataset.pt_start_date, dataset.pt_end_date)
 dataset.allhosp_1yr_before = add_hospitalisations(dataset.pt_start_date - years(1), dataset.pt_start_date)
 
+# vaccination codes
+all_vacc = vaccinations \
+    .where(vaccinations.date.is_between(study_start_date, study_end_date)) \
+    .where(vaccinations.target_disease == "SARS-2 CORONAVIRUS")
+
+# this will be replaced with distinct_count_for_patient() once it is developed
+dataset.total_vacc = all_vacc \
+    .count_for_patient()
+
+# FIRST VACCINE DOSE ------------------------------------------------------------
+# first vaccine dose was 8th December 2020
+vaccine_dose_1 = all_vacc \
+    .where(all_vacc.date.is_after(datetime.date(2020, 12, 7))) \
+    .sort_by(all_vacc.date) \
+    .first_for_patient()
+dataset.vaccine_dose_1_date = vaccine_dose_1.date
+
+# SECOND VACCINE DOSE ------------------------------------------------------------
+# first recorded 2nd dose was 29th December 2020
+# need a 19 day gap from first dose
+vaccine_dose_2 = all_vacc \
+    .where(all_vacc.date.is_after(datetime.date(2020, 12, 28))) \
+    .where(all_vacc.date.is_after(dataset.vaccine_dose_1_date + days(19))) \
+    .sort_by(all_vacc.date) \
+    .first_for_patient()
+dataset.vaccine_dose_2_date = vaccine_dose_2.date
+
 # shielding codes
 hirisk_shield_codes = clinical_events \
+    .where(clinical_events.date.is_after(study_start_date)) \
     .where(clinical_events.snomedct_code.is_in(codelists.high_risk_shield))
 
 lorisk_shield_codes = clinical_events \
+    .where(clinical_events.date.is_after(study_start_date)) \
     .where(clinical_events.snomedct_code.is_in(codelists.low_risk_shield))
 
 dataset.highrisk_shield = hirisk_shield_codes \
