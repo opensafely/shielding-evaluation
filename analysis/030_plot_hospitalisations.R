@@ -49,7 +49,7 @@ pdf(here::here("output/figures/covid_hosp_over_time.pdf"), width = 8, height = 6
 ggplot(shielding_hosp_summ, aes(x = plot_date, y = weekly_admissions, col = shielding)) +
   geom_line() + 
   geom_point(size = 1.2, pch = 1) +
-  facet_wrap(~shielding, ncol = 1, scales = "free") +
+  facet_wrap(~shielding, ncol = 1, scales = "free_y") +
   labs(x = "Date", y = "Weekly admissions") + 
   theme_bw()
 dev.off()
