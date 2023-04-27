@@ -37,7 +37,7 @@ actions:
         table1_data: output/table1_data.csv
         table2: output/tables/shielding_table2.html
 
-  plot0_hospitalisations: 
+  plot_hospitalisations: 
     run: > 
       r:latest
         analysis/030_plot_hospitalisations.R

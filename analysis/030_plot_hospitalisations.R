@@ -13,13 +13,16 @@ shielding_cohort <- arrow::read_parquet(file = here::here("output/data_edited.gz
 output_dir_plot <- here("output/figures")
 fs::dir_create(output_dir_plot)
 
+shielding_cohort %>% 
+  group_by(shielding) %>% 
+  summarise(hosps = sum(all_covid_hosp, na.rm = T)) %>% 
+  print()
+
 # Add week number and year for first hospitalisation
 shielding_hosp <- shielding_cohort %>% 
   dplyr::select(patient_id,
                 dplyr::starts_with("pt_"),
-                sex, 
-                practice_nuts, 
-                dplyr::contains("shield"),
+                shielding,
                 dplyr::contains("hosp_admitted")) %>% 
   pivot_longer(cols = dplyr::contains("hosp_admitted"), 
                names_pattern = "covid_hosp_admitted_(.)",
@@ -27,18 +30,23 @@ shielding_hosp <- shielding_cohort %>%
                values_to = "admission_date") %>% 
   drop_na()
 
+# create a couple of numeric week and year variables to group on
 shielding_hosp <- shielding_hosp %>% 
   mutate(hosp_week = lubridate::week(admission_date),
          hosp_year = lubridate::year(admission_date))
-shiedling_dt <- setDT(shielding_hosp)
-hirisk_hosp <- shiedling_dt[order(hosp_year, hosp_week), .(weekly_admissions=.N), by = .(hosp_week, hosp_year, shielding)]
+
+shielding_hosp_summ <- shielding_hosp %>% 
+  group_by(hosp_year, hosp_week, shielding) %>% 
+  summarise(weekly_admissions = n()) %>% 
+  ungroup()
 
 mindate <- min(shielding_hosp$admission_date)
-hirisk_hosp <- hirisk_hosp %>% 
+print(mindate)
+shielding_hosp_summ <- shielding_hosp_summ %>% 
   mutate(plot_date = mindate + weeks(hosp_week - week(mindate)) + years(hosp_year - year(mindate))) 
 
 pdf(here::here("output/figures/covid_hosp_over_time.pdf"), width = 8, height = 6)
-ggplot(hirisk_hosp, aes(x = plot_date, y = weekly_admissions, col = shielding)) +
+ggplot(shielding_hosp_summ, aes(x = plot_date, y = weekly_admissions, col = shielding)) +
   geom_line() + 
   geom_point(size = 1.2, pch = 1) +
   facet_wrap(~shielding, ncol = 1, scales = "free") +
@@ -46,14 +54,15 @@ ggplot(hirisk_hosp, aes(x = plot_date, y = weekly_admissions, col = shielding)) 
   theme_bw()
 dev.off()
 
-hirisk_hosp_cumsum <- hirisk_hosp %>% 
+hirisk_hosp_cumsum <- shielding_hosp_summ %>% 
   group_by(shielding) %>% 
   mutate(cumsum_admissions = cumsum(weekly_admissions))
 
 pdf(here::here("output/figures/covid_hosp_over_time_cumsum.pdf"), width = 8, height = 6)
 ggplot(hirisk_hosp_cumsum, aes(x = plot_date, y = cumsum_admissions, col = shielding, fill = shielding)) +
   geom_col() + 
-  facet_wrap(~shielding, ncol = 1, scales = "free") +
+  facet_wrap(~shielding, ncol = 1, scales = "free_y") +
   labs(x = "Date", y = "Total admissions") + 
   theme_bw()
 dev.off()
+
