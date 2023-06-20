@@ -1,8 +1,8 @@
 # where EHRQl is defined. Only really need Dastaset, tehe others are specific
-from databuilder.ehrql import days, case, when
+from ehrql import days, case, when
 
 # this is where we import the schema to run the study with
-from databuilder.tables.beta.tpp import (
+from ehrql.tables.beta.tpp import (
   patients,
   clinical_events,
   sgss_covid_all_tests,
@@ -18,9 +18,6 @@ from variable_lib import (
   hospitalisation_diagnosis_matches
 )
 import codelists
-
-
-
 
 def add_common_variables(dataset, study_start_date, study_end_date):
     # Demographic variables
@@ -183,24 +180,6 @@ def add_common_variables(dataset, study_start_date, study_end_date):
         .where(fracture_hospitalisations.admission_date.is_between(dataset.p_start_date, dataset.pt_end_date)) \
         .sort_by(fracture_hospitalisations.admission_date) \
         .first_for_patient().admission_date
-
-    # shielding codes
-    dataset.highrisk_shield = clinical_events \
-        .where(clinical_events.snomedct_code.is_in(codelists.high_risk_shield)) \
-        .sort_by(clinical_events.date) \
-        .first_for_patient().date
-
-    dataset.lowrisk_shield = clinical_events \
-        .where(clinical_events.snomedct_code.is_in(codelists.low_risk_shield)) \
-        .sort_by(clinical_events.date) \
-        .first_for_patient().date
-
-    # care home flag
-    dataset.care_home = address_as_of(dataset.pt_start_date) \
-        .care_home_is_potential_match.if_null_then(False)
-
-    dataset.care_home_nursing = address_as_of(dataset.pt_start_date) \
-        .care_home_requires_nursing.if_null_then(False)
 
     # final age restriction
     pop_restrict = (dataset.age <= 100) & (dataset.age >= 18) & (dataset.sex.contains("male"))

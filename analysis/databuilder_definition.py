@@ -1,9 +1,9 @@
-from databuilder.ehrql import Dataset, days, case, when, years
+from ehrql import Dataset, days, case, when, years
 
 # from datasets import add_common_variables, study_end_date, study_start_date
 
 # this is where we import the schema to run the study with
-from databuilder.tables.beta.tpp import (
+from ehrql.tables.beta.tpp import (
   practice_registrations,
   appointments,
   vaccinations,
@@ -281,13 +281,13 @@ vaccine_dose_2 = all_vacc \
     .first_for_patient()
 dataset.vaccine_dose_2_date = vaccine_dose_2.date
 
-# shielding codes
+# shielding codes ---------------------------------------------------------------
 hirisk_shield_codes = clinical_events \
-    .where(clinical_events.date.is_after(study_start_date)) \
+    .where(clinical_events.date.is_between(dataset.pt_start_date, dataset.pt_end_date)) \
     .where(clinical_events.snomedct_code.is_in(codelists.high_risk_shield))
 
 lorisk_shield_codes = clinical_events \
-    .where(clinical_events.date.is_after(study_start_date)) \
+    .where(clinical_events.date.is_between(dataset.pt_start_date, dataset.pt_end_date)) \
     .where(clinical_events.snomedct_code.is_in(codelists.low_risk_shield))
 
 dataset.highrisk_shield = hirisk_shield_codes \
@@ -313,6 +313,34 @@ create_sequential_variables(
     num_variables=3,
     events=lorisk_shield_codes,
     column="date"
+)
+
+# different "shielding" definitions
+# 1 - people who were shielding from the start and never had a lowrisk flag
+dataset.hi_risk_only = (
+    hirisk_shield_codes
+    .where(hirisk_shield_codes.date.is_before(datetime.date(2020, 4, 21)))
+    .except_where(lorisk_shield_codes.exists_for_patient())
+    .sort_by(hirisk_shield_codes.date)
+    .first_for_patient()
+    .date
+    )
+
+# 2 - people who had ONE high-risk and zero or one lowrisk flag afterwards
+dataset.one_hirisk_start = (
+    hirisk_shield_codes
+    .where(dataset.hirisk_shield_count == 1)
+    .where(dataset.lorisk_shield_count <= 1)
+    .except_where(dataset.lorisk_codedate_1 > dataset.hirisk_codedate_1)
+    .date
+    .minimum_for_patient()
+)
+
+dataset.one_hirisk_end = (
+    lorisk_shield_codes
+    .where(lorisk_shield_codes.date > dataset.one_hirisk_start)
+    .date
+    .minimum_for_patient()
 )
 
 # final age restriction
