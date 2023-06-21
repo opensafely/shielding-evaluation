@@ -30,7 +30,10 @@ data <- readr::read_csv(here("output/dataset_all.csv.gz"),
                           hirisk_codedate_3 = col_date(),
                           lorisk_codedate_1 = col_date(),
                           lorisk_codedate_2 = col_date(),
-                          lorisk_codedate_3 = col_date()
+                          lorisk_codedate_3 = col_date(),
+                          hi_risk_only = col_date(),
+                          one_hirisk_start = col_date(),
+                          one_hirisk_end = col_date()
                         )) %>% 
   janitor::clean_names()
 spec(data) %>% print()
@@ -125,7 +128,9 @@ cleaned_data <- data %>%
       !highrisk_shield_bin & !lowrisk_shield_bin ~ 0),
     levels = c(0, 1, 2),
     labels = c("No shielding", "Low/Moderate risk", "High Risk")
-  ))
+  )) %>% 
+  mutate(hi_risk_only_bin = !is.na(hi_risk_only)) %>% 
+  mutate(one_hirisk_bin = !is.na(one_hirisk_start)) 
 
 arrow::write_parquet(cleaned_data,
                      sink = here::here("output/data_edited.gz.parquet"),

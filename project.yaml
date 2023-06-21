@@ -44,5 +44,8 @@ actions:
     needs: [clean_the_data]
     outputs: 
       moderately_sensitive: 
-        fig1: output/figures/covid_hosp_over_time.pdf
-        fig2: output/figures/covid_hosp_over_time_cumsum.pdf
+        shielding_comparison: output/data_properties/different_shielding.txt
+        fig1_v1: output/figures/covid_hosp_over_time_v1.pdf
+        fig2_v1: output/figures/covid_hosp_over_time_cumsum_v1.pdf
+        fig1_v2: output/figures/covid_hosp_over_time_v2.pdf
+        fig2_v2: output/figures/covid_hosp_over_time_cumsum_v2.pdf
