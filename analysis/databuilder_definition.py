@@ -105,7 +105,7 @@ dataset.age = age_as_of(study_start_date)
 dataset.has_died = has_died(study_start_date)
 dataset.msoa = address_as_of(study_start_date).msoa_code
 dataset.imd = address_as_of(study_start_date).imd_rounded
-dataset.death_date = patients.where(patients.date_of_death.is_between(dataset.pt_start_date, dataset.pt_end_date))
+dataset.death_date = patients.date_of_death
 
 # Ethnicity in 6 categories ------------------------------------------------------------
 dataset.ethnicity = clinical_events.where(clinical_events.ctv3_code.is_in(codelists.ethnicity)) \
@@ -342,5 +342,20 @@ dataset.one_hirisk_end = (
 )
 
 # final age restriction
-pop_restrict = (registrations_number == 1) & (dataset.age <= 100) & (dataset.age >= 0) & (dataset.sex.contains("male"))
+# 1- only one registration
+# 2- age between 0 and 100
+# 3- sex is either male or female (to avoid small cell counts)
+# 4- check they haven't died already. Shouldn't be able to die and then start a registration but strange things can happen
+
+# death_date can be missing or a value. But I can't work out how to do either/or statements
+# within the define_population. So make a fake data and if it's missing, make the 
+# date of death something stupid in the future. Then filter out anyone with a 
+# fake_death_date before study enrolment
+fake_death_date = dataset.death_date.if_null_then(datetime.date(3001,1,1))
+
+pop_restrict = (registrations_number == 1) \
+    & (dataset.age <= 100) & (dataset.age >= 0) \
+    & (dataset.sex.contains("male")) \
+    & (fake_death_date > dataset.pt_start_date)
+
 dataset.define_population(pop_restrict)
