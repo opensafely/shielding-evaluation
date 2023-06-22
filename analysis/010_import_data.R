@@ -118,7 +118,13 @@ cleaned_data <- data %>%
     breaks = c(-Inf, 0:5, Inf),
     labels = c(as.character(0:4), "5+", "5+"))
   ) %>% 
-  mutate(fracture = !is.na(first_fracture_hosp)) %>% 
+  mutate(fracture = !is.na(first_fracture_hosp)) 
+
+# create the different versions of shielding ------------------------------
+cleaned_data <- cleaned_data %>% 
+  # v0: simple crude version. IF people have a high-risk flag then they 
+  # are "High risk" throughout the pandemic period. ELSE they are "Low/Moderate risk" 
+  # if they have a lowrisk flag. ELSE they are not shielding
   mutate(highrisk_shield_bin = !is.na(highrisk_shield)) %>% 
   mutate(lowrisk_shield_bin = !is.na(lowrisk_shield)) %>% 
   mutate(shielding = factor(
@@ -129,9 +135,32 @@ cleaned_data <- data %>%
     levels = c(0, 1, 2),
     labels = c("No shielding", "Low/Moderate risk", "High Risk")
   )) %>% 
-  mutate(hi_risk_only_bin = !is.na(hi_risk_only)) %>% 
-  mutate(one_hirisk_bin = !is.na(one_hirisk_start)) 
+  # v1: high risk only. This creates two variables in a group 
+  # of people who have a high risk flag before 2020-04-21 and 
+  # never got a low risk flag. This group we can be confident were 
+  # shielding from the start.
+  # So start "shielding" from date of hirisk flag:
+  # 0-----------hi----------->t 
+  mutate(shielding_v1_binary = !is.na(hi_risk_only)) %>% 
+  rename(shielding_v1_startdate = hi_risk_only) %>% 
+  # v2: one high risk flag. This creates 3 variables in a 
+  # group of people that have one high-risk flag, but stop 
+  # the shielding if they receive a low/moderate risk flag.
+  # One binary indicator for people that fit this description
+  # 2 date variables:
+  # So start and end date variables define the shielding period
+  # 0------------------hi------------------lo------------>t
+  # 0------------------shieldingshieldingshie------------>t
+  mutate(shielding_v2_binary = !is.na(one_hirisk_start)) %>% 
+  rename(shielding_v2_startdate = one_hirisk_start,
+         shielding_v2_enddate = one_hirisk_end)
 
+# NOTE: v1 and v2 will exclude people how have multiple
+# hi-risk and lo-risk flags. We are assuming that these are 
+# in the minority and too complex to accurately capture 
+# their "shielding" behaviour
+
+# output the data ---------------------------------------------------------
 arrow::write_parquet(cleaned_data,
                      sink = here::here("output/data_edited.gz.parquet"),
                      compression = "gzip", compression_level = 5)
