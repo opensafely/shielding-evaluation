@@ -36,7 +36,7 @@ actions:
         table1_r: output/tables/shielding_table1_redacted.html
         table1_data: output/table1_data.csv
         table2: output/tables/shielding_table2.html
-
+  
   plot_hospitalisations: 
     run: > 
       r:latest
@@ -49,3 +49,24 @@ actions:
         fig2_v1: output/figures/covid_hosp_over_time_cumsum_v1.pdf
         fig1_v2: output/figures/covid_hosp_over_time_v2.pdf
         fig2_v2: output/figures/covid_hosp_over_time_cumsum_v2.pdf
+  
+  plot_hospitalisations2:
+    run: > 
+      r:latest
+        analysis/040_plot_hospitalisations.R
+    needs: [clean_the_data]
+    outputs: 
+      moderately_sensitive: 
+        fig3: output/figures/covid_hosp_over_time2.pdf
+        fig4: output/figures/covid_hosp_over_time_cumsum2.pdf
+        
+  plot_deaths2:
+    run: > 
+      r:latest
+        analysis/050_plot_deaths.R
+    needs: [clean_the_data]
+    outputs: 
+      moderately_sensitive: 
+        fig5: output/figures/covid_deaths_over_time2.pdf
+        fig6: output/figures/covid_deaths_over_time_cumsum2.pdf
+ 
