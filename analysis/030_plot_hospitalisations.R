@@ -20,22 +20,26 @@ capture.output(
   file = paste0(output_dir, "/different_shielding.txt"),
   shielding_cohort %>% 
     group_by(shielding) %>% 
-    summarise(hosps = sum(all_covid_hosp, na.rm = T)) %>% 
+    summarise(denom = n(), hosps = sum(all_covid_hosp, na.rm = T)) %>% 
+    mutate(proportion = round(hosps/denom, 3)) %>% 
     print()
   ,
   shielding_cohort %>% 
-    group_by(one_hirisk_bin) %>% 
-    summarise(hosps = sum(all_covid_hosp, na.rm = T)) %>% 
+    group_by(shielding_v1_binary) %>% 
+    summarise(denom = n(), hosps = sum(all_covid_hosp, na.rm = T)) %>% 
+    mutate(proportion = round(hosps/denom, 3)) %>% 
     print()
   ,
   shielding_cohort %>% 
-    group_by(hi_risk_only_bin) %>% 
-    summarise(hosps = sum(all_covid_hosp, na.rm = T)) %>% 
+    group_by(shielding_v2_binary) %>% 
+    summarise(denom = n(), hosps = sum(all_covid_hosp, na.rm = T)) %>% 
+    mutate(proportion = round(hosps/denom, 3)) %>% 
     print()
   ,
   shielding_cohort %>% 
     group_by(hirisk_shield_count) %>% 
-    summarise(hosps = sum(all_covid_hosp, na.rm = T)) %>% 
+    summarise(denom = n(), hosps = sum(all_covid_hosp, na.rm = T)) %>% 
+    mutate(proportion = round(hosps/denom, 3)) %>% 
     print()
 )
 
@@ -44,7 +48,7 @@ capture.output(
 shielding_hosp_v1 <- shielding_cohort %>% 
   dplyr::select(patient_id,
                 dplyr::starts_with("pt_"),
-                hi_risk_only,
+                shielding_v1_startdate,
                 dplyr::contains("hosp_admitted")) %>% 
   pivot_longer(cols = dplyr::contains("hosp_admitted"), 
                names_pattern = "covid_hosp_admitted_(.)",
@@ -53,7 +57,7 @@ shielding_hosp_v1 <- shielding_cohort %>%
   filter(!is.na(admission_date)) %>% 
   # create binary variable for whether the patient was shielding 
   # at the date of hospital admission:
-  mutate(shielding = as.numeric(admission_date > hi_risk_only)) %>% 
+  mutate(shielding = as.numeric(admission_date > shielding_v1_startdate)) %>% 
   # there will be a lot of NAs (people who never shielded have NA `hirisk_only`)
   # so replace these with 0
   mutate(shielding = replace_na(0)) %>% 
@@ -63,7 +67,7 @@ shielding_hosp_v1 <- shielding_cohort %>%
 shielding_hosp_v2 <- shielding_cohort %>% 
   dplyr::select(patient_id,
                 dplyr::starts_with("pt_"),
-                one_hirisk_start, one_hirisk_end,
+                shielding_v2_startdate, shielding_v2_enddate,
                 dplyr::contains("hosp_admitted")) %>% 
   pivot_longer(cols = dplyr::contains("hosp_admitted"), 
                names_pattern = "covid_hosp_admitted_(.)",
@@ -74,10 +78,10 @@ shielding_hosp_v2 <- shielding_cohort %>%
   # at the date of hospital admission:
   # To do so, because of a lot of NA values, replace these with an 
   # artificially futuristic date value 
-  mutate_at(vars(one_hirisk_start, one_hirisk_end), 
+  mutate_at(vars(shielding_v2_startdate, shielding_v2_enddate), 
             ~replace_na(., as.Date("3023-01-01"))) %>% 
-  mutate(shielding = as.numeric(admission_date >= one_hirisk_start & 
-                                  admission_date <= one_hirisk_end)) %>% 
+  mutate(shielding = as.numeric(admission_date >= shielding_v2_startdate & 
+                                  admission_date <= shielding_v2_enddate)) %>% 
   ungroup()
 
 # plot the results --------------------------------------------------------
@@ -126,3 +130,4 @@ pdf(here::here("output/figures/covid_hosp_over_time_cumsum_v1.pdf"), width = 8, 
 # Version 2 of shielding definition
 pdf(here::here("output/figures/covid_hosp_over_time_v2.pdf"), width = 8, height = 6); shieldplots_v2$p1; dev.off()
 pdf(here::here("output/figures/covid_hosp_over_time_cumsum_v2.pdf"), width = 8, height = 6); shieldplots_v2$p2; dev.off()
+

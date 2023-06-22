@@ -42,6 +42,8 @@ shielding_data <- shielding_cohort %>%
                 care_home, 
                 care_home_nursing,
                 shielding,
+                shielding_v1_binary,
+                shielding_v2_binary,
                 hirisk_shield_count,
                 lorisk_shield_count,
                 covid_hosp_cat, 
@@ -70,6 +72,8 @@ var_labels <- list(
   care_home ~ "Resident in care home",
   care_home_nursing ~ "Resident in care home (with nursing)",
   shielding ~ "Shielding category",
+  shielding_v1_binary ~ "Shielding v1: shielding from the start",
+  shielding_v2_binary ~ "Shielding v2: shielding until low/moderate flag",
   hirisk_shield_count ~ "Codes for high-risk shielding (n)",
   lorisk_shield_count ~ "Codes for low/moderate-risk shielding (n)",
   fracture ~ "Hospitalised for fracture",
@@ -163,6 +167,46 @@ table2 %>%
   as_gt() %>%
   gt::gtsave(
     filename = "shielding_table2.html",
+    path = fs::path(output_dir_tab)
+  )
+
+
+# table 2 - by shielding status v1 and v2-----------------------------------
+table2_v1 <- shielding_cohort %>% 
+  dplyr::select(any_of(names(var_labels))) %>% 
+  tbl_summary(
+    by = shielding_v1_binary, 
+    label = unname(var_labels[names(.)]),
+    statistic = list(
+      all_continuous() ~ "{mean} ({sd})",
+      all_categorical() ~ "{n} ({p}%)"
+    ),
+    digits = all_continuous() ~ 1
+  )
+
+table2_v1 %>%
+  as_gt() %>%
+  gt::gtsave(
+    filename = "shielding_v1_table2.html",
+    path = fs::path(output_dir_tab)
+  )
+
+table2_v2 <- shielding_cohort %>% 
+  dplyr::select(any_of(names(var_labels))) %>% 
+  tbl_summary(
+    by = shielding_v2_binary, 
+    label = unname(var_labels[names(.)]),
+    statistic = list(
+      all_continuous() ~ "{mean} ({sd})",
+      all_categorical() ~ "{n} ({p}%)"
+    ),
+    digits = all_continuous() ~ 1
+  )
+
+table2_v2 %>%
+  as_gt() %>%
+  gt::gtsave(
+    filename = "shielding_v2_table2.html",
     path = fs::path(output_dir_tab)
   )
 

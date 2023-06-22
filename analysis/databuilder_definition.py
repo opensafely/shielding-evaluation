@@ -75,7 +75,7 @@ minimum_registration = 90
 # get eligible registrations
 registrations = practice_registrations \
     .except_where(practice_registrations.end_date <= study_start_date) \
-    .except_where(practice_registrations.start_date > study_end_date)
+    .except_where(practice_registrations.start_date + days(minimum_registration) > study_end_date)
 
 # get the number of registrations in this period to exclude anyone with >1 in the `set_population` later
 registrations_number = registrations.count_for_patient()
@@ -121,8 +121,7 @@ all_test_positive = sgss_covid_all_tests \
 dataset.all_test_positive = all_test_positive.count_for_patient()
 
 dataset.all_tests = sgss_covid_all_tests \
-    .except_where(sgss_covid_all_tests.specimen_taken_date <= dataset.pt_start_date) \
-    .except_where(sgss_covid_all_tests.specimen_taken_date >= dataset.pt_end_date) \
+    .where(sgss_covid_all_tests.specimen_taken_date.is_between(dataset.pt_start_date, dataset.pt_end_date)) \
     .count_for_patient()
 
 # get the date of each of up to 5 test positives
@@ -317,6 +316,7 @@ create_sequential_variables(
 
 # different "shielding" definitions
 # 1 - people who were shielding from the start and never had a lowrisk flag
+# using 2020-04-21 because it is the median value of all high risk flags
 dataset.hi_risk_only = (
     hirisk_shield_codes
     .where(hirisk_shield_codes.date.is_before(datetime.date(2020, 4, 21)))
@@ -330,19 +330,32 @@ dataset.hi_risk_only = (
 dataset.one_hirisk_start = (
     hirisk_shield_codes
     .where(dataset.hirisk_shield_count == 1)
-    .where(dataset.lorisk_shield_count <= 1)
-    .except_where(dataset.lorisk_codedate_1 > dataset.hirisk_codedate_1)
     .date
     .minimum_for_patient()
 )
 
 dataset.one_hirisk_end = (
     lorisk_shield_codes
-    .where(lorisk_shield_codes.date > dataset.one_hirisk_start)
+    .where(dataset.lorisk_codedate_1 > dataset.hirisk_codedate_1)
     .date
     .minimum_for_patient()
 )
 
 # final age restriction
-pop_restrict = (registrations_number == 1) & (dataset.age <= 100) & (dataset.age >= 0) & (dataset.sex.contains("male"))
+# 1- only one registration
+# 2- age between 0 and 100
+# 3- sex is either male or female (to avoid small cell counts)
+# 4- check they haven't died already. Shouldn't be able to die and then start a registration but strange things can happen
+
+# death_date can be missing or a value. But I can't work out how to do either/or statements
+# within the define_population. So make a fake data and if it's missing, make the 
+# date of death something stupid in the future. Then filter out anyone with a 
+# fake_death_date before study enrolment
+fake_death_date = dataset.death_date.if_null_then(datetime.date(3001,1,1))
+
+pop_restrict = (registrations_number == 1) \
+    & (dataset.age <= 100) & (dataset.age >= 0) \
+    & (dataset.sex.contains("male")) \
+    & (fake_death_date > dataset.pt_start_date)
+
 dataset.define_population(pop_restrict)
