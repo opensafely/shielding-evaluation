@@ -8,6 +8,7 @@ from ehrql.tables.beta.tpp import (
   appointments,
   vaccinations,
   patients,
+  ons_deaths,
   clinical_events,
   sgss_covid_all_tests,
   hospital_admissions
@@ -106,6 +107,23 @@ dataset.has_died = has_died(study_start_date)
 dataset.msoa = address_as_of(study_start_date).msoa_code
 dataset.imd = address_as_of(study_start_date).imd_rounded
 dataset.death_date = patients.date_of_death
+
+ons_first_death = ons_deaths.sort_by(ons_deaths.date).first_for_patient()
+dataset.death_cause_01 = ons_first_death.cause_of_death_01
+dataset.death_cause_02 = ons_first_death.cause_of_death_02
+dataset.death_cause_03 = ons_first_death.cause_of_death_03
+dataset.death_cause_04 = ons_first_death.cause_of_death_04
+dataset.death_cause_05 = ons_first_death.cause_of_death_05
+dataset.death_cause_06 = ons_first_death.cause_of_death_06
+dataset.death_cause_07 = ons_first_death.cause_of_death_07
+dataset.death_cause_08 = ons_first_death.cause_of_death_08
+dataset.death_cause_09 = ons_first_death.cause_of_death_09
+dataset.death_cause_10 = ons_first_death.cause_of_death_10
+dataset.death_cause_11 = ons_first_death.cause_of_death_11
+dataset.death_cause_12 = ons_first_death.cause_of_death_12
+dataset.death_cause_13 = ons_first_death.cause_of_death_13
+dataset.death_cause_14 = ons_first_death.cause_of_death_14
+dataset.death_cause_15 = ons_first_death.cause_of_death_15
 
 # Ethnicity in 6 categories ------------------------------------------------------------
 dataset.ethnicity = clinical_events.where(clinical_events.ctv3_code.is_in(codelists.ethnicity)) \
@@ -347,15 +365,16 @@ dataset.one_hirisk_end = (
 # 3- sex is either male or female (to avoid small cell counts)
 # 4- check they haven't died already. Shouldn't be able to die and then start a registration but strange things can happen
 
-# death_date can be missing or a value. But I can't work out how to do either/or statements
-# within the define_population. So make a fake data and if it's missing, make the 
-# date of death something stupid in the future. Then filter out anyone with a 
-# fake_death_date before study enrolment
-fake_death_date = dataset.death_date.if_null_then(datetime.date(3001,1,1))
-
 pop_restrict = (registrations_number == 1) \
     & (dataset.age <= 100) & (dataset.age >= 0) \
     & (dataset.sex.contains("male")) \
-    & (fake_death_date > dataset.pt_start_date)
+    & (
+        # include people who died after the start date
+        dataset.death_date.is_on_or_after(dataset.pt_start_date)
+        # Or have an artificially large date - in case this is used as a placeholder
+        | (dataset.death_date > "3000-01-01")
+        # Or have not died
+        | dataset.death_date.is_null()
+    )
 
 dataset.define_population(pop_restrict)
