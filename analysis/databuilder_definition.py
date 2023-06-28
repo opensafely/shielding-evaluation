@@ -108,7 +108,14 @@ dataset.msoa = address_as_of(study_start_date).msoa_code
 dataset.imd = address_as_of(study_start_date).imd_rounded
 dataset.death_date = patients.date_of_death
 
-ons_first_death = ons_deaths.sort_by(ons_deaths.date).first_for_patient()
+ons_first_death = (
+    ons_deaths
+    .where(ons_deaths.date >= dataset.pt_start_date)
+    .except_where(ons_deaths.date >= dataset.pt_end_date)
+    .sort_by(ons_deaths.date)
+    .first_for_patient()
+)
+dataset.ons_death_date = ons_first_death.date
 dataset.death_cause_01 = ons_first_death.cause_of_death_01
 dataset.death_cause_02 = ons_first_death.cause_of_death_02
 dataset.death_cause_03 = ons_first_death.cause_of_death_03
