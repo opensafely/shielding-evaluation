@@ -108,6 +108,9 @@ dataset.msoa = address_as_of(study_start_date).msoa_code
 dataset.imd = address_as_of(study_start_date).imd_rounded
 dataset.death_date = patients.date_of_death
 
+# Death should be a one-row per patient thing but there are duplicates
+# in the ONS data so we have to include this step to keep one death 
+# per patient
 ons_first_death = (
     ons_deaths
     .where(ons_deaths.date >= dataset.pt_start_date)
@@ -116,6 +119,7 @@ ons_first_death = (
     .first_for_patient()
 )
 dataset.ons_death_date = ons_first_death.date
+dataset.ons_underlying_cause = ons_first_death.underlying_cause_of_death
 dataset.death_cause_01 = ons_first_death.cause_of_death_01
 dataset.death_cause_02 = ons_first_death.cause_of_death_02
 dataset.death_cause_03 = ons_first_death.cause_of_death_03
