@@ -52,6 +52,15 @@ actions:
         fig1_v2: output/figures/covid_hosp_over_time_v2.pdf
         fig2_v2: output/figures/covid_hosp_over_time_cumsum_v2.pdf
   
+  plot_shielding: 
+    run: > 
+      r:latest
+        analysis/031_plot_shielding.R
+    needs: [clean_the_data]
+    outputs: 
+      moderately_sensitive: 
+        fig1_shielding: output/figures/shielding_over_time.pdf
+
   plot_hospitalisations2:
     run: > 
       r:latest
