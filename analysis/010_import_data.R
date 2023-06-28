@@ -33,7 +33,23 @@ data <- readr::read_csv(here("output/dataset_all.csv.gz"),
                           lorisk_codedate_3 = col_date(),
                           hi_risk_only = col_date(),
                           one_hirisk_start = col_date(),
-                          one_hirisk_end = col_date()
+                          one_hirisk_end = col_date(),
+                          ons_death_date = col_date(),
+                          death_cause_01 = col_character(),
+                          death_cause_02 = col_character(),
+                          death_cause_03 = col_character(),
+                          death_cause_04 = col_character(),
+                          death_cause_05 = col_character(),
+                          death_cause_06 = col_character(),
+                          death_cause_07 = col_character(),
+                          death_cause_08 = col_character(),
+                          death_cause_09 = col_character(),
+                          death_cause_10 = col_character(),
+                          death_cause_11 = col_character(),
+                          death_cause_12 = col_character(),
+                          death_cause_13 = col_character(),
+                          death_cause_14 = col_character(),
+                          death_cause_15 = col_character()
                         )) %>% 
   janitor::clean_names()
 spec(data) %>% print()
