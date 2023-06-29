@@ -50,6 +50,16 @@ def has_prior_event_numeric(codelist, where=True):
     )
 
 
+def covid_on_deathcert(cause_of_death):
+    covid_mentioned = cause_of_death.is_in(codelists.hosp_covid)
+    return (
+        case(
+            when(covid_mentioned).then(1),
+            when(~covid_mentioned).then(0)
+            )
+    )
+
+
 # Function codes for extracting monthly GP visit from `appointments` table
 def add_visits(from_date, to_date):
     # Number of GP visits between `from_date` and `to_date`
@@ -120,21 +130,23 @@ ons_first_death = (
 )
 dataset.ons_death_date = ons_first_death.date
 dataset.ons_underlying_cause = ons_first_death.underlying_cause_of_death
-dataset.death_cause_01 = ons_first_death.cause_of_death_01
-dataset.death_cause_02 = ons_first_death.cause_of_death_02
-dataset.death_cause_03 = ons_first_death.cause_of_death_03
-dataset.death_cause_04 = ons_first_death.cause_of_death_04
-dataset.death_cause_05 = ons_first_death.cause_of_death_05
-dataset.death_cause_06 = ons_first_death.cause_of_death_06
-dataset.death_cause_07 = ons_first_death.cause_of_death_07
-dataset.death_cause_08 = ons_first_death.cause_of_death_08
-dataset.death_cause_09 = ons_first_death.cause_of_death_09
-dataset.death_cause_10 = ons_first_death.cause_of_death_10
-dataset.death_cause_11 = ons_first_death.cause_of_death_11
-dataset.death_cause_12 = ons_first_death.cause_of_death_12
-dataset.death_cause_13 = ons_first_death.cause_of_death_13
-dataset.death_cause_14 = ons_first_death.cause_of_death_14
-dataset.death_cause_15 = ons_first_death.cause_of_death_15
+dataset.ons_covid_on_deathcert = (
+    covid_on_deathcert(ons_first_death.cause_of_death_01) +
+    covid_on_deathcert(ons_first_death.cause_of_death_02) +
+    covid_on_deathcert(ons_first_death.cause_of_death_03) +
+    covid_on_deathcert(ons_first_death.cause_of_death_04) +
+    covid_on_deathcert(ons_first_death.cause_of_death_05) +
+    covid_on_deathcert(ons_first_death.cause_of_death_06) +
+    covid_on_deathcert(ons_first_death.cause_of_death_07) +
+    covid_on_deathcert(ons_first_death.cause_of_death_08) +
+    covid_on_deathcert(ons_first_death.cause_of_death_09) +
+    covid_on_deathcert(ons_first_death.cause_of_death_10) +
+    covid_on_deathcert(ons_first_death.cause_of_death_11) +
+    covid_on_deathcert(ons_first_death.cause_of_death_12) +
+    covid_on_deathcert(ons_first_death.cause_of_death_13) +
+    covid_on_deathcert(ons_first_death.cause_of_death_14) +
+    covid_on_deathcert(ons_first_death.cause_of_death_15)
+)
 
 # Ethnicity in 6 categories ------------------------------------------------------------
 dataset.ethnicity = clinical_events.where(clinical_events.ctv3_code.is_in(codelists.ethnicity)) \
@@ -378,14 +390,6 @@ dataset.one_hirisk_end = (
 
 pop_restrict = (registrations_number == 1) \
     & (dataset.age <= 100) & (dataset.age >= 0) \
-    & (dataset.sex.contains("male")) \
-    & (
-        # include people who died after the start date
-        dataset.death_date.is_on_or_after(dataset.pt_start_date)
-        # Or have an artificially large date - in case this is used as a placeholder
-        | (dataset.death_date > "3000-01-01")
-        # Or have not died
-        | dataset.death_date.is_null()
-    )
+    & (dataset.sex.contains("male")) 
 
 dataset.define_population(pop_restrict)
