@@ -80,4 +80,3 @@ actions:
       moderately_sensitive: 
         fig5: output/figures/covid_deaths_over_time2.pdf
         fig6: output/figures/covid_deaths_over_time_cumsum2.pdf
- 

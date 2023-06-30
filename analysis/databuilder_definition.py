@@ -130,23 +130,23 @@ ons_first_death = (
 )
 dataset.ons_death_date = ons_first_death.date
 dataset.ons_underlying_cause = ons_first_death.underlying_cause_of_death
-dataset.ons_covid_on_deathcert = (
-    covid_on_deathcert(ons_first_death.cause_of_death_01) +
-    covid_on_deathcert(ons_first_death.cause_of_death_02) +
-    covid_on_deathcert(ons_first_death.cause_of_death_03) +
-    covid_on_deathcert(ons_first_death.cause_of_death_04) +
-    covid_on_deathcert(ons_first_death.cause_of_death_05) +
-    covid_on_deathcert(ons_first_death.cause_of_death_06) +
-    covid_on_deathcert(ons_first_death.cause_of_death_07) +
-    covid_on_deathcert(ons_first_death.cause_of_death_08) +
-    covid_on_deathcert(ons_first_death.cause_of_death_09) +
-    covid_on_deathcert(ons_first_death.cause_of_death_10) +
-    covid_on_deathcert(ons_first_death.cause_of_death_11) +
-    covid_on_deathcert(ons_first_death.cause_of_death_12) +
-    covid_on_deathcert(ons_first_death.cause_of_death_13) +
-    covid_on_deathcert(ons_first_death.cause_of_death_14) +
-    covid_on_deathcert(ons_first_death.cause_of_death_15)
-)
+# dataset.ons_covid_on_deathcert = (
+#     covid_on_deathcert(ons_first_death.cause_of_death_01) +
+#     covid_on_deathcert(ons_first_death.cause_of_death_02) +
+#     covid_on_deathcert(ons_first_death.cause_of_death_03) +
+#     covid_on_deathcert(ons_first_death.cause_of_death_04) +
+#     covid_on_deathcert(ons_first_death.cause_of_death_05) +
+#     covid_on_deathcert(ons_first_death.cause_of_death_06) +
+#     covid_on_deathcert(ons_first_death.cause_of_death_07) +
+#     covid_on_deathcert(ons_first_death.cause_of_death_08) +
+#     covid_on_deathcert(ons_first_death.cause_of_death_09) +
+#     covid_on_deathcert(ons_first_death.cause_of_death_10) +
+#     covid_on_deathcert(ons_first_death.cause_of_death_11) +
+#     covid_on_deathcert(ons_first_death.cause_of_death_12) +
+#     covid_on_deathcert(ons_first_death.cause_of_death_13) +
+#     covid_on_deathcert(ons_first_death.cause_of_death_14) +
+#     covid_on_deathcert(ons_first_death.cause_of_death_15)
+# )
 
 # Ethnicity in 6 categories ------------------------------------------------------------
 dataset.ethnicity = clinical_events.where(clinical_events.ctv3_code.is_in(codelists.ethnicity)) \
