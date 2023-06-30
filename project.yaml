@@ -80,3 +80,43 @@ actions:
       moderately_sensitive: 
         fig5: output/figures/covid_deaths_over_time2.pdf
         fig6: output/figures/covid_deaths_over_time_cumsum2.pdf
+
+  plot_hospitalisations2_East:
+    run: > 
+      r:latest
+        analysis/060_plot_hospitalisations_East.R
+    needs: [clean_the_data]
+    outputs: 
+      moderately_sensitive: 
+        fig3E: output/figures/covid_hosp_over_time2_East.pdf
+        fig4E: output/figures/covid_hosp_over_time_cumsum2_East.pdf
+
+  plot_deaths2_East:
+    run: > 
+      r:latest
+        analysis/070_plot_deaths_East.R
+    needs: [clean_the_data]
+    outputs: 
+      moderately_sensitive: 
+        fig5E: output/figures/covid_deaths_over_time2_East.pdf
+        fig6E: output/figures/covid_deaths_over_time_cumsum2_East.pdf
+
+  plot_hospitalisations2_EastMid:
+    run: > 
+      r:latest
+        analysis/080_plot_hospitalisations_EastMid.R
+    needs: [clean_the_data]
+    outputs: 
+      moderately_sensitive: 
+        fig3EM: output/figures/covid_hosp_over_time2_EastMid.pdf
+        fig4EM: output/figures/covid_hosp_over_time_cumsum2_EastMid.pdf
+
+  plot_deaths2_EastMid:
+    run: > 
+      r:latest
+        analysis/090_plot_deaths_EastMid.R
+    needs: [clean_the_data]
+    outputs: 
+      moderately_sensitive: 
+        fig5EM: output/figures/covid_deaths_over_time2_EastMid.pdf
+        fig6EM: output/figures/covid_deaths_over_time_cumsum2_EastMid.pdf
