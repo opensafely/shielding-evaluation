@@ -13,17 +13,18 @@ fs::dir_create(output_dir_plot)
 
 shielding_cohort <- arrow::read_parquet(file = here::here("output/data_edited.gz.parquet"),
                                         compression = "gzip", compression_level = 5)
+dim_sc = dim(shielding_cohort)
+if (dim_sc[1]>1000){ #only operates on real data, as dummy data has 500 or 1000 rows
+  shielding_cohort <- shielding_cohort[which(shielding_cohort$practice_nuts=="East Midlands"),] #limit to East practices, but not in dummy data as too few data
+}										
+										
 shielding_cohort_s <- shielding_cohort
 shielding_cohort_a <- shielding_cohort
-shielding_cohort_r <- shielding_cohort
 
 shielding_cohort_s %>% group_by(shielding) %>% #by shielding
   summarise(hosps = sum(all_covid_hosp, na.rm = T)) %>% print()
 
 shielding_cohort_a %>% group_by(age_cat) %>% #by age_cat
-  summarise(hosps = sum(all_covid_hosp, na.rm = T)) %>% print()
-
-shielding_cohort_r %>% group_by(practice_nuts) %>% #by practice_nuts
   summarise(hosps = sum(all_covid_hosp, na.rm = T)) %>% print()
 
 
@@ -59,17 +60,6 @@ shielding_hosp_a <- shielding_cohort_a %>%
                names_to = "covid_admission",
                values_to = "admission_date") %>% 
   drop_na()
-  
-  shielding_hosp_r <- shielding_cohort_r %>% 
-  dplyr::select(patient_id,
-                dplyr::starts_with("pt_"),
-                practice_nuts,
-                dplyr::contains("hosp_admitted")) %>% 
-  pivot_longer(cols = dplyr::contains("hosp_admitted"), 
-               names_pattern = "covid_hosp_admitted_(.)",
-               names_to = "covid_admission",
-               values_to = "admission_date") %>% 
-  drop_na()
 
 # create numeric week and year variables to group on
 shielding_hosp <- shielding_hosp %>%
@@ -81,10 +71,6 @@ shielding_hosp_s <- shielding_hosp_s %>%
          hosp_year = lubridate::year(admission_date))
 
 shielding_hosp_a <- shielding_hosp_a %>%
-  mutate(hosp_week = lubridate::week(admission_date),
-         hosp_year = lubridate::year(admission_date))
-
-shielding_hosp_r <- shielding_hosp_r %>%
   mutate(hosp_week = lubridate::week(admission_date),
          hosp_year = lubridate::year(admission_date))
 
@@ -104,18 +90,13 @@ shielding_hosp_summ_a <- shielding_hosp_a %>%
   summarise(weekly_admissions = n()) %>% 
   ungroup()
 
-shielding_hosp_summ_r <- shielding_hosp_r %>% 
-  group_by(hosp_year, hosp_week, practice_nuts) %>%
-  summarise(weekly_admissions = n()) %>% 
-  ungroup()
-
 mindate <- min(shielding_hosp$admission_date, na.rm = TRUE)
 print(mindate)
 shielding_hosp_summ <- shielding_hosp_summ %>% 
   mutate(plot_date = mindate + weeks(hosp_week - week(mindate)) + years(hosp_year - year(mindate))) %>% 
   mutate(total_admissions = cumsum(weekly_admissions)) #CUMULATIVE
 
-mindate <- min(shielding_hosp_s$admission_date, na.rm = TRUE)
+#mindate <- min(shielding_hosp_s$admission_date, na.rm = TRUE)
 shielding_hosp_summ_s <- shielding_hosp_summ_s %>% 
   mutate(plot_date = mindate + weeks(hosp_week - week(mindate)) + years(hosp_year - year(mindate))) %>% 
   mutate(total_admissions = cumsum(weekly_admissions)) #CUMULATIVE
@@ -124,13 +105,9 @@ shielding_hosp_summ_a <- shielding_hosp_summ_a %>%
   mutate(plot_date = mindate + weeks(hosp_week - week(mindate)) + years(hosp_year - year(mindate))) %>% 
   mutate(total_admissions = cumsum(weekly_admissions)) #CUMULATIVE
 
-shielding_hosp_summ_r <- shielding_hosp_summ_r %>% 
-  mutate(plot_date = mindate + weeks(hosp_week - week(mindate)) + years(hosp_year - year(mindate))) %>% 
-  mutate(total_admissions = cumsum(weekly_admissions)) #CUMULATIVE
-
 
 ##WEEKLY
-pdf(here::here("output/figures/covid_hosp_over_time2.pdf"), width = 8, height = 6)
+pdf(here::here(paste0("output/figures/covid_hosp_over_time2","_EastMid",".pdf")), width = 8, height = 6)
 ##All
 ggplot(shielding_hosp_summ, aes(x = plot_date, y = weekly_admissions)) +
   geom_line() + 
@@ -151,18 +128,11 @@ ggplot(shielding_hosp_summ_a, aes(x = plot_date, y = weekly_admissions, col = ag
   facet_wrap(~age_cat, ncol = 1, scales = "free_y") +
   labs(x = "Date", y = "Weekly admissions") + 
   theme_bw()
-#by practice_nuts
-ggplot(shielding_hosp_summ_r, aes(x = plot_date, y = weekly_admissions, col = practice_nuts)) +
-  geom_line() + 
-  geom_point(size = 1.2, pch = 1) +
-  facet_wrap(~practice_nuts, ncol = 1, scales = "free_y") +
-  labs(x = "Date", y = "Weekly admissions") + 
-  theme_bw()
 dev.off()
 
 
 #CUMULATIVE
-pdf(here::here("output/figures/covid_hosp_over_time_cumsum2.pdf"), width = 8, height = 6)
+pdf(here::here(paste0("output/figures/covid_hosp_over_time_cumsum2","_EastMid",".pdf")), width = 8, height = 6)
 ##All
 ggplot(shielding_hosp_summ, aes(x = plot_date, y = total_admissions)) +
   geom_line() + 
@@ -183,11 +153,6 @@ ggplot(shielding_hosp_summ_a, aes(x = plot_date, y = total_admissions, col = age
   facet_wrap(~age_cat, ncol = 1, scales = "free_y") +
   labs(x = "Date", y = "Weekly admissions") + 
   theme_bw()
-#by practice_nuts
-ggplot(shielding_hosp_summ_r, aes(x = plot_date, y = total_admissions, col = practice_nuts)) +
-  geom_line() + 
-  geom_point(size = 1.2, pch = 1) +
-  facet_wrap(~practice_nuts, ncol = 1, scales = "free_y") +
-  labs(x = "Date", y = "Weekly admissions") + 
-  theme_bw()
 dev.off()
+
+
