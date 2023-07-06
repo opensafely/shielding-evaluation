@@ -12,9 +12,11 @@ output_dir_plot <- here("output/figures")
 fs::dir_create(output_dir_plot)
 
 shielding_cohort <- arrow::read_parquet(file = here::here("output/data_edited.gz.parquet"),
-                                        compression = "gzip", compression_level = 5)
-										
-shielding_cohort <- shielding_cohort[which(shielding_cohort$practice_nuts=="East"),]
+                                        compression = "gzip", compression_level = 5)									
+dim_sc = dim(shielding_cohort)
+if (dim_sc[1]>1000){ #only operates on real data, as dummy data has 500 or 1000 rows
+  shielding_cohort <- shielding_cohort[which(shielding_cohort$practice_nuts=="East"),] #limit to East practices, but not in dummy data as too few data
+}
 										
 shielding_cohort_s <- shielding_cohort
 shielding_cohort_a <- shielding_cohort
@@ -88,13 +90,13 @@ shielding_hosp_summ_a <- shielding_hosp_a %>%
   summarise(weekly_admissions = n()) %>% 
   ungroup()
 
-mindate <- min(shielding_hosp$admission_date)
+mindate <- min(shielding_hosp$admission_date, na.rm = TRUE)
 print(mindate)
 shielding_hosp_summ <- shielding_hosp_summ %>% 
   mutate(plot_date = mindate + weeks(hosp_week - week(mindate)) + years(hosp_year - year(mindate))) %>% 
   mutate(total_admissions = cumsum(weekly_admissions)) #CUMULATIVE
 
-mindate <- min(shielding_hosp_s$admission_date)
+#mindate <- min(shielding_hosp_s$admission_date, na.rm = TRUE)
 shielding_hosp_summ_s <- shielding_hosp_summ_s %>% 
   mutate(plot_date = mindate + weeks(hosp_week - week(mindate)) + years(hosp_year - year(mindate))) %>% 
   mutate(total_admissions = cumsum(weekly_admissions)) #CUMULATIVE

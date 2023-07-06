@@ -13,9 +13,11 @@ fs::dir_create(output_dir_plot)
 
 shielding_cohort <- arrow::read_parquet(file = here::here("output/data_edited.gz.parquet"),
                                         compression = "gzip", compression_level = 5)
-	
-shielding_cohort <- shielding_cohort[which(shielding_cohort$ons_death_date>="2020-01-01"),]
-shielding_cohort <- shielding_cohort[which(is.element(shielding_cohort$ons_underlying_cause,c("U071","U072"))),]	
+dim_sc = dim(shielding_cohort)
+if (dim_sc[1]>1000){ #only operates on real data, as dummy data has 500 or 1000 rows
+  shielding_cohort <- shielding_cohort[which(shielding_cohort$ons_death_date>="2020-01-01"),]                      #remove deaths prior to 2020 but registered from 2020
+  shielding_cohort <- shielding_cohort[which(is.element(shielding_cohort$ons_underlying_cause,c("U071","U072"))),] #remove deaths not caused by covid_deaths_over_time2
+}
 shielding_cohort <- shielding_cohort[which(shielding_cohort$practice_nuts=="East"),]
 
 shielding_cohort_s <- shielding_cohort
@@ -69,15 +71,15 @@ shielding_death_summ_a <- shielding_death_a %>%
   summarise(weekly_deaths = n()) %>% 
   ungroup()
 
-mindate <- min(shielding_death$death_date)
-maxdate <- max(shielding_death$death_date)
+mindate <- min(shielding_death$death_date, na.rm = TRUE)
+maxdate <- max(shielding_death$death_date, na.rm = TRUE)
 print(mindate)
 shielding_death_summ <- shielding_death_summ %>% 
   mutate(plot_date = mindate + weeks(death_week - week(mindate)) + years(death_year - year(mindate))) %>% 
   mutate(total_deaths = cumsum(weekly_deaths)) #CUMULATIVE
 
-mindate <- min(shielding_death_s$death_date)
-maxdate <- max(shielding_death_s$death_date)
+mindate <- min(shielding_death_s$death_date, na.rm = TRUE)
+maxdate <- max(shielding_death_s$death_date, na.rm = TRUE)
 shielding_death_summ_s <- shielding_death_summ_s %>% 
   mutate(plot_date = mindate + weeks(death_week - week(mindate)) + years(death_year - year(mindate))) %>% 
   mutate(total_deaths = cumsum(weekly_deaths)) #CUMULATIVE

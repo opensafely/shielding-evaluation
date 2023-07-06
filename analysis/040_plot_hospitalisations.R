@@ -109,13 +109,13 @@ shielding_hosp_summ_r <- shielding_hosp_r %>%
   summarise(weekly_admissions = n()) %>% 
   ungroup()
 
-mindate <- min(shielding_hosp$admission_date)
+mindate <- min(shielding_hosp$admission_date, na.rm = TRUE)
 print(mindate)
 shielding_hosp_summ <- shielding_hosp_summ %>% 
   mutate(plot_date = mindate + weeks(hosp_week - week(mindate)) + years(hosp_year - year(mindate))) %>% 
   mutate(total_admissions = cumsum(weekly_admissions)) #CUMULATIVE
 
-mindate <- min(shielding_hosp_s$admission_date)
+mindate <- min(shielding_hosp_s$admission_date, na.rm = TRUE)
 shielding_hosp_summ_s <- shielding_hosp_summ_s %>% 
   mutate(plot_date = mindate + weeks(hosp_week - week(mindate)) + years(hosp_year - year(mindate))) %>% 
   mutate(total_admissions = cumsum(weekly_admissions)) #CUMULATIVE
@@ -191,15 +191,3 @@ ggplot(shielding_hosp_summ_r, aes(x = plot_date, y = total_admissions, col = pra
   labs(x = "Date", y = "Weekly admissions") + 
   theme_bw()
 dev.off()
-
-
-
-#WEEKLY
-#by shielding + total
-#ggplot(shielding_hosp_summ_s %>% 
-#          bind_rows(shielding_hosp_summ_s %>% mutate(shielding = "total")),
-#          aes(x = plot_date, y = total_admissions, col = shielding, fill = shielding)) +
-#  geom_col() + 
-#  facet_wrap(~shielding, ncol = 1, scales = "free_y")  +
-#  labs(x = "Date", y = "Total admissions") + 
-#  theme_bw()
