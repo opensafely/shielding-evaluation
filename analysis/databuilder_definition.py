@@ -64,14 +64,14 @@ def covid_on_deathcert(cause_of_death):
 def add_visits(from_date, to_date):
     # Number of GP visits between `from_date` and `to_date`
     return appointments \
-        .where(appointments.start_date.is_between(from_date, to_date)) \
+        .where(appointments.start_date.is_between_but_not_on(from_date, to_date)) \
         .count_for_patient()
 
 
 def add_hospitalisations(from_date, to_date):
     # Hospitalisation within `num_months` of `from_date`
     return hospital_admissions \
-        .where(hospital_admissions.admission_date.is_between(from_date, to_date)) \
+        .where(hospital_admissions.admission_date.is_between_but_not_on(from_date, to_date)) \
         .count_for_patient()
 
 
@@ -157,12 +157,12 @@ dataset.ethnicity = clinical_events.where(clinical_events.ctv3_code.is_in(codeli
 # covid tests
 all_test_positive = sgss_covid_all_tests \
     .where(sgss_covid_all_tests.is_positive) \
-    .where(sgss_covid_all_tests.specimen_taken_date.is_between(dataset.pt_start_date, dataset.pt_end_date))
+    .where(sgss_covid_all_tests.specimen_taken_date.is_between_but_not_on(dataset.pt_start_date, dataset.pt_end_date))
 
 dataset.all_test_positive = all_test_positive.count_for_patient()
 
 dataset.all_tests = sgss_covid_all_tests \
-    .where(sgss_covid_all_tests.specimen_taken_date.is_between(dataset.pt_start_date, dataset.pt_end_date)) \
+    .where(sgss_covid_all_tests.specimen_taken_date.is_between_but_not_on(dataset.pt_start_date, dataset.pt_end_date)) \
     .count_for_patient()
 
 # get the date of each of up to 5 test positives
@@ -277,7 +277,7 @@ dataset.comorbid_count = binary_diabetes + \
 fracture_hospitalisations = hospitalisation_diagnosis_matches(hospital_admissions, codelists.hosp_fractures)
 
 dataset.first_fracture_hosp = fracture_hospitalisations \
-    .where(fracture_hospitalisations.admission_date.is_between(dataset.pt_start_date, dataset.pt_end_date)) \
+    .where(fracture_hospitalisations.admission_date.is_between_but_not_on(dataset.pt_start_date, dataset.pt_end_date)) \
     .sort_by(fracture_hospitalisations.admission_date) \
     .first_for_patient().admission_date
 
@@ -296,7 +296,7 @@ dataset.allhosp_1yr_before = add_hospitalisations(dataset.pt_start_date - years(
 
 # vaccination codes
 all_vacc = vaccinations \
-    .where(vaccinations.date.is_between(study_start_date, study_end_date)) \
+    .where(vaccinations.date.is_between_but_not_on(study_start_date, study_end_date)) \
     .where(vaccinations.target_disease == "SARS-2 CORONAVIRUS")
 
 # this will be replaced with distinct_count_for_patient() once it is developed
@@ -323,11 +323,11 @@ dataset.vaccine_dose_2_date = vaccine_dose_2.date
 
 # shielding codes ---------------------------------------------------------------
 hirisk_shield_codes = clinical_events \
-    .where(clinical_events.date.is_between(dataset.pt_start_date, dataset.pt_end_date)) \
+    .where(clinical_events.date.is_between_but_not_on(dataset.pt_start_date, dataset.pt_end_date)) \
     .where(clinical_events.snomedct_code.is_in(codelists.high_risk_shield))
 
 lorisk_shield_codes = clinical_events \
-    .where(clinical_events.date.is_between(dataset.pt_start_date, dataset.pt_end_date)) \
+    .where(clinical_events.date.is_between_but_not_on(dataset.pt_start_date, dataset.pt_end_date)) \
     .where(clinical_events.snomedct_code.is_in(codelists.low_risk_shield))
 
 dataset.highrisk_shield = hirisk_shield_codes \
