@@ -77,7 +77,8 @@ actions:
         analysis/050_plot_deaths.R
     needs: [clean_the_data]
     outputs: 
-      moderately_sensitive: 
+      moderately_sensitive:
+        fig5a: output/figures/covid_deaths_lm.pdf
         fig5: output/figures/covid_deaths_over_time2.pdf
         fig6: output/figures/covid_deaths_over_time_cumsum2.pdf
 
