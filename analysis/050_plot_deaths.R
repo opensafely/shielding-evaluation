@@ -19,158 +19,109 @@ if (dim_sc[1]>1000){ #only operates on real data, as dummy data has 500 or 1000 
   shielding_cohort <- shielding_cohort[which(is.element(shielding_cohort$ons_underlying_cause,c("U071","U072"))),] #remove deaths not caused by covid_deaths_over_time2
 }
 
-shielding_cohort_s <- shielding_cohort
-shielding_cohort_a <- shielding_cohort
-shielding_cohort_r <- shielding_cohort
-
-shielding_cohort_s %>% group_by(shielding) %>% #by shielding
-  summarise(deaths = sum(has_died, na.rm = T)) %>% print()
-
-shielding_cohort_a %>% group_by(age_cat) %>% #by age_cat
-  summarise(deaths = sum(has_died, na.rm = T)) %>% print()
-
-shielding_cohort_r %>% group_by(practice_nuts) %>% #by practice_nuts
-  summarise(deaths = sum(has_died, na.rm = T)) %>% print()
-
 #Add week number and year for deaths
-shielding_death   <- shielding_cohort %>% 
-  dplyr::select(patient_id, death_date) %>% 
+shielding_death <- shielding_cohort %>% 
+  dplyr::select(patient_id, death_date, ons_death_date, shielding, age_cat, practice_nuts) %>% #keep "death_date" for now
   drop_na()
-
-shielding_death_s <- shielding_cohort_s %>% 
-  dplyr::select(patient_id, death_date, shielding) %>% 
-  drop_na()  
-
-shielding_death_a <- shielding_cohort_a %>% 
-  dplyr::select(patient_id, death_date, age_cat) %>% 
-  drop_na()
-
-shielding_death_r <- shielding_cohort_r %>% 
-  dplyr::select(patient_id, death_date, practice_nuts) %>% 
-  drop_na() 
   
-#create numeric week and year variables to group on
-shielding_death <- shielding_death %>%
-  mutate(death_week = lubridate::week(death_date),
-         death_year = lubridate::year(death_date))
-
-shielding_death_s <- shielding_death_s %>%
-  mutate(death_week = lubridate::week(death_date),
-         death_year = lubridate::year(death_date))
-
-shielding_death_a <- shielding_death_a %>%
-  mutate(death_week = lubridate::week(death_date),
-         death_year = lubridate::year(death_date))
-
-shielding_death_r <- shielding_death_r %>%
-  mutate(death_week = lubridate::week(death_date),
-         death_year = lubridate::year(death_date))
-
-#WEEKLY
-shielding_death_summ <- shielding_death %>% 
-  group_by(death_year, death_week) %>%
-  summarise(weekly_deaths = n()) %>% 
-  ungroup()		
-  
-shielding_death_summ_s <- shielding_death_s %>% 
-  group_by(death_year, death_week, shielding) %>%
-  summarise(weekly_deaths = n()) %>% 
-  ungroup()
-
-shielding_death_summ_a <- shielding_death_a %>% 
-  group_by(death_year, death_week, age_cat) %>%
-  summarise(weekly_deaths = n()) %>% 
-  ungroup()
-
-shielding_death_summ_r <- shielding_death_r %>% 
-  group_by(death_year, death_week, practice_nuts) %>%
-  summarise(weekly_deaths = n()) %>% 
-  ungroup()
-
-mindate <- min(shielding_death$death_date, na.rm = TRUE)
-maxdate <- max(shielding_death$death_date, na.rm = TRUE)
+#create week and year variables
+mindate <- min(shielding_death$ons_death_date, na.rm = TRUE)
+maxdate <- max(shielding_death$ons_death_date, na.rm = TRUE)
 print(mindate)
-shielding_death_summ <- shielding_death_summ %>% 
-  mutate(plot_date = mindate + weeks(death_week - week(mindate)) + years(death_year - year(mindate))) %>% 
-  mutate(total_deaths = cumsum(weekly_deaths)) #CUMULATIVE
 
-mindate <- min(shielding_death_s$death_date, na.rm = TRUE)
-maxdate <- max(shielding_death_s$death_date, na.rm = TRUE)
-shielding_death_summ_s <- shielding_death_summ_s %>% 
-  mutate(plot_date = mindate + weeks(death_week - week(mindate)) + years(death_year - year(mindate))) %>% 
-  mutate(total_deaths = cumsum(weekly_deaths)) #CUMULATIVE
+shielding_death <- shielding_death %>%
+  mutate(death_week = lubridate::week(ons_death_date),
+         death_year = lubridate::year(ons_death_date),
+         plot_date = mindate + weeks(death_week - week(mindate)) + years(death_year - year(mindate)))
+  
+#Week density and cumulative
+By_week <- function(data, vars){
+  data %>% 
+     group_by(across({{vars}}))      %>%
+     mutate(weekly_deaths = n())     %>%
+     ungroup(death_year, death_week) %>%
+     arrange(plot_date)              %>%
+     mutate(total_deaths = cumsum(weekly_deaths)) %>% #CUMULATIVE                                  
+     ungroup()
+}
+#overall
+shielding_death_summ   <- shielding_death %>% By_week(c(death_year, death_week))
+# by shielding
+shielding_death_summ_s <- shielding_death %>% By_week(c(death_year, death_week, shielding))
+# by age
+shielding_death_summ_a <- shielding_death %>% By_week(c(death_year, death_week, age_cat))
+# by region
+shielding_death_summ_r <- shielding_death %>% By_week(c(death_year, death_week, practice_nuts))
 
-shielding_death_summ_a <- shielding_death_summ_a %>% 
-  mutate(plot_date = mindate + weeks(death_week - week(mindate)) + years(death_year - year(mindate))) %>% 
-  mutate(total_deaths = cumsum(weekly_deaths)) #CUMULATIVE
 
-shielding_death_summ_r <- shielding_death_summ_r %>% 
-  mutate(plot_date = mindate + weeks(death_week - week(mindate)) + years(death_year - year(mindate))) %>% 
-  mutate(total_deaths = cumsum(weekly_deaths)) #CUMULATIVE
+#Figures - overlapping groups
+fig0 <- function(data, x , y, col, xname='Date', yname='Weekly deaths') {
+  ggplot(data, aes(x = {{x}}, y = {{y}}, col = {{col}})) +
+    geom_line() + 
+    geom_point(size = 1.2, pch = 1) +
+    labs(x = xname, y = yname) +
+    ylim(c(0, NA)) +
+    theme_bw()
+}
+#Figures - panels for groups
+fig <- function(data, x , y, col, facets, xname='Date', yname='Weekly deaths') {
+  ggplot(data, aes(x = {{x}}, y = {{y}}, col = {{col}})) +
+    geom_line() + 
+    geom_point(size = 1.2, pch = 1) +
+    facet_wrap(facets, ncol = 1, scales = 'free_y') +
+    labs(x = xname, y = yname) + 
+    ylim(c(0, NA)) +
+    theme_bw()
+}
 
-
-#WEEKLY
-pdf(here::here("output/figures/covid_deaths_over_time2.pdf"), width = 8, height = 6)
-##All
-ggplot(shielding_death_summ, aes(x = plot_date, y = weekly_deaths)) +
-  geom_line() + 
-  geom_point(size = 1.2, pch = 1) +
-  labs(x = "Date", y = "Weekly deaths") + 
-  #xlim(2020, 2023) +
-  theme_bw()
-#by shielding
-ggplot(shielding_death_summ_s, aes(x = plot_date, y = weekly_deaths, col = shielding)) +
-  geom_line() + 
-  geom_point(size = 1.2, pch = 1) +
-  facet_wrap(~shielding, ncol = 1, scales = "free_y") +
-  labs(x = "Date", y = "Weekly deaths") + 
-  theme_bw()
-#by age_cat
-ggplot(shielding_death_summ_a, aes(x = plot_date, y = weekly_deaths, col = age_cat)) +
-  geom_line() + 
-  geom_point(size = 1.2, pch = 1) +
-  facet_wrap(~age_cat, ncol = 1, scales = "free_y") +
-  labs(x = "Date", y = "Weekly deaths") + 
-  theme_bw()
-#by practice_nuts
-ggplot(shielding_death_summ_r, aes(x = plot_date, y = weekly_deaths, col = practice_nuts)) +
-  geom_line() + 
-  geom_point(size = 1.2, pch = 1) +
-  facet_wrap(~practice_nuts, ncol = 1, scales = "free_y") +
-  labs(x = "Date", y = "Weekly deaths") + 
-  theme_bw()
+##PLOTS WEEKLY
+##lm - All
+pdf(here::here("output/figures/covid_deaths_lm.pdf"), width = 8, height = 6)
+par(mfrow=c(2,2))
+yd=shielding_death_summ$weekly_deaths
+xd=shielding_death_summ$plot_date
+plot(lm((log(yd+rnorm(length(yd),0,0.1)+1))~xd))$y;
 dev.off()
 
+##Data
+pdf(here::here("output/figures/covid_deaths_over_time2.pdf"), width = 8, height = 6)
+##All
+fig(shielding_death_summ,   plot_date, weekly_deaths,                      facets = 'NULL',          xname = 'Date',  yname = 'Weekly deaths')
+#by shielding - overlapping
+fig0(shielding_death_summ_s, plot_date, weekly_deaths, col = shielding,     xname = 'Date',  yname = 'Weekly deaths')
+#by age_cat
+fig0(shielding_death_summ_a, plot_date, weekly_deaths, col = age_cat,       xname = 'Date',  yname = 'Weekly deaths')
+#by region
+fig0(shielding_death_summ_r, plot_date, weekly_deaths, col = practice_nuts, xname = 'Date',  yname = 'Weekly deaths')
 
-#CUMULATIVE
+#by shielding - panels
+fig(shielding_death_summ_s, plot_date, weekly_deaths, col = shielding,     facets = "shielding",     xname = 'Date',  yname = 'Weekly deaths')
+#by age_cat
+fig(shielding_death_summ_a, plot_date, weekly_deaths, col = age_cat,       facets = "age_cat",       xname = 'Date',  yname = 'Weekly deaths')
+#by region
+fig(shielding_death_summ_r, plot_date, weekly_deaths, col = practice_nuts, facets = "practice_nuts", xname = 'Date',  yname = 'Weekly deaths')
+
+dev.off()
+
+##PLOTS CUMULATIVE
 pdf(here::here("output/figures/covid_deaths_over_time_cumsum2.pdf"), width = 8, height = 6)
 ##All
-ggplot(shielding_death_summ, aes(x = plot_date, y = total_deaths)) +
-  geom_line() + 
-  geom_point(size = 1.2, pch = 1) +
-  labs(x = "Date", y = "Total deaths") + 
-  theme_bw()
-#by shielding
-ggplot(shielding_death_summ_s, aes(x = plot_date, y = total_deaths, col = shielding)) +
-  geom_line() + 
-  geom_point(size = 1.2, pch = 1) +
-  facet_wrap(~shielding, ncol = 1, scales = "free_y") +
-  labs(x = "Date", y = "Total deaths") + 
-  theme_bw() 
+fig(shielding_death_summ,   plot_date, total_deaths,                      facets = 'NULL',          xname = 'Date',  yname = 'Total deaths')
+
+#by shielding - overlapping
+fig0(shielding_death_summ_s, plot_date, total_deaths, col = shielding,     xname = 'Date',  yname = 'Total deaths')
 #by age_cat
-ggplot(shielding_death_summ_a, aes(x = plot_date, y = total_deaths, col = age_cat)) +
-  geom_line() + 
-  geom_point(size = 1.2, pch = 1) +
-  facet_wrap(~age_cat, ncol = 1, scales = "free_y") +
-  labs(x = "Date", y = "Total deaths") + 
-  theme_bw()
-#by practice_nuts
-ggplot(shielding_death_summ_r, aes(x = plot_date, y = total_deaths, col = practice_nuts)) +
-  geom_line() + 
-  geom_point(size = 1.2, pch = 1) +
-  facet_wrap(~practice_nuts, ncol = 1, scales = "free_y") +
-  labs(x = "Date", y = "Total deaths") + 
-  theme_bw()
+fig0(shielding_death_summ_a, plot_date, total_deaths, col = age_cat,       xname = 'Date',  yname = 'Total deaths')
+#by region
+fig0(shielding_death_summ_r, plot_date, total_deaths, col = practice_nuts, xname = 'Date',  yname = 'Total deaths')
+
+#by shielding - panels
+fig(shielding_death_summ_s, plot_date, total_deaths, col = shielding,     facets = "shielding",     xname = 'Date',  yname = 'Total deaths')
+#by age_cat
+fig(shielding_death_summ_a, plot_date, total_deaths, col = age_cat,       facets = "age_cat",       xname = 'Date',  yname = 'Total deaths')
+#by region
+fig(shielding_death_summ_r, plot_date, total_deaths, col = practice_nuts, facets = "practice_nuts", xname = 'Date',  yname = 'Total deaths')
+
 dev.off()
 
 
