@@ -13,8 +13,8 @@ library(here)
 #library(bench)
 
 #wd=repo
-input_dir  <- here::here(paste0(getwd(),"/modelling/input")) #getwd())#  
-output_dir <- here::here(paste0(getwd(),"/output/modelling")) #getwd())#  
+input_dir  <- paste0(getwd(),"/modelling/input") #getwd())#  
+output_dir <- paste0(getwd(),"/output/modelling") #getwd())#  
 fs::dir_create(output_dir)
 
 #1-SET UP
