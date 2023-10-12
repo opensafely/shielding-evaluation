@@ -31,7 +31,7 @@ if (pset$iplatform==0) { print(paste0("Model chosen: ",pset$MODEL[pset$imodel]))
 # 1-OS DATA
 ## return: datD(Weeks, Dataz, Dates, Week1OfData, Week2OfData)
 ## 1 pdf: Infected_data_and_R0_by_week 
-## 2 pdf: output/figures/covid_hosp_over_time2
+## 2 pdf: output/figures/covid_hosp_over_time2again
 if (pset$iplatform>0) {
   source(file = paste0(input_dir,"/SEIR_data.r"))
 }
@@ -136,7 +136,7 @@ LogLikelihood = function(theta){
 }
 
 ## Likelihood definition, parameter ranges
-niter    = 50000 #40000
+niter    = 200000 #50000 #40000
 setup    = createBayesianSetup(likelihood=LogLikelihood,
            lower = c(0,0,0,0,0,0), upper =c(1,1,30,1,1,sdUpper)) #rEI, rIR, R0, pE0, pdm, sd
 settings = list (iterations = niter, burnin = round(niter*npar/15), message=F)
