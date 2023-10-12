@@ -8,6 +8,8 @@ pars <- within(pars, {
     ndays  <- 364             #no. days
     nt     <- ndays/dt        #no. time points
     na     <- 9               #age groups
+    nw     <- 52              #week length of model run
+    iw1    <- 1+(0:(nw-1))*7/dt  ##vector indices at start of each week (starts at 1, for R, apply "-1" for c++)
     d      <- 0 #1/70         #death rate - for vital dynamics
     b      <- d               #birth rate
     rEI    <- 1/10#1/7#1/4#   #latency, Davies Nat Med
@@ -16,11 +18,15 @@ pars <- within(pars, {
     R0     <- 3               #2020-wild-type basic reproduction rate, Knock et al 2021
     beta   <- R0*(rIR+d)/u_mean #transmission rate, for age-uniform, higher than NGM actual
     Npop   <- 24*1e6          #population size
+    pE0    <- 0.015           #Initial proportion of population in E state (sum of age groups)
+    pI0    <- 0.000           #Initial proportion of population in I state (sum of age groups)    
     Na0    <- Npop*agedens    #Initial population size by age group 
-    Ea0    <- Na0*0.015       #ODE-accrued 29/01/20-24/02/20 based Davies Lancet PH, Nat Med
-    Ia0    <- Na0*0.00
+    Ea0    <- Na0*pE0         #ODE-accrued 29/01/20-24/02/20 based Davies Lancet PH, Nat Med
+    Ia0    <- Na0*pI0
     Ra0    <- Na0*0.00
     Sa0    <- Na0-Ra0-Ea0-Ia0
+    logPI0 <- log10((Ea0[2]+Ia0[2])/Na0[2]) #proportion of infection in age-group 2
+    pdm    <- 1               #peak hosp/Iw=(6000/Npop)/0.02 #proportion of data in relation to model
     cmdim1 <- na
     cmdim2 <- na
     cmdim3 <- 52
