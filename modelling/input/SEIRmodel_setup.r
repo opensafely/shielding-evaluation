@@ -2,12 +2,14 @@ pset <- list()
 pset <- within(pset, {
     TODAY <- format(Sys.Date(), "%d-%m-%Y")
     TIME  <- format(Sys.time(),'%H.%M.%S_%d-%m-%Y')
+    ## Job no.
+    Job="J4_" #J1=lm, J2=fit-simul, J3=SEIR_fit
     ## Model choice
     MODEL    <- c("SEIR", "SEIUHRD");
-    imodel   <- 1; #2
+    imodel   <- 2#1; #2
     ### OpenSafely
     PLATFORM <- c("Simulate", "Fit dummy data", "OpenSafely"); #0, 1, 2
-    iplatform<- 2#1#2#
+    iplatform<- 2#1#0#
     
     ### model fitting
     DOfit    <- 1; #(0=Dont fit, 1=simulated or OS data)
@@ -25,13 +27,15 @@ pset <- within(pset, {
     File_contact_data    <- "Contact_matrix_year-from-24Feb20_vector-lenght-9x9x52_norm=maxEV1.csv"
 
     ### output file names
-    File_run             <- "SEIRmodel_run.txt"
-    File_contact_summary <- "Contact_matrix_year-from-24Feb20_vector-lenght-9x9x52_norm=maxEV1_stats.txt"
-    File_R0_week         <- "R0_by_week.csv"
-    File_data_plots      <- "Infected_data_and_R0_by_week.pdf"
-    File_model_plots     <- "Infected_and_R0_by_week.pdf"
-    File_model_simulation<- "Infected_by_week.csv"
-    File_fit_output      <- "MCMC_BT.pdf"
-    File_fit_summary     <- "Bayesian_fit_report.txt"
-
+    File_run             <- paste0(Job,"Simul_run.txt")
+    File_contact_summary <- paste0(Job,"Contact_matrix_year-start-24Feb20_stats.txt")
+    File_R0_week         <- paste0(Job,"Simul_R0_by_week.csv")
+    File_data_plots      <- paste0(Job,"Data_Incidence.pdf")
+    File_model_sim_plots <- paste0(Job,"Simul_Infected_and_R0.pdf")
+    File_model_sim_data  <- paste0(Job,"Simul_Incidence.csv")
+    File_fit_output      <- paste0(Job,"Fit_MCMC_BT.pdf")
+    File_fit_variables   <- paste0(Job,"Fit_Variables_estimated.pdf")
+    File_fit_summary     <- paste0(Job,"Fit_Bayesian_report.txt")
+    File_data_hosp       <- paste0(Job,"covid_hosp_over_time2again.pdf")
+    File_data_deaths     <- paste0(Job,"covid_deaths_over_time2again.pdf")
 })

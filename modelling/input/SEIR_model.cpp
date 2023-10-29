@@ -45,15 +45,6 @@ List SEIR(List pars){
     NumericVector time(nt);
     NumericVector cmdtmean(nt);
 
-    // age group and population states initialised
-    for (int ia = 0; ia < na; ia++) {
-        S(ia,0) = Sa0[ia];   St[0] += S(ia,0);
-        E(ia,0) = Ea0[ia];   Et[0] += E(ia,0);
-        I(ia,0) = Ia0[ia];   It[0] += I(ia,0);
-        R(ia,0) = Ra0[ia];   Rt[0] += R(ia,0);
-        N(ia,0) = Na0[ia];   Nt[0] += N(ia,0);
-    }
-
     // read parameters
     const NumericVector u = as<NumericVector>(pars["u"]); 
     const double d    = pars["d"];
@@ -63,7 +54,15 @@ List SEIR(List pars){
     const double rIR  = pars["rIR"];
     const double rRS  = pars["rRS"];
     const double dt   = pars["dt"];
-
+    
+    // age group and population states initialised
+    for (int ia = 0; ia < na; ia++) {
+        S(ia,0) = Sa0[ia];   St[0] += S(ia,0);
+        E(ia,0) = Ea0[ia];   Et[0] += E(ia,0);   Iw[0] += E(ia,0)*rEI*7;
+        I(ia,0) = Ia0[ia];   It[0] += I(ia,0);
+        R(ia,0) = Ra0[ia];   Rt[0] += R(ia,0);
+        N(ia,0) = Na0[ia];   Nt[0] += N(ia,0);
+    }
 
     // Dynamics of state variables - Euler integration
     time[0] = 0;
