@@ -85,7 +85,7 @@ actions:
   SEIUHRD_fit:
     run: > 
       r:latest
-        modelling/J4_SEIRmodel_main.r
+        modelling/SEIRmodel_main.r
     needs: [clean_the_data]
     outputs:
       moderately_sensitive:
@@ -99,22 +99,6 @@ actions:
         txt13: output/modelling/J4_Fit_Bayesian_report.txt
         fig13: output/figures/J4_covid_deaths_over_time2again.pdf
 
-    
-  SEIR_fit:
-    run: > 
-      r:latest
-        modelling/SEIRmodel_main.r
-    needs: [clean_the_data]
-    outputs:
-      moderately_sensitive:
-        txt10a: output/modelling/Simul_run.txt
-        dat10a: output/modelling/Simul_R0_by_week.csv
-        txt11a: output/modelling/Contact_matrix_year-start-24Feb20_stats.txt
-        fig10a: output/modelling/Data_Incidence.pdf
-        fig11a: output/modelling/Fit_MCMC_BT.pdf
-        fig12a: output/figures/covid_hosp_over_time2again.pdf
-        txt12a: output/modellimg/Fit_Variables_estimated.pdf
-        txt13a: output/modelling/Fit_Bayesian_report.txt
  
   plot_hospitalisations2_East:
     run: > 
