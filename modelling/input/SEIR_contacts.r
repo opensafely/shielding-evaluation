@@ -4,7 +4,7 @@ Week1OfModel = "2020-02-24"
 Week2OfModel = "2021-02-15"
 print(paste0("Date range of contact data, ", Week1OfModel, ", ", Week2OfModel))
 
-### max length (weeks) of contacts and model run
+### max length (weeks) of contacts (pars$cmdim3) and model run (pset$nw)
 nd = pset$nw
 
 ### Summary variables

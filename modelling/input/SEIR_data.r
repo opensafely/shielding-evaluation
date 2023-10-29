@@ -50,7 +50,7 @@ shielding_hosp_summ_a <- shielding_hosp %>% By_week(c(hosp_year, hosp_week, age_
 #plot_date (in weeks) is the date identifier because counts are aggregated in weeks
 Week1OfData = min(shielding_hosp_summ$plot_date)
 Week2OfData = max(shielding_hosp_summ$plot_date)
-print(paste0("Date by week in data, range  ", Week1OfData, ", ", Week2OfData))
+print(paste0("Hospit data - date by week, range  ", Week1OfData, ", ", Week2OfData))
 
 #Figures - overlapping groups
 fig0 <- function(data, x , y, col, xname='Date', yname='Weekly admissions') {
@@ -62,23 +62,29 @@ fig0 <- function(data, x , y, col, xname='Date', yname='Weekly admissions') {
     theme_bw() }
 #Figures - panels for groups
 fig <- function(data, x , y, col, facets, xname='Date', yname='Weekly admissions') {
-  ggplot(data, aes(x = {{x}}, y = {{y}}, col = {{col}})) +
+  p <- ggplot(data, aes(x = {{x}}, y = {{y}}, col = {{col}})) +
     geom_line() + 
     geom_point(size = 1.2, pch = 1) +
     facet_wrap(facets, ncol = 1, scales = 'free_y') +
     labs(x = xname, y = yname) +
     ylim(c(0, NA)) +
-    theme_bw() }
+    theme_bw() 
+  print(p)} #for when sourcing
 
 ##PLOTS WEEKLY
 pdf(here::here("output/figures/covid_hosp_over_time2again.pdf"), width = 8, height = 6)
   ##All
-  fig(shielding_hosp_summ,   plot_date, weekly_admissions,                      facets = 'NULL',          xname = 'Date',  yname = 'Weekly admissions')
+  fig(shielding_hosp_summ, plot_date, weekly_admissions, facets ='NULL', xname ='Date', yname ='Weekly admissions')
+dev.off()
+
+#fig(shielding_hosp_summ, plot_date, weekly_admissions, facets ='NULL', xname ='Date', yname ='Weekly admissions')
+#ggsave("output/figures/covid_hosp_over_time2again.pdf", width = 8, height = 6)
+
   #by age_cat
   #fig0(shielding_hosp_summ_a, plot_date, weekly_admissions, col = age_cat,      xname = 'Date',  yname = 'Weekly admissions')
   #by age_cat - panels
   #fig(shielding_hosp_summ_a, plot_date, weekly_admissions, col = age_cat,       facets = "age_cat",       xname = 'Date',  yname = 'Weekly admissions')
-dev.off()
+
 
 datD <- tibble(Weeks = shielding_hosp_summ$hosp_week, 
               Dataz  = shielding_hosp_summ$weekly_admissions,

@@ -1,5 +1,5 @@
 //##############################################################################################
-//# SEIUHRD age-structured, stratified-contact compartment model
+//# SEIUHRD age-structured, stratified-contact compartment model, age profiles: u, y, h, m
 		 
 #include <Rcpp.h>
 using namespace Rcpp;
@@ -8,14 +8,18 @@ using namespace Rcpp;
 List SEIUHRD(List pars){ 
 
     // array sizes
-    int nt = as<int>(pars["nt"]); 
-    int na = as<int>(pars["na"]);
-	
+    const int nt = as<int>(pars["nt"]); 
+    const int na = as<int>(pars["na"]);
+    const int nw = as<int>(pars["nw"]);
+    // vector indices for start of week
+    const IntegerVector iw = as<IntegerVector>(pars["iw1"]) - 1;
+    
     // contact matrix
-    NumericVector cm = as<NumericVector>(pars["cm"]);
-    int cmdim1 = as<int>(pars["cmdim1"]);
-    int cmdim2 = as<int>(pars["cmdim2"]); //int cdmdim3 = as<int>(pars["cmdim3"])
-
+    const NumericVector cm = as<NumericVector>(pars["cm"]);
+    const int cmdim1 = as<int>(pars["cmdim1"]);
+    const int cmdim2 = as<int>(pars["cmdim2"]);
+    const double ocmdim = std::pow(cmdim1*cmdim2,-1);
+    
     // age-group states = 0, need initialise S(na,0) etc
     NumericMatrix S(na,nt);
     NumericMatrix E(na,nt);
@@ -55,9 +59,32 @@ List SEIUHRD(List pars){
     NumericVector Rt(nt);
     NumericVector Dt(nt);
     NumericVector Nt(nt);
+    NumericVector Hw(nw);
+    NumericVector Dw(nw);
     NumericVector time(nt);
     NumericVector cmdtmean(nt);
 
+    // read parameters
+    const NumericVector u = as<NumericVector>(pars["u"]); 
+    const NumericVector y = as<NumericVector>(pars["y"]); 
+    const NumericVector h = as<NumericVector>(pars["h"]); 
+    const NumericVector m = as<NumericVector>(pars["m"]); 
+    
+    const double beta_infectivity = pars["beta"];
+    const double fu   = pars["fu"];
+    const double rEI  = pars["rEI"];
+    const double rEU  = pars["rEU"];
+    const double rIR  = pars["rIR"];
+    const double rUR  = pars["rUR"];
+    const double rIH  = pars["rIH"];
+    const double rHR  = pars["rHR"];
+    const double rHD  = pars["rHD"];
+    const double rRS  = pars["rRS"];
+    const double rC   = pars["rC"];
+    const double rCi  = 5*rC;
+    const double rHi  = 5*rHD;
+    const double dt   = pars["dt"];
+    
     // age group and population states initialised
     for (int ia = 0; ia < na; ia++) {
         S(ia,0)  = Sa0[ia];   St[0] += S(ia,0);
@@ -73,45 +100,26 @@ List SEIUHRD(List pars){
         H2(ia,0) = 0;
         H3(ia,0) = 0;
         H4(ia,0) = 0;
-        H5(ia,0) = 0;         Ht[0] += Ha0[ia];
+        H5(ia,0) = 0;         Ht[0] += Ha0[ia];   Hw[0] += 0;
         R(ia,0)  = Ra0[ia];   Rt[0] += R(ia,0);
-        D(ia,0)  = Da0[ia];   Dt[0] += D(ia,0);
+        D(ia,0)  = Da0[ia];   Dt[0] += D(ia,0);   Dw[0] += 0;
         N(ia,0)  = Na0[ia];   Nt[0] += N(ia,0);
     }
 
-    // read parameters
-	  NumericVector u = as<NumericVector>(pars["u"]); 
-	  NumericVector y = as<NumericVector>(pars["y"]); 
-	  NumericVector h = as<NumericVector>(pars["h"]); 
-	  NumericVector m = as<NumericVector>(pars["m"]); 
 
-    double beta_infectivity = pars["beta"];
-    double fu   = pars["fu"];
-    double rEI  = pars["rEI"];
-    double rEU  = pars["rEU"];
-    double rIR  = pars["rIR"];
-    double rUR  = pars["rUR"];
-    double rIH  = pars["rIH"];
-    double rHR  = pars["rHR"];
-    double rHD  = pars["rHD"];
-    double rRS  = pars["rRS"];
-    double rC   = pars["rC"];
-    double rCi  = 5*rC;
-    double rHi  = 5*rHD;
-    
-    double dt   = pars["dt"];
-
-    //auxiliary variables
-    //  double cmi = 0;
-    //  int icm  = 0;
-    
     // Dynamics of state variables - Euler integration
     time[0] = 0;
+    int  week  = 1;
+    int  week0 = 1;
+    double Hpw = 0;
+    double Dpw = 0;
     for (int it = 0; it < (nt-1); it++) {	//Crucial: nt-1
-        int week = 1 + (int) time[it]/7;  //time(days)/7
+        week0 = week;
+        week  = 1 + (int) time[it]/7;
         cmdtmean[it] = 0;
          
         for (int ia = 0; ia < na; ia++) {
+          
  	 	    // current matrix cells
         double Sat = S(ia,it);
         double Eat = E(ia,it);
@@ -141,7 +149,7 @@ List SEIUHRD(List pars){
             int    icm = (week-1)*cmdim1*cmdim2 + ib*cmdim1 + ia;
             double cmi = cm[icm];
             lambda        += beta_infectivity*ua*cmi*( I(ib,it) + fu*U(ib,it) )/N(ib,it);
-            cmdtmean[it]  += cmi;
+            cmdtmean[it]  += cmi*ocmdim;
         } //ib
 
         // state update for next timestep
@@ -156,14 +164,16 @@ List SEIUHRD(List pars){
         double dC4 = dt*( rCi*C3at   - rCi*C4at);
         double dC5 = dt*( rCi*C4at   - rCi*C5at);
 
-        double dH1 = dt*( rIH*ha*Iat - rHi*H1at);
+        double dHin= dt*rIH*ha*Iat;
+        double dH1 = dHin       - dt*( rHi*H1at);
         double dH2 = dt*( rHi*H1at   - rHi*H2at);
         double dH3 = dt*( rHi*H2at   - rHi*H3at);
         double dH4 = dt*( rHi*H3at   - rHi*H4at);
-        double dH5 = dt*( rHi*H4at   - ((rHR*5)*(1-da)+rHi*da)*H5at); //Recovery time def could be different
+        double dH5 = dt*( rHi*H4at   - ((rHR*5)*(1-ma)+rHi*ma)*H5at); //Recovery time def could be different
 
-        double dR  = dt*( rUR*Uat + rIR*(1-ha)*Iat + (rHR*5)*(1-da)*H5at - rRS*Rat);
-        double dD  = dt*( rHi*ma*H5at );
+        double dR  = dt*( rUR*Uat + rIR*(1-ha)*Iat + (rHR*5)*(1-ma)*H5at - rRS*Rat);
+        double dDin= dt*( rHi*ma*H5at );
+        double dD  = dDin;
         double dN  = dS + dE + dU + dI + dH1 + dH2 + dH3 + dH4 + dH5 + dR + dD;
 
         S(ia,it+1)  = Sat  + dS;
@@ -195,23 +205,33 @@ List SEIUHRD(List pars){
         Rt[it+1]  += Rat + dR;
         Dt[it+1]  += Dat + dD;
    	    Nt[it+1]  += Nat + dN;
-	}; //ia
+   	    Hpw       += dHin;
+   	    Dpw       += dDin;
+   	    
+  }; //ia
+        if (week - week0 == 1) {
+          Hw[week-1] = Hpw;
+          Hpw=0;
+          Dw[week-1] = Dpw;
+          Dpw=0;
+        }
 	}; //it
 	
     // TODO: output by AGE
-    DataFrame simt = DataFrame::create(
-        Named("time") = time,
-        Named("St") = St,
-        Named("Et") = Et,
-        Named("It") = It,
-        Named("Ut") = Ut,
-        Named("Ct") = Ct,
-        Named("Ht") = Ht,
-        Named("Rt") = Rt,
-        Named("Dt") = Dt,
-        Named("Nt") = Nt,
-        Named("cmdtmean") = cmdtmean/(cmdim1*cmdim2));
-
+  DataFrame simt = DataFrame::create(
+        Named("time") = time[iw],
+        Named("St")   = St[iw],
+        Named("Et")   = Et[iw],
+        Named("It")   = It[iw],
+        Named("Ut")   = Ut[iw],
+        Named("Ct")   = Ct[iw],
+        Named("Ht")   = Ht[iw],
+        Named("Rt")   = Rt[iw],
+        Named("Dt")   = Dt[iw],
+        Named("Nt")   = Nt[iw],
+        Named("Hw")   = Hw,
+        Named("Dw")   = Dw,
+        Named("cmdtmean") = cmdtmean[iw]);
 	return simt;
 };
 

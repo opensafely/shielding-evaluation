@@ -82,6 +82,24 @@ actions:
         fig5: output/figures/covid_deaths_over_time2.pdf
         fig6: output/figures/covid_deaths_over_time_cumsum2.pdf
 
+  SEIUHRD_fit:
+    run: > 
+      r:latest
+        modelling/J4_SEIRmodel_main.r
+    needs: [clean_the_data]
+    outputs:
+      moderately_sensitive:
+        txt10: output/modelling/J4_Simul_run.txt
+        dat10: output/modelling/J4_Simul_R0_by_week.csv
+        txt11: output/modelling/J4_Contact_matrix_year-start-24Feb20_stats.txt
+        fig10: output/modelling/J4_Data_Incidence.pdf
+        fig11: output/modelling/J4_Fit_MCMC_BT.pdf
+        fig12: output/figures/J4_covid_hosp_over_time2again.pdf
+        txt12: output/modelling/J4_Fit_Variables_estimated.pdf
+        txt13: output/modelling/J4_Fit_Bayesian_report.txt
+        fig13: output/figures/J4_covid_deaths_over_time2again.pdf
+
+    
   SEIR_fit:
     run: > 
       r:latest
@@ -89,14 +107,15 @@ actions:
     needs: [clean_the_data]
     outputs:
       moderately_sensitive:
-        txt10: output/modelling/SEIRmodel_run.txt
-        dat10: output/modelling/R0_by_week.csv
-        fig10: output/modelling/Infected_data_and_R0_by_week.pdf
-        txt11: output/modelling/Contact_matrix_year-from-24Feb20_vector-lenght-9x9x52_norm=maxEV1_stats.txt
-        fig11: output/modelling/MCMC_BT.pdf
-        txt12: output/modelling/Bayesian_fit_report.txt
-        fig12: output/figures/covid_hosp_over_time2again.pdf
-  
+        txt10a: output/modelling/Simul_run.txt
+        dat10a: output/modelling/Simul_R0_by_week.csv
+        txt11a: output/modelling/Contact_matrix_year-start-24Feb20_stats.txt
+        fig10a: output/modelling/Data_Incidence.pdf
+        fig11a: output/modelling/Fit_MCMC_BT.pdf
+        fig12a: output/figures/covid_hosp_over_time2again.pdf
+        txt12a: output/modellimg/Fit_Variables_estimated.pdf
+        txt13a: output/modelling/Fit_Bayesian_report.txt
+ 
   plot_hospitalisations2_East:
     run: > 
       r:latest
