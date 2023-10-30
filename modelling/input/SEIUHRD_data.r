@@ -1,5 +1,10 @@
 ## 040 hospital admissions
 ## 050 deaths
+library(data.table)
+library(magrittr)
+library(arrow)
+library(glue)
+
 
 source(here::here("analysis/functions/redaction.R"))
 
@@ -13,8 +18,8 @@ shielding_cohort  <- arrow::read_parquet(file = here::here("output/data_edited.g
 shielding_cohortD <- shielding_cohort
 dim_sc = dim(shielding_cohort)
 if (dim_sc[1]>1000){ #only operates on real data, as dummy data has 500 or 1000 rows
-  shielding_cohortD <- shielding_cohortD[which(shielding_cohort$ons_death_date>="2020-01-01"),]                      #remove deaths prior to 2020 but registered from 2020
-  shielding_cohortD <- shielding_cohortD[which(is.element(shielding_cohort$ons_underlying_cause,c("U071","U072"))),] #remove deaths not caused by covid_deaths_over_time2
+  shielding_cohortD <- shielding_cohortD[which(shielding_cohortD$ons_death_date>="2020-01-01"),]                      #remove deaths prior to 2020 but registered from 2020
+  shielding_cohortD <- shielding_cohortD[which(is.element(shielding_cohortD$ons_underlying_cause,c("U071","U072"))),] #remove deaths not caused by covid_deaths_over_time2
 }
 
 #H week and year for hospitalisations
@@ -63,20 +68,20 @@ By_weekH <- function(data, vars){
   data %>% 
     group_by(across({{vars}}))      %>%
     mutate(weekly_admissions = n()) %>%
-    ungroup(hosp_year, hosp_week)   %>%
-    arrange(plot_date)              %>%
-    mutate(total_admissions = cumsum(weekly_admissions)) #%>% #CUMULATIVE                                  
-  #ungroup()
+    #ungroup(hosp_year, hosp_week)   %>%
+    #arrange(plot_date)              %>%
+    #mutate(total_admissions = cumsum(weekly_admissions)) #%>% #CUMULATIVE                                  
+  ungroup()
 }
 #D Week density and cumulative
 By_weekD <- function(data, vars){
   data %>% 
     group_by(across({{vars}}))      %>%
     mutate(weekly_deaths = n())     %>%
-    ungroup(death_year, death_week) %>%
-    arrange(plot_date)              %>%
-    mutate(total_deaths = cumsum(weekly_deaths)) #%>% #CUMULATIVE                                  
-  #ungroup()
+    #ungroup(death_year, death_week) %>%
+    #arrange(plot_date)              %>%
+    #mutate(total_deaths = cumsum(weekly_deaths)) #%>% #CUMULATIVE                                  
+  ungroup()
 }
 
 #H overall
@@ -109,6 +114,7 @@ ih0 = which( shielding_hosp_summ$plot_date <=Week2OfData & shielding_hosp_summ$p
 id  = which( shielding_death_summ$plot_date<=Week2OfData & shielding_death_summ$plot_date>=Week1OfData)
 ih  = ih0[1:length(id)]
 nD  = length(ih)
+print(paste0("length of datasets = ",nD," weeks"))
 
 #Figures H, D - overlapping groups
 fig0 <- function(data, x , y, col, xname='Date', yname='Weekly admissions') { #yname='Weekly deaths'
@@ -168,7 +174,7 @@ p1 <- ggplot(datD, aes(x = Weeks)) + #Dates))
       labs(x = 'Weeks', y = 'Weekly admissions') 
 #D
 p2 <- ggplot(datD, aes(x = Weeks)) + #Dates))
-      geom_point(aes(y = Dataz)) +
+      geom_point(aes(y = Dataw)) +
       labs(x = 'Weeks', y = 'Weekly deaths')
 
 if (pset$iplatform==1) { 
