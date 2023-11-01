@@ -57,7 +57,11 @@ sink(file = paste0(output_dir,"/",pset$File_run), append=TRUE, split=FALSE)
   rev(pset); cat("\n")
   print(paste0("Date in contact-data, range  ", Week1OfModel, ", ", Week2OfModel)); cat("\n")
   if(pset$iplatform>0) {
+  if (pset$imodel==1)  {
   print(paste0("Date by week in data, range  ", Week1OfData,  ", ", Week2OfData )); cat("\n")}
+  if (pset$imodel==2)  {
+  print(paste0("Date by week in H data, range  ", Week1OfDataH,", ", Week2OfDataH )); cat("\n")
+  print(paste0("Date by week in D data, range  ", Week1OfDataD,", ", Week2OfDataD )); cat("\n")}     }
   rev(pars[-1]); #exclude cm
   cat("\n \n")
 sink()

@@ -35,6 +35,8 @@ pset <- within(pset, {
     File_model_sim_data  <- paste0(Job,"Simul_Incidence.csv")
     File_fit_output      <- paste0(Job,"Fit_MCMC_BT.pdf")
     File_fit_variables   <- paste0(Job,"Fit_Variables_estimated.pdf")
+    File_fit_data1       <- paste0(Job,"Fit_Variables_data1.pdf")
+    File_fit_data2       <- paste0(Job,"Fit_Variables_data2.pdf")
     File_fit_summary     <- paste0(Job,"Fit_Bayesian_report.txt")
     File_data_hosp       <- paste0(Job,"covid_hosp_over_time2again.pdf")
     File_data_deaths     <- paste0(Job,"covid_deaths_over_time2again.pdf")
