@@ -55,7 +55,8 @@ if (pset$iplatform==0) {
 set.seed(7777)
 ### number of estimated parameters
 if(pset$iplatform==0) {
-   thetaTrue = c(pars$rEI, pars$rIR, pars$R0, pars$pE0, pars$pdm, dev0);
+  #thetaTrue = c(pars$rEI, pars$rIR, pars$R0, pars$pE0, pars$pdm, dev0);
+  thetaTrue = c(pars$rEI, pars$rIR, pars$R0, pars$pE0, dev0);
    npar = length(thetaTrue)}
 if (pset$iplatform>0) {
    npar = 6
@@ -106,9 +107,9 @@ LogLikelihood2 <- function(theta){
   pars$rIR = theta[2] 
   pars$R0  = theta[3] 
   pars$pE0 = theta[4] 
-  pars$pdm = theta[5]
+  #pars$pdm = theta[5]
   #p        = theta[5] #200#         #auxiliary parameter for bin or NB noise
-  sdH      = theta[6]                #auxiliary parameter for normal noise  
+  sdH      = theta[5]                #auxiliary parameter for normal noise  
   #Dependent
   pars$Ea0 = pars$Na0*pars$pE0
   pars$Sa0 = pars$Na0-pars$Ra0-pars$Ea0-pars$Ia0
@@ -124,7 +125,7 @@ LogLikelihood2 <- function(theta){
   MeanH[1]= max(MeanH[1],1); #avoid NAs
   MeanD[1]= max(MeanD[1],1); #avoid NAs
   muH = MeanH                #pars$pdm*MeanH #
-  muD = pars$pdm*MeanD       #MeanD #
+  muD = MeanD #pars$pdm*MeanD       #
   sdD = sd2osd1*sdH
   #Negative binomial likelihood - product over weeks
     #return( sum(dnbinom(x = zd, size = 1/p, mu = mu, log=T))) #expect k=1/p=200=> p=0.005
@@ -136,7 +137,8 @@ LogLikelihood2 <- function(theta){
 niter = 200000 #30000 #120000 #90000 #60000 #150000 #30000 #50000 #40000
 if (pset$imodel==1) {
   LogLikelihood = LogLikelihood1; Lower=c(1,1,1,1,1)*0.0001;   Upper = c(1,1,30,1,sdUpper)   } else {
-  LogLikelihood = LogLikelihood2; Lower=c(1,1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,2,sdUpper)} #rEI, rIR, R0, pE0, pdm, sd or p
+  LogLikelihood = LogLikelihood2; Lower=c(1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,sdUpper)} #rEI, rIR, R0, pE0, sd or p
+  #LogLikelihood = LogLikelihood2; Lower=c(1,1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,2,sdUpper)} #rEI, rIR, R0, pE0, pdm, sd or p
 setup    = createBayesianSetup(likelihood=LogLikelihood, lower = Lower, upper = Upper) #parallel = T,
 settings = list (iterations = niter, burnin = round(niter*npar/15), message=F)
 ## Bayesian sample
@@ -155,7 +157,7 @@ parsE$rEI <- MAPE$parametersMAP[1] #thetaTrue[1]
 parsE$rIR <- MAPE$parametersMAP[2] #thetaTrue[2]
 parsE$R0  <- MAPE$parametersMAP[3] #thetaTrue[3]
 parsE$pE0 <- MAPE$parametersMAP[4] #thetaTrue[4]
-parsE$pdm <- MAPE$parametersMAP[5] #thetaTrue[5]
+#parsE$pdm <- MAPE$parametersMAP[5] #thetaTrue[5]
 mE        <- model(parsE)
 
 #binomial fit to binomial data or normal fit to normal data
@@ -163,7 +165,8 @@ if(pset$iplatform>0) {
    pbin = 1/pars$k;             #for neg binomial data 
    dev0 = 1 }                   #for normal H likelihood - in simulation: #round(0.05*mean(zm)) 
 #Expected parameter estimates
-thetaTrue = c(pars$rEI, pars$rIR, pars$R0, pars$pE0, pars$pdm, dev0); #
+thetaTrue = c(pars$rEI, pars$rIR, pars$R0, pars$pE0, dev0); #
+#thetaTrue = c(pars$rEI, pars$rIR, pars$R0, pars$pE0, pars$pdm, dev0); #
 
 ##sd of normal likelihood for normal data
 #dev = round(0.05*mean(zd))
@@ -173,10 +176,11 @@ if (pset$imodel==1) {
   mEmean = mean(mE$Hw)} 
 dev = sqrt(mEmean + mEmean^2*pbin)
 thetaTrue[length(thetaTrue)] = dev
+if (!is.element(pset$iplatform,1)) {kest = 0.2*log(var(zd) - mean(zd))/log(mean(zd)); print(paste0("k_est = ", kest))}
 
 N  = pars$Npop
-rE = parsE$pdm #1#
-rM = pars$pdm  #1#
+rE = 1#parsE$pdm #
+rM = 1#pars$pdm  #
 if(pset$iplatform==0) { 
   iseq  = seq_along(mE$time) 
   iseqH = iseq
@@ -189,25 +193,25 @@ if(pset$iplatform==0) {
 
 if (pset$imodel==1) { 
   dat  <- tibble(Weeks  = mE$time[iseq]/7,
-                 PIwe   = rE* mE$Iw[iseq]/N,   #treat PIwe (PHwe) as mu (muH) = pdm*Mean
-                 DataIw = zd/N) 
+                 Iwe    = rE* mE$Iw[iseq],   #treat PIwe (PHwe) as mu (muH) = pdm*Mean
+                 DataIw = zd) 
   if (pset$iplatform==0) {
   dat  <- tibble(dat, 
-                 PIw    = rM* datM$PIw[iseq]) }
+                 Iw     = rM* datM$Iw[iseq]) }
     
  } else if (pset$imodel==2) {
   datH <- tibble(Weeks  = mE$time[iseqH]/7,  
-                 PHwe   =     mE$Hw[iseqH]/N,  
-                 DataHw = zd/N)
+                 Hwe    =     mE$Hw[iseqH],  
+                 DataHw = zd)
   datD <- tibble(Weeks  = mE$time[iseqD]/7,  
-                 PDwe   = rE* mE$Dw[iseqD]/N,  
-                 DataDw = wd/N)                
+                 Dwe    = rE* mE$Dw[iseqD],  
+                 DataDw = wd)
 
   if (pset$iplatform==0) {
   datH <- tibble(datH, 
-                 PHw    = datM$PHw[iseqH])
+                 Hw    = datM$Hw[iseqH])
   datD <- tibble(datD, 
-                 PDw    = datM$PDw[iseqD])    }
+                 Dw    = datM$Dw[iseqD])    }
   }
 
 
@@ -220,9 +224,9 @@ par(mar = c(1, 1, 1, 1))
 plot(out)
 correlationPlot(out)
 
-colors <- c("DIw"     = "black", "PIw_est" = "red",   "PIw_mod" = "green",
-            "DHw"     = "black", "PHw_est" = "red",   "PHw_mod" = "green",
-            "DDw"     = "grey", "PDw_est" = "orange","PDw_mod" = "blue")
+colors <- c("DIw"     = "black", "Iw_est" = "red",   "Iw_mod" = "green",
+            "DHw"     = "black", "Hw_est" = "red",   "Hw_mod" = "green",
+            "DDw"     = "grey",  "Dw_est" = "orange","Dw_mod" = "blue")
 
 par(mfrow = c(1,2))
 
@@ -231,9 +235,9 @@ if (pset$imodel==1) {
           labs(x = 'Weeks', y = 'Infections per week', color = "Legend") + 
           scale_color_manual(values = colors) +
           geom_point( aes(y=DataIw,   color = "DIw")) +
-          geom_line ( aes(y=PIwe,     color = "PIw_est")) +
+          geom_line ( aes(y=Iwe,      color = "Iw_est")) +
     if (pset$iplatform==0) {
-    p1 <- p1 + geom_line (aes(x=Weeks, y=PIw,  color = "PIw_mod"))  }          
+    p1 <- p1 + geom_line (aes(x=Weeks, y=Iw,  color = "Iw_mod"))  }          
 }
   
 if(pset$imodel==2) {
@@ -241,12 +245,12 @@ if(pset$imodel==2) {
           labs(x = 'Weeks', y = 'hospitalisations & deaths per week', color = "Legend") + 
           scale_color_manual(values = colors) +
           geom_point(data=datH, aes(x=Weeks,y=DataHw, color = "DHw"), size = 1.4, pch = 19) +
-          geom_line (data=datH, aes(x=Weeks,y=PHwe,   color = "PHw_est")) +
+          geom_line (data=datH, aes(x=Weeks,y=Hwe,    color = "Hw_est")) +
           geom_point(data=datD, aes(x=Weeks,y=DataDw, color = "DDw"), size =   1,   pch = 16) +
-          geom_line (data=datD, aes(x=Weeks,y=PDwe,   color = "PDw_est"))
+          geom_line (data=datD, aes(x=Weeks,y=Dwe,    color = "Dw_est"))
     if (pset$iplatform==0) {
-    p1 <- p1 + geom_line(data=datH, aes(x=Weeks,y=PHw, color = "PHw_mod")) +
-               geom_line(data=datD, aes(x=Weeks,y=PDw, color = "PDw_mod"))  }
+    p1 <- p1 + geom_line(data=datH, aes(x=Weeks,y=Hw, color = "Hw_mod")) +
+               geom_line(data=datD, aes(x=Weeks,y=Dw, color = "Dw_mod"))  }
 }
 print(p1)
 
@@ -272,15 +276,17 @@ dev.off() }
 
 ## Summary - output
 sink(file = paste0(output_dir,"/",pset$File_fit_summary),append=TRUE,split=FALSE)
+cat("\n"); 
 if (pset$imodel==1) {
   print(paste0("#data pts fitted: ", length(iweeksmodel))) 
 } else if (pset$imodel==2) {
   if(pset$iplatform==0) { iwH=iweeksmodel; iwD=iweeksmodel} else {iwH=iweeksmodelH; iwD=iweeksmodelD}
   print(paste0("#H data pts fitted: ", length(iwH)))
   print(paste0("#D data pts fitted: ", length(iwD))) }
+#if(pset$iplatform==0) print(paste0("Expected: ", c("rEI = ","rIR = ", "R0 = ", "pE0 = ", "pdm = ", "var = "), round(thetaTrue,3)))
+print(paste0("Expected: ", c("rEI = ","rIR = ", "R0 = ", "pE0 = ", "var = "), round(thetaTrue,3)))
+cat("\n");
 print(summary(out)); cat("\n")
-if(pset$iplatform==0) print(paste0("Expected: ", c("rEI = ","rIR = ", "R0 = ", "pE0 = ", "pdm = ", "var = "), round(thetaTrue,3)))
-#if(pset$iplatform==0) print(paste0("Expected: ", c("rEI = ","rIR = ", "R0 = ", "pE0 = ", "var = "), round(thetaTrue,3)))
 print(paste0("Mean by chain and parameter:"))
 print(out$X)
 print(paste0("Time used (sec):"))
