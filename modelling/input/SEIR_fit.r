@@ -53,23 +53,20 @@ if (pset$iplatform==0) {
 ######## 1 BayesianTools #####################
 ### reproducibility of MCMC sample
 set.seed(7777)
-### number of estimated parameters
-if(pset$iplatform==0) {
-  #thetaTrue = c(pars$rEI, pars$rIR, pars$R0, pars$pE0, pars$pdm, dev0);
-  thetaTrue = c(pars$rEI, pars$rIR, pars$R0, pars$pE0, dev0);
-   npar = length(thetaTrue)}
+
 if (pset$iplatform>0) {
-   npar = 6
    ## Compile & run model (weekly points)
    sourceCpp(file = paste0(input_dir,"/",pset$File_model_choice))  
   }
 ### Multiple model options
 if (pset$imodel==1) {model <- SEIR}
-if (pset$imodel==2) {model <- SEIUHRD; sd2osd1 = mean(wd)/mean(zd)}
+if (pset$imodel==2) {model <- SEIUHRD} #; sd2osd1 = mean(wd)/mean(zd)}
 
 ### Likelihood in R and model in Rcpp
-sdUpper = 1            #p #binomial likelihood, and data
-sdUpper = 0.4*mean(zd) #sd  #normal likelihood, any data
+sdUpper = 1            #p   #binomial likelihood, and data
+sdUpper  = 0.4*mean(zd) #sd  #normal likelihood, any data
+if (pset$imodel==2) {
+sdUpper2 = 0.4*mean(wd)}#sd  #normal likelihood, any data
 
 #Model 1
 LogLikelihood1 <- function(theta){
@@ -110,6 +107,7 @@ LogLikelihood2 <- function(theta){
   #pars$pdm = theta[5]
   #p        = theta[5] #200#         #auxiliary parameter for bin or NB noise
   sdH      = theta[5]                #auxiliary parameter for normal noise  
+  sdD      = theta[6]                #auxiliary parameter for normal noise
   #Dependent
   pars$Ea0 = pars$Na0*pars$pE0
   pars$Sa0 = pars$Na0-pars$Ra0-pars$Ea0-pars$Ia0
@@ -126,7 +124,7 @@ LogLikelihood2 <- function(theta){
   MeanD[1]= max(MeanD[1],1); #avoid NAs
   muH = MeanH                #pars$pdm*MeanH #
   muD = MeanD #pars$pdm*MeanD       #
-  sdD = sd2osd1*sdH
+  #sdD = sd2osd1*sdH
   #Negative binomial likelihood - product over weeks
     #return( sum(dnbinom(x = zd, size = 1/p, mu = mu, log=T))) #expect k=1/p=200=> p=0.005
   #Normal likelihood - product over weeks
@@ -134,49 +132,48 @@ LogLikelihood2 <- function(theta){
 }
 
 ## Likelihood definition, parameter ranges
-niter = 200000 #30000 #120000 #90000 #60000 #150000 #30000 #50000 #40000
+niter = 30000 #200000 #30000 #120000 #90000 #60000 #150000 #30000 #50000 #40000
 if (pset$imodel==1) {
-  LogLikelihood = LogLikelihood1; Lower=c(1,1,1,1,1)*0.0001;   Upper = c(1,1,30,1,sdUpper)   } else {
-  LogLikelihood = LogLikelihood2; Lower=c(1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,sdUpper)} #rEI, rIR, R0, pE0, sd or p
-  #LogLikelihood = LogLikelihood2; Lower=c(1,1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,2,sdUpper)} #rEI, rIR, R0, pE0, pdm, sd or p
+  LogLikelihood = LogLikelihood1; Lower=c(1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,sdUpper)   } else {
+  LogLikelihood = LogLikelihood2; Lower=c(1,1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,sdUpper,sdUpper2)} #rEI, rIR, R0, pE0, sd or p# pdm,
 setup    = createBayesianSetup(likelihood=LogLikelihood, lower = Lower, upper = Upper) #parallel = T,
-settings = list (iterations = niter, burnin = round(niter*npar/15), message=F)
+settings = list (iterations = niter, burnin = round(niter*length(Lower)/15), message=F)
 ## Bayesian sample
 tout1 <- system.time(out <- runMCMC(bayesianSetup=setup, settings=settings) )
-## summary
-if (pset$iplatform==0) {
-  mT <- model(pars) #out.df parameters including contacts (data fit), all parameters (simulation)
-  tout1
-  round(thetaTrue,3)
-  print(paste0("Mean by chain and parameter:"))
-  out$X }
 ## Estimates
 parsE     <- pars
 MAPE      <- MAP(out)
-parsE$rEI <- MAPE$parametersMAP[1] #thetaTrue[1]
-parsE$rIR <- MAPE$parametersMAP[2] #thetaTrue[2]
-parsE$R0  <- MAPE$parametersMAP[3] #thetaTrue[3]
-parsE$pE0 <- MAPE$parametersMAP[4] #thetaTrue[4]
-#parsE$pdm <- MAPE$parametersMAP[5] #thetaTrue[5]
+parsE$rEI <- MAPE$parametersMAP[1]
+parsE$rIR <- MAPE$parametersMAP[2]
+parsE$R0  <- MAPE$parametersMAP[3]
+parsE$pE0 <- MAPE$parametersMAP[4]
+#parsE$pdm <- MAPE$parametersMAP[5]
 mE        <- model(parsE)
 
-#binomial fit to binomial data or normal fit to normal data
+#binomial fit or normal fit
 if(pset$iplatform>0) {
    pbin = 1/pars$k;             #for neg binomial data 
-   dev0 = 1 }                   #for normal H likelihood - in simulation: #round(0.05*mean(zm)) 
+   dev0 = 1          }          #for normal likelihood
 #Expected parameter estimates
-thetaTrue = c(pars$rEI, pars$rIR, pars$R0, pars$pE0, dev0); #
-#thetaTrue = c(pars$rEI, pars$rIR, pars$R0, pars$pE0, pars$pdm, dev0); #
+thetaTrue = c(pars$rEI, pars$rIR, pars$R0, pars$pE0, dev0, dev0); #pars$pdm, 
 
-##sd of normal likelihood for normal data
-#dev = round(0.05*mean(zd))
+
+##sd of normal likelihood if normal data
+  #dev = round(0.05*mean(zd))
 ##sd of normal likelihood for NB data
 if (pset$imodel==1) {
-  mEmean = mean(mE$Iw)} else { 
-  mEmean = mean(mE$Hw)} 
-dev = sqrt(mEmean + mEmean^2*pbin)
-thetaTrue[length(thetaTrue)] = dev
-if (!is.element(pset$iplatform,1)) {kest = 0.2*log(var(zd) - mean(zd))/log(mean(zd)); print(paste0("k_est = ", kest))}
+  mEm = mean(mE$Iw)} else { 
+  mEm = mean(mE$Hw); mEm2 = mean(mE$Hw);} 
+dev  = sqrt(mEm  + mEm^2*pbin)
+dev2 = sqrt(mEm2 + mEm2^2*pbin)
+thetaTrue[c(length(thetaTrue)-1,length(thetaTrue))] = c(dev,dev2)
+
+if (!is.element(pset$iplatform,1)) {
+  kest_mdata  = round(1/((var(zd) - mean(zd))/(mean(zd)^2)),1); 
+  kest_mmodel = round(1/((var(zd) - mEm)/(mEm^2)),1); 
+  print(paste0("k_est (data mean)  = ", kest_mdata))
+  print(paste0("k_est (model mean) = ", kest_mmodel))
+}
 
 N  = pars$Npop
 rE = 1#parsE$pdm #
@@ -283,8 +280,7 @@ if (pset$imodel==1) {
   if(pset$iplatform==0) { iwH=iweeksmodel; iwD=iweeksmodel} else {iwH=iweeksmodelH; iwD=iweeksmodelD}
   print(paste0("#H data pts fitted: ", length(iwH)))
   print(paste0("#D data pts fitted: ", length(iwD))) }
-#if(pset$iplatform==0) print(paste0("Expected: ", c("rEI = ","rIR = ", "R0 = ", "pE0 = ", "pdm = ", "var = "), round(thetaTrue,3)))
-print(paste0("Expected: ", c("rEI = ","rIR = ", "R0 = ", "pE0 = ", "var = "), round(thetaTrue,3)))
+print(paste0("Expected: ", c("rEI = ","rIR = ", "R0 = ", "pE0 = ", "varH = ", "varD = "), round(thetaTrue,3))) #"pdm = ",
 cat("\n");
 print(summary(out)); cat("\n")
 print(paste0("Mean by chain and parameter:"))
@@ -293,9 +289,11 @@ print(paste0("Time used (sec):"))
 print(tout1[[3]])
 print(names(out[[1]]))
 print(names(out[[2]]))
+cat("\n")
+print(paste0("k_est (data mean)  = ", kest_mdata))
+print(paste0("k_est (model mean) = ", kest_mmodel))
 cat("\n"); cat("\n")
 sink()
-
 
 
 
