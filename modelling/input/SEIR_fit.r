@@ -132,7 +132,7 @@ LogLikelihood2 <- function(theta){
 }
 
 ## Likelihood definition, parameter ranges
-niter = 30000 #200000 #30000 #120000 #90000 #60000 #150000 #30000 #50000 #40000
+niter = 200000 #30000 #120000 #90000 #60000 #150000 #30000 #50000 #40000
 if (pset$imodel==1) {
   LogLikelihood = LogLikelihood1; Lower=c(1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,sdUpper)   } else {
   LogLikelihood = LogLikelihood2; Lower=c(1,1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,sdUpper,sdUpper2)} #rEI, rIR, R0, pE0, sd or p# pdm,
