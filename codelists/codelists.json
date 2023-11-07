@@ -45,8 +45,8 @@
     "opensafely-direct-acting-oral-anticoagulants-doac.csv": {
       "id": "opensafely/direct-acting-oral-anticoagulants-doac/2020-10-05",
       "url": "https://codelists.opensafely.org/codelist/opensafely/direct-acting-oral-anticoagulants-doac/2020-10-05/",
-      "downloaded_at": "2023-03-30 10:16:02.173507Z",
-      "sha": "50f69d9c0bcb0e58aadb76fb4749d33f74f66253"
+      "downloaded_at": "2023-11-07 16:19:28.395786Z",
+      "sha": "a4d3390bdd43f911766a8dedf4107733563132ca"
     },
     "opensafely-aplastic-anaemia.csv": {
       "id": "opensafely/aplastic-anaemia/2020-04-24",
@@ -69,14 +69,14 @@
     "opensafely-asthma-inhaler-salbutamol-medication.csv": {
       "id": "opensafely/asthma-inhaler-salbutamol-medication/2020-04-15",
       "url": "https://codelists.opensafely.org/codelist/opensafely/asthma-inhaler-salbutamol-medication/2020-04-15/",
-      "downloaded_at": "2023-03-30 10:16:02.593263Z",
-      "sha": "d886f3ce53492ec456e0a304ee865d66e73715d6"
+      "downloaded_at": "2023-11-07 16:19:29.457853Z",
+      "sha": "a067bd0338f289210aab862b818d676c58521793"
     },
     "opensafely-asthma-inhaler-steroid-medication.csv": {
       "id": "opensafely/asthma-inhaler-steroid-medication/2020-04-15",
       "url": "https://codelists.opensafely.org/codelist/opensafely/asthma-inhaler-steroid-medication/2020-04-15/",
-      "downloaded_at": "2023-03-30 10:16:02.698916Z",
-      "sha": "d184aff205a5017c9e656d2be7484e3aaadc9cda"
+      "downloaded_at": "2023-11-07 16:19:29.686897Z",
+      "sha": "83c3d107e928ee44a8a20aab69852d35c40c4b7d"
     },
     "opensafely-cancer-excluding-lung-and-haematological.csv": {
       "id": "opensafely/cancer-excluding-lung-and-haematological/2020-04-15",
@@ -147,8 +147,8 @@
     "opensafely-asthma-oral-prednisolone-medication.csv": {
       "id": "opensafely/asthma-oral-prednisolone-medication/2020-04-27",
       "url": "https://codelists.opensafely.org/codelist/opensafely/asthma-oral-prednisolone-medication/2020-04-27/",
-      "downloaded_at": "2023-03-30 10:16:04.044820Z",
-      "sha": "e47cc254975c23f7507cf04bb655454f8b5ece18"
+      "downloaded_at": "2023-11-07 16:19:32.709554Z",
+      "sha": "a27045e5455a014a290ba8c2dfb75066dbb91eb4"
     },
     "opensafely-ra-sle-psoriasis.csv": {
       "id": "opensafely/ra-sle-psoriasis/2020-04-14",
@@ -183,8 +183,8 @@
     "opensafely-warfarin.csv": {
       "id": "opensafely/warfarin/2020-10-05",
       "url": "https://codelists.opensafely.org/codelist/opensafely/warfarin/2020-10-05/",
-      "downloaded_at": "2023-03-30 10:16:04.729214Z",
-      "sha": "971d819a24d4c04bea3000390e9fb2f718fb3b22"
+      "downloaded_at": "2023-11-07 16:19:34.209800Z",
+      "sha": "e19102a47652d751ca937b4fecb54a74eb1b76f0"
     },
     "opensafely-psychosis-schizophrenia-bipolar-affective-disease.csv": {
       "id": "opensafely/psychosis-schizophrenia-bipolar-affective-disease/0311653f",
