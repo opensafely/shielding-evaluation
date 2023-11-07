@@ -12,7 +12,7 @@ if (pset$iplatform==0) {
   } else { 
   print(paste0("#data pts fitted: ", length(iweeksmodel))) }
 
-} else {
+} else { #if iplatform>0
   if (pset$iplatform==1) Week2ofStudy = Week2OfModel #Dummy data: use max of contact matrix range
   if (pset$iplatform==2) Week2ofStudy = "2020-12-01" #Real data: use start of vacc & alpha
   if (pset$imodel==1) {
@@ -63,10 +63,12 @@ if (pset$imodel==1) {model <- SEIR}
 if (pset$imodel==2) {model <- SEIUHRD} #; sd2osd1 = mean(wd)/mean(zd)}
 
 ### Likelihood in R and model in Rcpp
-sdUpper = 1            #p   #binomial likelihood, and data
-sdUpper  = 0.4*mean(zd) #sd  #normal likelihood, any data
+sdUpper = 1               #p  binomial likelihood, and data
+sdUpper  = 0.4*mean(zd)   #sd normal likelihood, any data
+kUpper   = 2*pars$k       #k  NB likelihood and data
 if (pset$imodel==2) {
-sdUpper2 = 0.4*mean(wd)}#sd  #normal likelihood, any data
+sdUpper2 = 0.4*mean(wd)   #sd normal likelihood, any data
+kUpper2  = 2*pars$k     } #k  NB likelihood and data
 
 #Model 1
 LogLikelihood1 <- function(theta){
@@ -108,6 +110,8 @@ LogLikelihood2 <- function(theta){
   #p        = theta[5] #200#         #auxiliary parameter for bin or NB noise
   sdH      = theta[5]                #auxiliary parameter for normal noise  
   sdD      = theta[6]                #auxiliary parameter for normal noise
+  kH=sdH; #kempir_mmodel #pars$k; #sdH; 
+  kD=sdD; #kempir_mmodel2 #pars$k; #sdD;
   #Dependent
   pars$Ea0 = pars$Na0*pars$pE0
   pars$Sa0 = pars$Na0-pars$Ra0-pars$Ea0-pars$Ia0
@@ -127,15 +131,18 @@ LogLikelihood2 <- function(theta){
   #sdD = sd2osd1*sdH
   #Negative binomial likelihood - product over weeks
     #return( sum(dnbinom(x = zd, size = 1/p, mu = mu, log=T))) #expect k=1/p=200=> p=0.005
+    return( sum(dnbinom(x = zd, size = kH, mu = muH, log = T)) +
+            sum(dnbinom(x = wd, size = kD, mu = muD, log = T)))
   #Normal likelihood - product over weeks
-    return(sum(dnorm(zd, mean = muH, sd = sdH, log = T))+  sum(dnorm(wd, mean = muD, sd = sdD, log = T)))
+    #return(sum(dnorm(zd, mean = muH, sd = sdH, log = T))+  sum(dnorm(wd, mean = muD, sd = sdD, log = T)))
 }
 
 ## Likelihood definition, parameter ranges
 niter = 200000 #30000 #120000 #90000 #60000 #150000 #30000 #50000 #40000
 if (pset$imodel==1) {
   LogLikelihood = LogLikelihood1; Lower=c(1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,sdUpper)   } else {
-  LogLikelihood = LogLikelihood2; Lower=c(1,1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,sdUpper,sdUpper2)} #rEI, rIR, R0, pE0, sd or p# pdm,
+  LogLikelihood = LogLikelihood2; Lower=c(1,1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,kUpper,kUpper2)} #rEI, rIR, R0, pE0, k, k2# pdm,
+  #LogLikelihood = LogLikelihood2; Lower=c(1,1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,sdUpper,sdUpper2)} #rEI, rIR, R0, pE0, sd or p# pdm,
 setup    = createBayesianSetup(likelihood=LogLikelihood, lower = Lower, upper = Upper) #parallel = T,
 settings = list (iterations = niter, burnin = round(niter*length(Lower)/15), message=F)
 ## Bayesian sample
@@ -150,30 +157,48 @@ parsE$pE0 <- MAPE$parametersMAP[4]
 #parsE$pdm <- MAPE$parametersMAP[5]
 mE        <- model(parsE)
 
-#binomial fit or normal fit
-if(pset$iplatform>0) {
-   pbin = 1/pars$k;             #for neg binomial data 
-   dev0 = 1          }          #for normal likelihood
-#Expected parameter estimates
-thetaTrue = c(pars$rEI, pars$rIR, pars$R0, pars$pE0, dev0, dev0); #pars$pdm, 
+
+#True parameters (except last two)
+thetaTrue = c(pars$rEI, pars$rIR, pars$R0, pars$pE0, 1, 1); #pars$pdm, 
 
 
-##sd of normal likelihood if normal data
+#Expected parameters
+
+##Normal data - Normal residual likelihood
+##sd empirical
   #dev = round(0.05*mean(zd))
-##sd of normal likelihood for NB data
-if (pset$imodel==1) {
-  mEm = mean(mE$Iw)} else { 
-  mEm = mean(mE$Hw); mEm2 = mean(mE$Hw);} 
-dev  = sqrt(mEm  + mEm^2*pbin)
-dev2 = sqrt(mEm2 + mEm2^2*pbin)
-thetaTrue[c(length(thetaTrue)-1,length(thetaTrue))] = c(dev,dev2)
 
-if (!is.element(pset$iplatform,1)) {
-  kest_mdata  = round(1/((var(zd) - mean(zd))/(mean(zd)^2)),1); 
-  kest_mmodel = round(1/((var(zd) - mEm)/(mEm^2)),1); 
-  print(paste0("k_est (data mean)  = ", kest_mdata))
-  print(paste0("k_est (model mean) = ", kest_mmodel))
-}
+##NB data
+##k empirical
+if (pset$imodel==1) {
+  mEm = mean(mE$Iw) } else { 
+  mEm = mean(mE$Hw); mEm2 = mean(mE$Dw) }
+
+if (!is.element(pset$iplatform,1)) { #cant estimate  with dummy data (1)
+  kempir_mdata  = round(1/((var(zd) - mean(zd))/(mean(zd)^2)),1); 
+  kempir_mmodel = round(1/((var(zd) - mEm)/(mEm^2)),1);
+  print(paste0("k_empirical (data mean)  = ", kempir_mdata))
+  print(paste0("k_empirical (model mean) = ", kempir_mmodel))
+  if (pset$imodel==2) {
+    kempir_mdata2  = round(1/((var(wd) - mean(wd))/(mean(wd)^2)),1); 
+    kempir_mmodel2 = round(1/((var(wd) - mEm2)/(mEm2^2)),1);
+    print(paste0("k_empiricalD (data mean)  = ", kempir_mdata2))
+    print(paste0("k_empiricalD (model mean) = ", kempir_mmodel2)) }
+} else {kempir_mmodel=1; kempir_mmodel2=1; kempir_mdata =1; kempir_mdata2=1;}
+
+##NB data - Normal residual likelihood
+##sd empirical 
+dev  = sqrt(mEm  + mEm^2*kempir_mmodel)
+if (pset$imodel==2) {
+dev2 = sqrt(mEm2 + mEm2^2*kempir_mmodel2) }
+thetaTrue[c(length(thetaTrue)-1,length(thetaTrue))] = c(dev,dev2) #pars$pdm, 
+
+##NB data - NB likelihood
+if(pset$iplatform==0){ #simulation: true parameters
+  thetaTrue[c(length(thetaTrue)-1,length(thetaTrue))] = c(pars$k,pars$k)  #pars$pdm, 
+  } else {             #not simulation
+  thetaTrue[c(length(thetaTrue)-1,length(thetaTrue))] = c(kempir_mdata, kempir_mdata2) } #pars$pdm,
+    
 
 N  = pars$Npop
 rE = 1#parsE$pdm #
@@ -259,6 +284,8 @@ if (pset$imodel==1) {gridExtra::grid.table(round(mE[c("time","St","It","Iw","Rt"
 if (pset$imodel==2) {gridExtra::grid.table(round(mE[c("time","St","Ht","Hw","Dt","Dw")])) }
 dev.off()
 
+if (pset$iplatform>0){
+  
 pdf(file = paste0(output_dir,"/",pset$File_fit_data1), height=nrow(datDH)/3)
 if (pset$imodel==1) {
   gridExtra::grid.table(datD[c("Weeks","Dataz")]) }
@@ -271,6 +298,8 @@ pdf(file = paste0(output_dir,"/",pset$File_fit_data2), height=nrow(datDD)/3)
   gridExtra::grid.table(datDD[c("Weeks","Dataw")])
 dev.off() }
 
+}
+
 ## Summary - output
 sink(file = paste0(output_dir,"/",pset$File_fit_summary),append=TRUE,split=FALSE)
 cat("\n"); 
@@ -280,7 +309,8 @@ if (pset$imodel==1) {
   if(pset$iplatform==0) { iwH=iweeksmodel; iwD=iweeksmodel} else {iwH=iweeksmodelH; iwD=iweeksmodelD}
   print(paste0("#H data pts fitted: ", length(iwH)))
   print(paste0("#D data pts fitted: ", length(iwD))) }
-print(paste0("Expected: ", c("rEI = ","rIR = ", "R0 = ", "pE0 = ", "varH = ", "varD = "), round(thetaTrue,3))) #"pdm = ",
+print(paste0("Expected: ", c("rEI = ","rIR = ", "R0 = ", "pE0 = ", "kH = ", "kD = "), round(thetaTrue,3))) #"pdm = ",
+#print(paste0("Expected: ", c("rEI = ","rIR = ", "R0 = ", "pE0 = ", "varH = ", "varD = "), round(thetaTrue,3))) #"pdm = ",
 cat("\n");
 print(summary(out)); cat("\n")
 print(paste0("Mean by chain and parameter:"))
@@ -290,11 +320,13 @@ print(tout1[[3]])
 print(names(out[[1]]))
 print(names(out[[2]]))
 cat("\n")
-print(paste0("k_est (data mean)  = ", kest_mdata))
-print(paste0("k_est (model mean) = ", kest_mmodel))
+print(paste0("k_empirical (data mean)   = ", kempir_mdata))
+print(paste0("k_empirical (model mean)  = ", kempir_mmodel))
+if (pset$imodel==2) {
+print(paste0("k_empiricalD (data mean)  = ", kempir_mdata2))
+print(paste0("k_empiricalD (model mean) = ", kempir_mmodel2)) }
+  
 cat("\n"); cat("\n")
 sink()
-
-
 
 ######## 2 Basic Metropolis Hastings MCMC ####
