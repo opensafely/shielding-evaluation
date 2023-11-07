@@ -184,13 +184,13 @@ if (!is.element(pset$iplatform,1)) { #cant estimate  with dummy data (1)
     kempir_mmodel2 = round(1/((var(wd) - mEm2)/(mEm2^2)),1);
     print(paste0("k_empiricalD (data mean)  = ", kempir_mdata2))
     print(paste0("k_empiricalD (model mean) = ", kempir_mmodel2)) }
-} else {kempir_mdata =1; kempir_mdata2=1;}
+} else {kempir_mmodel=1; kempir_mmodel2=1; kempir_mdata =1; kempir_mdata2=1;}
 
 ##NB data - Normal residual likelihood
 ##sd empirical 
-dev  = sqrt(mEm  + mEm^2*pbin)
+dev  = sqrt(mEm  + mEm^2*kempir_mmodel)
 if (pset$imodel==2) {
-dev2 = sqrt(mEm2 + mEm2^2*pbin) }
+dev2 = sqrt(mEm2 + mEm2^2*kempir_mmodel2) }
 thetaTrue[c(length(thetaTrue)-1,length(thetaTrue))] = c(dev,dev2) #pars$pdm, 
 
 ##NB data - NB likelihood
