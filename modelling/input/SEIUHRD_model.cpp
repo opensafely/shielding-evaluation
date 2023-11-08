@@ -71,6 +71,7 @@ List SEIUHRD(List pars){
     const NumericVector m = as<NumericVector>(pars["m"]); 
     
     const double beta_infectivity = pars["beta"];
+    const double phm  = pars["phm"];
     const double fu   = pars["fu"];
     const double rEI  = pars["rEI"];
     const double rEU  = pars["rEU"];
@@ -143,7 +144,7 @@ List SEIUHRD(List pars){
         double ua = u[ia];
         double ya = y[ia];
         double ha = h[ia];
-        double ma = m[ia];
+        double ma = m[ia]*phm;
 
         for (int ib = 0; ib < na; ib++) {
             int    icm = (week-1)*cmdim1*cmdim2 + ib*cmdim1 + ia;

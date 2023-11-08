@@ -89,17 +89,17 @@ actions:
     needs: [clean_the_data]
     outputs:
       moderately_sensitive:
-        txt10: output/modelling/J4d_Simul_run.txt
-        csv10: output/modelling/J4d_Simul_R0_by_week.csv
-        txt11: output/modelling/J4d_Contact_matrix_year-start-24Feb20_stats.txt
-        pdf10: output/modelling/J4d_Data_Incidence.pdf
-        pdf11: output/modelling/J4d_Fit_MCMC_BT.pdf
-        pdf12: output/modelling/J4d_Fit_Variables_estimated.pdf
-        pdf13: output/modelling/J4d_Fit_Variables_data1.pdf
-        pdf14: output/modelling/J4d_Fit_Variables_data2.pdf
-        txt12: output/modelling/J4d_Fit_Bayesian_report.txt
-        pdf15: output/figures/J4d_covid_hosp_over_time2again.pdf
-        pdf16: output/figures/J4d_covid_deaths_over_time2again.pdf
+        txt10: output/modelling/J4f_Simul_run.txt
+        csv10: output/modelling/J4f_Simul_R0_by_week.csv
+        txt11: output/modelling/J4f_Contact_matrix_year-start-24Feb20_stats.txt
+        pdf10: output/modelling/J4f_Data_Incidence.pdf
+        pdf11: output/modelling/J4f_Fit_MCMC_BT.pdf
+        pdf12: output/modelling/J4f_Fit_Variables_estimated.pdf
+        pdf13: output/modelling/J4f_Fit_Variables_data1.pdf
+        pdf14: output/modelling/J4f_Fit_Variables_data2.pdf
+        txt12: output/modelling/J4f_Fit_Bayesian_report.txt
+        pdf15: output/figures/J4f_covid_hosp_over_time2again.pdf
+        pdf16: output/figures/J4f_covid_deaths_over_time2again.pdf
 
  
   plot_hospitalisations2_East:

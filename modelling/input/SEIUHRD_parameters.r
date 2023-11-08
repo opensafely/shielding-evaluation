@@ -8,6 +8,7 @@ pars <- within(pars, {
     agedens<- c(0.0541, 0.0833, 0.0705, 0.1484, 0.1371, 0.1268, 0.1366, 0.1071, 0.1360);  agedens=agedens/sum(agedens) #sum 1 <= sum 0.9999
                               #population age distribution based on Census 2021, GOV.uk, CoMix age-bands 
     u_mean <- mean(u)
+    phm    <- 1               #correction in proportion of H that become D
     dt     <- 0.1 #0.01#      #time step (days)
     ndays  <- 364             #no. days
     nt     <- ndays/dt        #no. time points
