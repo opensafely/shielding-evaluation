@@ -181,17 +181,6 @@ for(i in 1:nsample){
   wsample[,i] = outs$Dw
 }
 
-# plot samples
-par(mfrow = c(1,2))
-##
-matplot(Weeks,zsample,type='l',col="grey", xlab="Weeks", ylab="Hospitalisations per week") # sample trajectories
-points (Weeks,zd) # data
-lines  (Weeks,mE$Hw,type='l',col='red') # MAP estimate
-#labels()
-matplot(Weeks,wsample,type='l',col="grey", xlab="Weeks", ylab="Deaths per week") # sample trajectories
-points (Weeks,wd) # data
-lines  (Weeks,mE$Dw,type='l',col='red') # MAP estimate
-
 
 #True parameters (except last two)
 thetaTrue = c(pars$rEI, pars$rIR, pars$R0, pars$pE0, pars$phm, 1, 1); #pars$pdm, 
