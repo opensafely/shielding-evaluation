@@ -39,48 +39,6 @@ actions:
         table2_shielding_v1: output/tables/shielding_v1_table2.html
         table2_shielding_v2: output/tables/shielding_v2_table2.html
   
-  plot_hospitalisations: 
-    run: > 
-      r:latest
-        analysis/030_plot_hospitalisations.R
-    needs: [clean_the_data]
-    outputs: 
-      moderately_sensitive: 
-        shielding_comparison: output/data_properties/different_shielding.txt
-        fig1_v1: output/figures/covid_hosp_over_time_v1.pdf
-        fig2_v1: output/figures/covid_hosp_over_time_cumsum_v1.pdf
-        fig1_v2: output/figures/covid_hosp_over_time_v2.pdf
-        fig2_v2: output/figures/covid_hosp_over_time_cumsum_v2.pdf
-  
-  plot_shielding: 
-    run: > 
-      r:latest
-        analysis/031_plot_shielding.R
-    needs: [clean_the_data]
-    outputs: 
-      moderately_sensitive: 
-        fig1_shielding: output/figures/shielding_over_time.pdf
-
-  plot_hospitalisations2:
-    run: > 
-      r:latest
-        analysis/040_plot_hospitalisations.R
-    needs: [clean_the_data]
-    outputs: 
-      moderately_sensitive: 
-        fig3: output/figures/covid_hosp_over_time2.pdf
-        fig4: output/figures/covid_hosp_over_time_cumsum2.pdf
-        
-  plot_deaths2:
-    run: > 
-      r:latest
-        analysis/050_plot_deaths.R
-    needs: [clean_the_data]
-    outputs: 
-      moderately_sensitive:
-        fig5a: output/figures/covid_deaths_lm.pdf
-        fig5: output/figures/covid_deaths_over_time2.pdf
-        fig6: output/figures/covid_deaths_over_time_cumsum2.pdf
 
   SEIUHRD_fit:
     run: > 
@@ -89,55 +47,16 @@ actions:
     needs: [clean_the_data]
     outputs:
       moderately_sensitive:
-        txt10: output/modelling/J4d_Simul_run.txt
-        csv10: output/modelling/J4d_Simul_R0_by_week.csv
-        txt11: output/modelling/J4d_Contact_matrix_year-start-24Feb20_stats.txt
-        pdf10: output/modelling/J4d_Data_Incidence.pdf
-        pdf11: output/modelling/J4d_Fit_MCMC_BT.pdf
-        pdf12: output/modelling/J4d_Fit_Variables_estimated.pdf
-        pdf13: output/modelling/J4d_Fit_Variables_data1.pdf
-        pdf14: output/modelling/J4d_Fit_Variables_data2.pdf
-        txt12: output/modelling/J4d_Fit_Bayesian_report.txt
-        pdf15: output/figures/J4d_covid_hosp_over_time2again.pdf
-        pdf16: output/figures/J4d_covid_deaths_over_time2again.pdf
+        txt10: output/modelling/J4f_Simul_run.txt
+        csv10: output/modelling/J4f_Simul_R0_by_week.csv
+        txt11: output/modelling/J4f_Contact_matrix_year-start-24Feb20_stats.txt
+        pdf10: output/modelling/J4f_Data_Incidence.pdf
+        pdf11: output/modelling/J4f_Fit_MCMC_BT.pdf
+        pdf12: output/modelling/J4f_Fit_Variables_estimated.pdf
+        pdf13: output/modelling/J4f_Fit_Variables_data1.pdf
+        pdf14: output/modelling/J4f_Fit_Variables_data2.pdf
+        txt12: output/modelling/J4f_Fit_Bayesian_report.txt
+        pdf15: output/figures/J4f_covid_hosp_over_time2again.pdf
+        pdf16: output/figures/J4f_covid_deaths_over_time2again.pdf
 
  
-  plot_hospitalisations2_East:
-    run: > 
-      r:latest
-        analysis/060_plot_hospitalisations_East.R
-    needs: [clean_the_data]
-    outputs: 
-      moderately_sensitive: 
-        fig3E: output/figures/covid_hosp_over_time2_East.pdf
-        fig4E: output/figures/covid_hosp_over_time_cumsum2_East.pdf
-
-  plot_deaths2_East:
-    run: > 
-      r:latest
-        analysis/070_plot_deaths_East.R
-    needs: [clean_the_data]
-    outputs: 
-      moderately_sensitive: 
-        fig5E: output/figures/covid_deaths_over_time2_East.pdf
-        fig6E: output/figures/covid_deaths_over_time_cumsum2_East.pdf
-
-  plot_hospitalisations2_EastMid:
-    run: > 
-      r:latest
-        analysis/080_plot_hospitalisations_EastMid.R
-    needs: [clean_the_data]
-    outputs: 
-      moderately_sensitive: 
-        fig3EM: output/figures/covid_hosp_over_time2_EastMid.pdf
-        fig4EM: output/figures/covid_hosp_over_time_cumsum2_EastMid.pdf
-
-  plot_deaths2_EastMid:
-    run: > 
-      r:latest
-        analysis/090_plot_deaths_EastMid.R
-    needs: [clean_the_data]
-    outputs: 
-      moderately_sensitive: 
-        fig5EM: output/figures/covid_deaths_over_time2_EastMid.pdf
-        fig6EM: output/figures/covid_deaths_over_time_cumsum2_EastMid.pdf

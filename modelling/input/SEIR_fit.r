@@ -108,8 +108,9 @@ LogLikelihood2 <- function(theta){
   pars$pE0 = theta[4] 
   #pars$pdm = theta[5]
   #p        = theta[5] #200#         #auxiliary parameter for bin or NB noise
-  sdH      = theta[5]                #auxiliary parameter for normal noise  
-  sdD      = theta[6]                #auxiliary parameter for normal noise
+  pars$phm = theta[5]
+  sdH      = theta[6]                #auxiliary parameter for normal noise  
+  sdD      = theta[7]                #auxiliary parameter for normal noise
   kH=sdH; #kempir_mmodel #pars$k; #sdH; 
   kD=sdD; #kempir_mmodel2 #pars$k; #sdD;
   #Dependent
@@ -134,20 +135,23 @@ LogLikelihood2 <- function(theta){
     return( sum(dnbinom(x = zd, size = kH, mu = muH, log = T)) +
             sum(dnbinom(x = wd, size = kD, mu = muD, log = T)))
   #Normal likelihood - product over weeks
-    #return(sum(dnorm(zd, mean = muH, sd = sdH, log = T))+  sum(dnorm(wd, mean = muD, sd = sdD, log = T)))
+  #return(sum(dnorm(zd, mean = muH, sd = sdH, log = T))+  sum(dnorm(wd, mean = muD, sd = sdD, log = T)))
 }
 
 ## Likelihood definition, parameter ranges
 niter = 200000 #30000 #120000 #90000 #60000 #150000 #30000 #50000 #40000
 if (pset$imodel==1) {
   LogLikelihood = LogLikelihood1; Lower=c(1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,sdUpper)   } else {
-  LogLikelihood = LogLikelihood2; Lower=c(1,1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,kUpper,kUpper2)} #rEI, rIR, R0, pE0, k, k2# pdm,
-  #LogLikelihood = LogLikelihood2; Lower=c(1,1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,sdUpper,sdUpper2)} #rEI, rIR, R0, pE0, sd or p# pdm,
+  #LogLikelihood = LogLikelihood2; Lower=c(1,1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,kUpper,kUpper)} #rEI, rIR, R0, pE0, k, k2# pdm,
+  LogLikelihood = LogLikelihood2; Lower=c(1,1,1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,2,kUpper,kUpper) } #rEI, rIR, R0, pE0, sd or p# pdm,
+  #LogLikelihood = LogLikelihood2; Lower=c(1,1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,sdUpper,sdUpper2) } #rEI, rIR, R0, pE0, sd or p# pdm,
+  #LogLikelihood = LogLikelihood2; Lower=c(1,1,1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,2,sdUpper,sdUpper2)} #rEI, rIR, R0, pE0, sd or p# pdm,
 setup    = createBayesianSetup(likelihood=LogLikelihood, lower = Lower, upper = Upper) #parallel = T,
 settings = list (iterations = niter, burnin = round(niter*length(Lower)/15), message=F)
 ## Bayesian sample
 tout1 <- system.time(out <- runMCMC(bayesianSetup=setup, settings=settings) )
-## Estimates
+
+## MAP Estimates
 parsE     <- pars
 MAPE      <- MAP(out)
 parsE$rEI <- MAPE$parametersMAP[1]
@@ -157,9 +161,30 @@ parsE$pE0 <- MAPE$parametersMAP[4]
 #parsE$pdm <- MAPE$parametersMAP[5]
 mE        <- model(parsE)
 
+## UNCERTAINTY
+## Sample the chains
+if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
+Weeks     = 1:length(mE$time)
+npar      = length(Lower)
+nsample   = 3000;
+psample = getSample(out, parametersOnly = T, numSamples = nsample, start=(niter/3)/3) #parametersOnly = F
+# run model for each parameter set in the sample
+zsample = matrix(0,length(Weeks),nsample)
+wsample = matrix(0,length(Weeks),nsample)
+parsES  = pars
+for(i in 1:nsample){
+  parsES$rEI <- as.vector(psample[i,1])
+  parsES$rIR <- as.vector(psample[i,2])
+  parsES$R0  <- as.vector(psample[i,3])
+  parsES$pE0 <- as.vector(psample[i,4])
+  outs        = model(as.vector(parsES))
+  zsample[,i] = outs$Hw
+  wsample[,i] = outs$Dw
+} }
+
 
 #True parameters (except last two)
-thetaTrue = c(pars$rEI, pars$rIR, pars$R0, pars$pE0, 1, 1); #pars$pdm, 
+thetaTrue = c(pars$rEI, pars$rIR, pars$R0, pars$pE0, pars$phm, 1, 1); #pars$pdm, 
 
 
 #Expected parameters
@@ -188,9 +213,9 @@ if (!is.element(pset$iplatform,1)) { #cant estimate  with dummy data (1)
 
 ##NB data - Normal residual likelihood
 ##sd empirical 
-dev  = sqrt(mEm  + mEm^2*kempir_mmodel)
+dev  = sqrt(mEm  + mEm^2*abs(kempir_mmodel)) #abs() to tackle dummy data negative k
 if (pset$imodel==2) {
-dev2 = sqrt(mEm2 + mEm2^2*kempir_mmodel2) }
+dev2 = sqrt(mEm2 + mEm2^2*abs(kempir_mmodel2)) }
 thetaTrue[c(length(thetaTrue)-1,length(thetaTrue))] = c(dev,dev2) #pars$pdm, 
 
 ##NB data - NB likelihood
@@ -238,7 +263,7 @@ if (pset$imodel==1) {
 
 
 
-## Plots
+## pdf Plots
 pdf(file = paste0(output_dir,"/",pset$File_fit_output))
 par(mfrow = c(1,2))
 marginalPlot(out)
@@ -276,7 +301,28 @@ if(pset$imodel==2) {
 }
 print(p1)
 
+## posterior sample plot
+if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
+par(mfrow = c(2,1))
+##
+matplot(Weeks,zsample,type='l',col="grey", xlab="Weeks", ylab="Hospitalisations per week") # sample trajectories
+points (Weeks,zd, col="black") # data
+lines  (Weeks,mE$Hw,type='l',col='red') # MAP estimate
+legend(max(Weeks)*0.7, max(zsample), legend=c("sample", "data", "MAP"),
+       col=c("grey", "black", "red"), lty=1:2, cex=0.8)
+
+#labels()
+matplot(Weeks,wsample,type='l',col="grey", xlab="Weeks", ylab="Deaths per week", ylim=range(zsample)) # sample trajectories
+points (Weeks,wd) # data
+lines  (Weeks,mE$Dw,type='l',col='red') # MAP estimate
+legend(max(Weeks)*0.7, max(zsample), legend=c("sample", "data", "MAP"),
+       col=c("grey", "black", "red"), lty=1:2, cex=0.8)
+}
+
 dev.off()
+
+##
+
 
 ## pdf: data frame
 pdf(file = paste0(output_dir,"/",pset$File_fit_variables), height=nrow(mE)/3)
@@ -309,8 +355,8 @@ if (pset$imodel==1) {
   if(pset$iplatform==0) { iwH=iweeksmodel; iwD=iweeksmodel} else {iwH=iweeksmodelH; iwD=iweeksmodelD}
   print(paste0("#H data pts fitted: ", length(iwH)))
   print(paste0("#D data pts fitted: ", length(iwD))) }
-print(paste0("Expected: ", c("rEI = ","rIR = ", "R0 = ", "pE0 = ", "kH = ", "kD = "), round(thetaTrue,3))) #"pdm = ",
-#print(paste0("Expected: ", c("rEI = ","rIR = ", "R0 = ", "pE0 = ", "varH = ", "varD = "), round(thetaTrue,3))) #"pdm = ",
+print(paste0("Expected: ", c("rEI = ","rIR = ", "R0 = ", "pE0 = ", "phm =", "kH = ", "kD = "), round(thetaTrue,3))) #"pdm = ",
+#print(paste0("Expected: ", c("rEI = ","rIR = ", "R0 = ", "pE0 = ", "phm =", "varH = ", "varD = "), round(thetaTrue,3))) #"pdm = ",
 cat("\n");
 print(summary(out)); cat("\n")
 print(paste0("Mean by chain and parameter:"))
