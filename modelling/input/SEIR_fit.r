@@ -143,8 +143,8 @@ niter = 200000 #30000 #120000 #90000 #60000 #150000 #30000 #50000 #40000
 if (pset$imodel==1) {
   LogLikelihood = LogLikelihood1; Lower=c(1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,sdUpper)   } else {
   #LogLikelihood = LogLikelihood2; Lower=c(1,1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,kUpper,kUpper)} #rEI, rIR, R0, pE0, k, k2# pdm,
-  LogLikelihood = LogLikelihood2; Lower=c(1,1,1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,2,kUpper,kUpper)} #rEI, rIR, R0, pE0, sd or p# pdm,
-  #LogLikelihood = LogLikelihood2; Lower=c(1,1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,sdUpper,sdUpper2)} #rEI, rIR, R0, pE0, sd or p# pdm,
+  LogLikelihood = LogLikelihood2; Lower=c(1,1,1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,2,kUpper,kUpper) } #rEI, rIR, R0, pE0, sd or p# pdm,
+  #LogLikelihood = LogLikelihood2; Lower=c(1,1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,sdUpper,sdUpper2) } #rEI, rIR, R0, pE0, sd or p# pdm,
   #LogLikelihood = LogLikelihood2; Lower=c(1,1,1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,2,sdUpper,sdUpper2)} #rEI, rIR, R0, pE0, sd or p# pdm,
 setup    = createBayesianSetup(likelihood=LogLikelihood, lower = Lower, upper = Upper) #parallel = T,
 settings = list (iterations = niter, burnin = round(niter*length(Lower)/15), message=F)
@@ -163,9 +163,10 @@ mE        <- model(parsE)
 
 ## UNCERTAINTY
 ## Sample the chains
+if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
 Weeks     = 1:length(mE$time)
 npar      = length(Lower)
-nsample   = 900;
+nsample   = 3000;
 psample = getSample(out, parametersOnly = T, numSamples = nsample, start=(niter/3)/3) #parametersOnly = F
 # run model for each parameter set in the sample
 zsample = matrix(0,length(Weeks),nsample)
@@ -179,7 +180,7 @@ for(i in 1:nsample){
   outs        = model(as.vector(parsES))
   zsample[,i] = outs$Hw
   wsample[,i] = outs$Dw
-}
+} }
 
 
 #True parameters (except last two)
@@ -212,9 +213,9 @@ if (!is.element(pset$iplatform,1)) { #cant estimate  with dummy data (1)
 
 ##NB data - Normal residual likelihood
 ##sd empirical 
-dev  = sqrt(mEm  + mEm^2*kempir_mmodel)
+dev  = sqrt(mEm  + mEm^2*abs(kempir_mmodel)) #abs() to tackle dummy data negative k
 if (pset$imodel==2) {
-dev2 = sqrt(mEm2 + mEm2^2*kempir_mmodel2) }
+dev2 = sqrt(mEm2 + mEm2^2*abs(kempir_mmodel2)) }
 thetaTrue[c(length(thetaTrue)-1,length(thetaTrue))] = c(dev,dev2) #pars$pdm, 
 
 ##NB data - NB likelihood
@@ -301,6 +302,7 @@ if(pset$imodel==2) {
 print(p1)
 
 ## posterior sample plot
+if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
 par(mfrow = c(2,1))
 ##
 matplot(Weeks,zsample,type='l',col="grey", xlab="Weeks", ylab="Hospitalisations per week") # sample trajectories
@@ -315,6 +317,7 @@ points (Weeks,wd) # data
 lines  (Weeks,mE$Dw,type='l',col='red') # MAP estimate
 legend(max(Weeks)*0.7, max(zsample), legend=c("sample", "data", "MAP"),
        col=c("grey", "black", "red"), lty=1:2, cex=0.8)
+}
 
 dev.off()
 
