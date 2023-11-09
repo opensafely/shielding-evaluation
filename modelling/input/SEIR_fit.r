@@ -69,6 +69,9 @@ kUpper   = 2*pars$k       #k  NB likelihood and data
 if (pset$imodel==2) {
 sdUpper2 = 0.4*mean(wd)   #sd normal likelihood, any data
 kUpper2  = 2*pars$k     } #k  NB likelihood and data
+if(pset$iplatform>0){
+  kUpper  = 20
+  Kupper2 = 20     }
 
 #Model 1
 LogLikelihood1 <- function(theta){
@@ -224,7 +227,37 @@ if(pset$iplatform==0){ #simulation: true parameters
   } else {             #not simulation
   thetaTrue[c(length(thetaTrue)-1,length(thetaTrue))] = c(kempir_mdata, kempir_mdata2) } #pars$pdm,
     
+## Summary - output
+sink(file = paste0(output_dir,"/",pset$File_fit_summary),append=TRUE,split=FALSE)
+cat("\n"); 
+if (pset$imodel==1) {
+  print(paste0("#data pts fitted: ", length(iweeksmodel))) 
+} else if (pset$imodel==2) {
+  if(pset$iplatform==0) { iwH=iweeksmodel; iwD=iweeksmodel} else {iwH=iweeksmodelH; iwD=iweeksmodelD}
+  print(paste0("#H data pts fitted: ", length(iwH)))
+  print(paste0("#D data pts fitted: ", length(iwD))) }
+print(paste0("Expected: ", c("rEI = ","rIR = ", "R0 = ", "pE0 = ", "phm =", "kH = ", "kD = "), round(thetaTrue,3))) #"pdm = ",
+#print(paste0("Expected: ", c("rEI = ","rIR = ", "R0 = ", "pE0 = ", "phm =", "varH = ", "varD = "), round(thetaTrue,3))) #"pdm = ",
+cat("\n");
+print(summary(out)); cat("\n")
+print(paste0("Mean by chain and parameter:"))
+print(out$X)
+print(paste0("Time used (sec):"))
+print(tout1[[3]])
+print(names(out[[1]]))
+print(names(out[[2]]))
+cat("\n")
+print(paste0("k_empirical (data mean)   = ", kempir_mdata))
+print(paste0("k_empirical (model mean)  = ", kempir_mmodel))
+if (pset$imodel==2) {
+  print(paste0("k_empiricalD (data mean)  = ", kempir_mdata2))
+  print(paste0("k_empiricalD (model mean) = ", kempir_mmodel2)) }
 
+cat("\n"); cat("\n")
+sink()
+
+
+## Plots - dataframe
 N  = pars$Npop
 rE = 1#parsE$pdm #
 rM = 1#pars$pdm  #
@@ -260,7 +293,6 @@ if (pset$imodel==1) {
   datD <- tibble(datD, 
                  Dw    = datM$Dw[iseqD])    }
   }
-
 
 
 ## pdf Plots
@@ -306,14 +338,14 @@ if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
 par(mfrow = c(2,1))
 ##
 matplot(Weeks,zsample,type='l',col="grey", xlab="Weeks", ylab="Hospitalisations per week") # sample trajectories
-points (Weeks,zd, col="black") # data
+points (datH$Weeks,datH$DataHw, col="black") # data
 lines  (Weeks,mE$Hw,type='l',col='red') # MAP estimate
 legend(max(Weeks)*0.7, max(zsample), legend=c("sample", "data", "MAP"),
        col=c("grey", "black", "red"), lty=1:2, cex=0.8)
 
 #labels()
 matplot(Weeks,wsample,type='l',col="grey", xlab="Weeks", ylab="Deaths per week", ylim=range(zsample)) # sample trajectories
-points (Weeks,wd) # data
+points (datD$Weeks,datD$DataDw, col="black") # data
 lines  (Weeks,mE$Dw,type='l',col='red') # MAP estimate
 legend(max(Weeks)*0.7, max(zsample), legend=c("sample", "data", "MAP"),
        col=c("grey", "black", "red"), lty=1:2, cex=0.8)
@@ -346,33 +378,6 @@ dev.off() }
 
 }
 
-## Summary - output
-sink(file = paste0(output_dir,"/",pset$File_fit_summary),append=TRUE,split=FALSE)
-cat("\n"); 
-if (pset$imodel==1) {
-  print(paste0("#data pts fitted: ", length(iweeksmodel))) 
-} else if (pset$imodel==2) {
-  if(pset$iplatform==0) { iwH=iweeksmodel; iwD=iweeksmodel} else {iwH=iweeksmodelH; iwD=iweeksmodelD}
-  print(paste0("#H data pts fitted: ", length(iwH)))
-  print(paste0("#D data pts fitted: ", length(iwD))) }
-print(paste0("Expected: ", c("rEI = ","rIR = ", "R0 = ", "pE0 = ", "phm =", "kH = ", "kD = "), round(thetaTrue,3))) #"pdm = ",
-#print(paste0("Expected: ", c("rEI = ","rIR = ", "R0 = ", "pE0 = ", "phm =", "varH = ", "varD = "), round(thetaTrue,3))) #"pdm = ",
-cat("\n");
-print(summary(out)); cat("\n")
-print(paste0("Mean by chain and parameter:"))
-print(out$X)
-print(paste0("Time used (sec):"))
-print(tout1[[3]])
-print(names(out[[1]]))
-print(names(out[[2]]))
-cat("\n")
-print(paste0("k_empirical (data mean)   = ", kempir_mdata))
-print(paste0("k_empirical (model mean)  = ", kempir_mmodel))
-if (pset$imodel==2) {
-print(paste0("k_empiricalD (data mean)  = ", kempir_mdata2))
-print(paste0("k_empiricalD (model mean) = ", kempir_mmodel2)) }
-  
-cat("\n"); cat("\n")
-sink()
+
 
 ######## 2 Basic Metropolis Hastings MCMC ####
