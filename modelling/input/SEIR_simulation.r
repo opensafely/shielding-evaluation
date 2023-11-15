@@ -9,7 +9,17 @@ if (pset$imodel==2){ t1<- system.time( out.df <- SEIUHRD(pars) )}
 ## Test Rcpp code:
 t1
 print("should be zero...")
-sum(cm_weekmean- out.df$cmdtmean)
+sum(cm_weekmean- out.df$byw$cmdtmean)
+
+#library(bench)
+#sourceCpp("SEIUHRD_model.cpp")
+#tt1 <- bench::mark(out.df <- SEIUHRD(pars))$total_time
+#sourceCpp("SEIUHRD3_model.cpp") #sourceCpp("SEIUHRDwl_model.cpp")
+#tt2 <- bench::mark(out.df <- SEIUHRD(pars))$total_time
+#print("_model")
+#tt1
+#print("2_model")
+#tt2
 
 ## output model results
 sink(file = paste0(output_dir,"/",pset$File_run), append=TRUE, split=FALSE)
@@ -17,7 +27,7 @@ sink(file = paste0(output_dir,"/",pset$File_run), append=TRUE, split=FALSE)
   t1
   cat("\n")
   print("Test Rcpp code - should be zero...")
-  sum(cm_weekmean- out.df$cmdtmean)
+  sum(cm_weekmean- out.df$byw$cmdtmean)
   cat("\n \n")
 sink()
 
@@ -26,21 +36,24 @@ sink()
 
 #### True model each week
 #### ym = infected, zm = incidence, wm = incidence
-if (pset$imodel==1){ ym = out.df$It;            zm = out.df$Iw};
-if (pset$imodel==2){ ym = out.df$It+out.df$Ut;  zm = out.df$Hw;  wm = out.df$Dw;  if(wm[1]==0) wm[1]=1;}
+if (pset$imodel==1){ ym = out.df$byw$It;                zm = out.df$byw$Iw};
+if (pset$imodel==2){ ym = out.df$byw$It+out.df$byw$Ut;  zm = out.df$byw$Hw;  wm = out.df$byw$Dw;  if(wm[1]==0) wm[1]=1;}
 if(zm[1]==0) zm[1]=1;
 
 #### True parameters - to be estimated
 pbin = 1/pars$k #1/200 #0.5  #for neg binomial data (size=k=200 Davies 2020 Nat Med) or binomial noise
 sd   = round(0.05*mean(zm))  #for normal data
+sd2   = round(0.05*mean(wm))  #for normal data
 dev0 = sd #pbin #sd #noise parameter
 
 #### Simulated Data each week
-set.seed(777)#7)    ### for reproducibility
-#zd = zm + rnorm(n=nd,mean=0,sd=sd)
-zd = rnbinom(nd, size=1/pbin, mu=zm) #size=k=200 Davies Nat Med 2020
+set.seed(7)#77)#7)    ### for reproducibility
+zd = zm + rnorm(n=nd,mean=0,sd=sd)
+#zd = rnbinom(nd, size=1/pbin, mu=zm) #size=k=200 Davies Nat Med 2020
 #for (i in seq_along(zd)) {zd[i] = max(1,zd[i])} #truncate at 1 at low end
-if (pset$imodel==2){ wd = rnbinom(nd, size=1/pbin, mu=wm)  }
+if (pset$imodel==2){ 
+wd = wm + rnorm(n=nd,mean=0,sd=sd)  }
+#wd = rnbinom(nd, size=1/pbin, mu=wm)  }
 #if (pset$imodel==2){ for (i in seq_along(wd)) {wd[i] = max(1,wd[i])}  }
 
 iz1=which(zd>0); iw1=which(wd>0);
@@ -54,10 +67,10 @@ points(1:nd,wd); lines(1:nd,wd,col=1); lines(1:nd,wm,col=3)
 
 #### Plot model and R0
 N  <- pars$Npop
-datM <- tibble( Weeks = out.df$time, 
+datM <- tibble( Weeks = out.df$byw$time, 
                 PInf  = ym/N, 
-                PSus  = out.df$St/N, 
-                PRec  = out.df$Rt/N, 
+                PSus  = out.df$byw$St/N, 
+                PRec  = out.df$byw$Rt/N, 
                 R0    = R0_week, 
                 Week1OfModel = Week1OfModel, 
                 Week2OfModel = Week2OfModel )
@@ -86,7 +99,7 @@ datM <- tibble( datM,
                 Dataz = zd,                 
                 Iw    = zm,
                 PIw   = zm/N,
-                PRw   = out.df$Rw/N)
+                PRw   = out.df$byw$Rw/N)
 
 colors <- c("DIw" = "black", "PIw" = "green", 
             "Pinf" = "red",  "PRw" = "blue")
