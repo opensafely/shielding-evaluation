@@ -157,7 +157,7 @@ LogLikelihood2 <- function(theta){
 }
 
 ## Likelihood definition, parameter ranges
-niter = 200000 #30000 #120000 #90000 #60000 #150000 #30000 #50000 #40000
+niter = 90000#120000#200000 #30000 #120000 #90000 #60000 #150000 #30000 #50000 #40000
 if (pset$imodel==1) {
   LogLikelihood = LogLikelihood1; Lower=c(1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,sdUpper)   } else {
     LOWER = c(1,1,1,1,1,1)*0.0001; #c(c(1,1,1,1,1)*0.0001,pkLower,pkLower2); #c(1,1,1,1,1,1)*0.0001;
@@ -207,7 +207,7 @@ mE        <- model(parsE)
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
 Weeks     = 1:length(mE$byw$time)
 npar      = length(LOWER)
-nsample   = 500#1000#3000;
+nsample   = 1000#3000;
 psample = getSample(out, parametersOnly = T, numSamples = nsample, start=(niter/3)/3) #parametersOnly = F
 # run model for each parameter set in the sample
 zsample = matrix(0,length(Weeks),nsample)
