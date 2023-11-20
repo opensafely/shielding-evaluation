@@ -63,25 +63,15 @@ if (pset$imodel==1) {model <- SEIR}
 if (pset$imodel==2) {model <- SEIUHRD} #; sd2osd1 = mean(wd)/mean(zd)}
 
 ### Likelihood in R and model in Rcpp
-sdUpper  = 1               #p  binomial likelihood, and data
-sdUpper  = 0.4*mean(zd)   #sd normal likelihood, any data
-kUpper   = 2*pars$k       #k  NB likelihood and data
-pkLower  = 0.1
+R0Max    = 20
+sdMax    = sd(zd)
+pkLower  = 0.1       #k  NB likelihood and data
 pkUpper  = 5       
 
 if (pset$imodel==2) {
-sdUpper2 = 0.4*mean(wd)   #sd normal likelihood, any data
-kUpper2  = 2*pars$k     
-pkLower2 = 0.1
-pkUpper2 = 5       } #k  NB likelihood and dat
-
-if(pset$iplatform>0){
-  #kUpper  = 20
-  #Kupper2 = 20 
-  pkLower  = 0.1
-  pkLower2 = 0.1
-  pkUpper  = 5       
-  pKUpper2 = 5 }
+sdMax2   = sd(wd)
+pkLower2 = 0.1       #k  NB likelihood and dat
+pkUpper2 = 5       } 
 
 
 #Model 1
@@ -89,11 +79,10 @@ LogLikelihood1 <- function(theta){
   #Proposed
   pars$rEI = theta[1] 
   pars$rIR = theta[2] 
-  pars$R0  = theta[3] 
+  pars$R0  = theta[3]#*R0Max
   pars$pE0 = theta[4] 
   #pars$pdm = theta[5]
-  #p        = theta[5] #200#         #auxiliary parameter for bin or NB noise
-  sd       = theta[5]                #auxiliary parameter for normal noise
+  sdscaled  = theta[5]               #auxiliary parameter for normal noise
   #Dependent
   pars$Ea0 = pars$Na0*pars$pE0
   pars$Sa0 = pars$Na0-pars$Ra0-pars$Ea0-pars$Ia0
@@ -109,7 +98,7 @@ LogLikelihood1 <- function(theta){
   #Negative binomial likelihood - product over weeks
     #return( sum(dnbinom(x = zd, size = 1/p, mu = mu, log=T))) #expect k=1/p=200=> p=0.005
   #Normal likelihood - product over weeks
-    return(sum(dnorm(zd, mean = mu, sd = sd, log = T)))
+    return(sum(dnorm(zd, mean = mu, sd = sdScaled*sdMax, log = T)))
 }
 
 #Model 2
@@ -118,16 +107,15 @@ LogLikelihood2 <- function(theta){
   #Proposed
   pars$rEI = theta[1] 
   pars$rIR = theta[2] 
-  pars$R0  = theta[3] 
+  pars$R0  = theta[3]#*R0Max 
   pars$pE0 = theta[4] 
   #pars$pdm = theta[5]
-  #p        = theta[5] #200#         #auxiliary parameter for bin or NB noise
-  sdH      = theta[5]#6]                #auxiliary parameter for normal noise  
-  sdD      = theta[6]                #auxiliary parameter for normal noise
-  #pkH       = theta[5]; #kempir_mmodel #pars$k; #sdH; 
-  #pkD       = theta[6]; #kempir_mmodel2 #pars$k; #sdD;
-  #kH=1/(pkH*pkH) # pk = 1/sqrt(k) => k = 1/pk^2
-  #kD=1/(pkD*pkD)
+  #sdHScaled  = theta[5]#6]                #auxiliary parameter for normal noise  
+  #sdDScaled  = theta[6]                #auxiliary parameter for normal noise
+  pkH       = theta[5]; #kempir_mmodel #pars$k; #sdH; 
+  pkD       = theta[6]; #kempir_mmodel2 #pars$k; #sdD;
+  kH=1/(pkH*pkH) # pk = 1/sqrt(k) => k = 1/pk^2
+  kD=1/(pkD*pkD)
   #Dependent
   pars$Ea0 = pars$Na0*pars$pE0
   pars$Sa0 = pars$Na0-pars$Ra0-pars$Ea0-pars$Ia0
@@ -147,40 +135,60 @@ LogLikelihood2 <- function(theta){
   #sdD = sd2osd1*sdH
   #Negative binomial likelihood - product over weeks
     #return( sum(dnbinom(x = zd, size = kH, mu = muH, log = T)))
-    #return( sum(dnbinom(x = zd, size = kH, mu = muH, log = T)) +
-    #        sum(dnbinom(x = wd, size = kD, mu = muD, log = T)))
+    return( sum(dnbinom(x = zd, size = kH, mu = muH, log = T)) +
+            sum(dnbinom(x = wd, size = kD, mu = muD, log = T)))
   #Poisson
     #return( sum(dpois(x = zd, lambda = muH, log = T)))
   #Normal likelihood - product over weeks
-    return(sum(dnorm(zd, mean = muH, sd = sdH, log = T)) 
-        +  sum(dnorm(wd, mean = muD, sd = sdD, log = T)))
+    #return(sum(dnorm(zd, mean = muH, sd = sdHScaled*sdMax,  log = T)) 
+    #    +  sum(dnorm(wd, mean = muD, sd = sdDScaled*sdMax2, log = T)))
 }
 
 ## Likelihood definition, parameter ranges
-niter = 90000#120000#200000 #30000 #120000 #90000 #60000 #150000 #30000 #50000 #40000
+niter = 200000#9000#120000#200000 #30000 #120000 #90000 #60000 #150000 #30000 #50000 #40000
 if (pset$imodel==1) {
-  LogLikelihood = LogLikelihood1; Lower=c(1,1,1,1,1)*0.0001; Upper = c(1,1,30,1,sdUpper)   } else {
+  LogLikelihood = LogLikelihood1; LOWER=c(1,1,1,1,1)*0.0001; UPPER = c(1,1,R0Max,1,1)   
+  } else {
     LOWER = c(1,1,1,1,1,1)*0.0001; #c(c(1,1,1,1,1)*0.0001,pkLower,pkLower2); #c(1,1,1,1,1,1)*0.0001;
-    UPPER = c(1,1,30,1,sdUpper,sdUpper2);   #c(1,1,30,1,pkUpper);  #c(1,1,30,1,2,pkUpper,pkUpper2) #c(1,1,30,1,kUpper,kUpper)
-    LogLikelihood = LogLikelihood2; Lower=LOWER; Upper = UPPER } #rEI, rIR, R0, pE0, sd or p# pdm,
+    UPPER = c(1,1,R0Max,1,pkUpper,pkUpper2);   #c(1,1,30,1,pkUpper);  #c(1,1,30,1,2,pkUpper,pkUpper2) #c(1,1,30,1,kUpper,kUpper)
+    LogLikelihood = LogLikelihood2; } #rEI, rIR, R0, pE0, sd or p# pdm,
 
-setup    = createBayesianSetup(likelihood=LogLikelihood, lower = Lower, upper = Upper) #parallel = T,
-settings = list (iterations = niter, burnin = round(niter*length(Lower)/15), message=T) #F)
+#Beta priors
+    #PRIOR <- createBetaPrior(4,5,lower = LOWER, upper = UPPER)
+    PRIOR <- createBetaPrior(3,4,lower = LOWER, upper = UPPER)
+    #PRIOR <- createBetaPrior(3,3,lower = LOWER, upper = UPPER)
+    setup    = createBayesianSetup(likelihood=LogLikelihood, prior =PRIOR) #parallel = T,
+#Normal priors
+    #PRIOR <- createTruncatedNormalPrior(0,.5,lower = LOWER, upper = UPPER)
+    #setup    = createBayesianSetup(likelihood=LogLikelihood, prior =PRIOR) #parallel = T,
+#Uniform priors
+   #setup    = createBayesianSetup(likelihood=LogLikelihood, lower = LOWER, upper = UPPER) #parallel = T,
+   PARSTART = 0.5*UPPER
+   nchain = 3
+#settings = list (startValue=t(array(PARSTART,dim=c(length(PARSTART),nchain))), iterations = niter, burnin = round(niter*length(LOWER)/15), message=T) #F)
+settings = list (iterations = niter, burnin = round(niter*length(LOWER)/15), message=T) #F)
 ## Bayesian sample
 tout1 <- system.time(out <- runMCMC(bayesianSetup=setup, settings=settings) )
+
 
 Resample=0
 if (Resample==1){
 ## Run with new prior based on posterior
-newPrior <- createPriorDensity(out)
-##newPrior = createPriorDensity(out, method = "multivariate", eps = 1e-10, lower = rep(-10, 3), upper =  rep(10, 3), best = NULL)
- #setup2 = createBayesianSetup(likelihood=LogLikelihood, prior = newPrior)
+#newPrior <- createPriorDensity(out)
+newPrior = createPriorDensity(out, method = "multivariate", eps = 1e-10, lower = LOWER, upper =  UPPER, best = NULL)
+#newPrior = createPriorDensity(out, method = "multivariate", eps = 1e-10, lower = rep(-10, 3), upper =  rep(10, 3), best = NULL)
+setup2 = createBayesianSetup(likelihood=LogLikelihood, prior = newPrior)
 ## Try: message=T)
 ## Bayesian sample
- #tout2 <- system.time(out2 <- runMCMC(bayesianSetup=setup2, settings=settings) )
+tout2 <- system.time(out2 <- runMCMC(bayesianSetup=setup2, settings=settings) )
  #=> lots of NAN bec parameters not sensinbly bounded - would need to transform pars to allow this
+out_1 <- out
+out   <- out2 }
+
+Restart=0
+if (Restart==1){
 ## Restart same sampling
-tout2 <- system.time(out2 <- runMCMC(bayesianSetup=setup, settings=settings) )
+#tout2 <- system.time(out2 <- runMCMC(bayesianSetup=setup, settings=settings) )
   out_1 <- out
   out   <- out2
 tout3 <- system.time(out3 <- runMCMC(bayesianSetup=setup, settings=settings) )
@@ -193,7 +201,7 @@ parsE     <- pars
 MAPE      <- MAP(out)
 parsE$rEI <- MAPE$parametersMAP[1]
 parsE$rIR <- MAPE$parametersMAP[2]
-parsE$R0  <- MAPE$parametersMAP[3]
+parsE$R0  <- MAPE$parametersMAP[3]#*R0Max
 parsE$pE0 <- MAPE$parametersMAP[4]
 #parsE$pdm <- MAPE$parametersMAP[5]
 #dependent
@@ -207,7 +215,7 @@ mE        <- model(parsE)
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
 Weeks     = 1:length(mE$byw$time)
 npar      = length(LOWER)
-nsample   = 1000#3000;
+nsample   = 300#1000#3000;
 psample = getSample(out, parametersOnly = T, numSamples = nsample, start=(niter/3)/3) #parametersOnly = F
 # run model for each parameter set in the sample
 zsample = matrix(0,length(Weeks),nsample)
@@ -216,7 +224,7 @@ parsES  = pars
 for(i in 1:nsample){
   parsES$rEI <- as.vector(psample[i,1])
   parsES$rIR <- as.vector(psample[i,2])
-  parsES$R0  <- as.vector(psample[i,3])
+  parsES$R0  <- as.vector(psample[i,3])#*R0Max
   parsES$pE0 <- as.vector(psample[i,4])
   #dependent
   parsES$Ea0 = parsES$Na0*parsES$pE0

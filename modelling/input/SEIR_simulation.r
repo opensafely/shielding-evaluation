@@ -48,12 +48,15 @@ dev0 = sd #pbin #sd #noise parameter
 
 #### Simulated Data each week
 set.seed(7)#77)#7)    ### for reproducibility
-zd = zm + rnorm(n=nd,mean=0,sd=sd)
-#zd = rnbinom(nd, size=1/pbin, mu=zm) #size=k=200 Davies Nat Med 2020
+
+#zd = zm + rnorm(n=nd,mean=0,sd=sd)
+zd = rnbinom(nd, size=1/pbin, mu=zm) #size=k=200 Davies Nat Med 2020
+
 #for (i in seq_along(zd)) {zd[i] = max(1,zd[i])} #truncate at 1 at low end
 if (pset$imodel==2){ 
-wd = wm + rnorm(n=nd,mean=0,sd=sd)  }
-#wd = rnbinom(nd, size=1/pbin, mu=wm)  }
+
+  #wd = wm + rnorm(n=nd,mean=0,sd=sd)  }
+  wd = rnbinom(nd, size=1/pbin, mu=wm)  }
 #if (pset$imodel==2){ for (i in seq_along(wd)) {wd[i] = max(1,wd[i])}  }
 
 iz1=which(zd>0); iw1=which(wd>0);
