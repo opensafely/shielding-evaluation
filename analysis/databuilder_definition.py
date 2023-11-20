@@ -118,34 +118,25 @@ dataset.msoa = address_as_of(study_start_date).msoa_code
 dataset.imd = address_as_of(study_start_date).imd_rounded
 dataset.death_date = patients.date_of_death
 
-# Death should be a one-row per patient thing but there are duplicates
-# in the ONS data so we have to include this step to keep one death 
-# per patient
-ons_first_death = (
-    ons_deaths
-    .where(ons_deaths.date >= dataset.pt_start_date)
-    .except_where(ons_deaths.date >= dataset.pt_end_date)
-    .sort_by(ons_deaths.date)
-    .first_for_patient()
-)
-dataset.ons_death_date = ons_first_death.date
-dataset.ons_underlying_cause = ons_first_death.underlying_cause_of_death
+# First registered death for patient
+dataset.ons_death_date = ons_deaths.date
+dataset.ons_underlying_cause = ons_deaths.underlying_cause_of_death
 # dataset.ons_covid_on_deathcert = (
-#     covid_on_deathcert(ons_first_death.cause_of_death_01) +
-#     covid_on_deathcert(ons_first_death.cause_of_death_02) +
-#     covid_on_deathcert(ons_first_death.cause_of_death_03) +
-#     covid_on_deathcert(ons_first_death.cause_of_death_04) +
-#     covid_on_deathcert(ons_first_death.cause_of_death_05) +
-#     covid_on_deathcert(ons_first_death.cause_of_death_06) +
-#     covid_on_deathcert(ons_first_death.cause_of_death_07) +
-#     covid_on_deathcert(ons_first_death.cause_of_death_08) +
-#     covid_on_deathcert(ons_first_death.cause_of_death_09) +
-#     covid_on_deathcert(ons_first_death.cause_of_death_10) +
-#     covid_on_deathcert(ons_first_death.cause_of_death_11) +
-#     covid_on_deathcert(ons_first_death.cause_of_death_12) +
-#     covid_on_deathcert(ons_first_death.cause_of_death_13) +
-#     covid_on_deathcert(ons_first_death.cause_of_death_14) +
-#     covid_on_deathcert(ons_first_death.cause_of_death_15)
+#     covid_on_deathcert(ons_deaths.cause_of_death_01) +
+#     covid_on_deathcert(ons_deaths.cause_of_death_02) +
+#     covid_on_deathcert(ons_deaths.cause_of_death_03) +
+#     covid_on_deathcert(ons_deaths.cause_of_death_04) +
+#     covid_on_deathcert(ons_deaths.cause_of_death_05) +
+#     covid_on_deathcert(ons_deaths.cause_of_death_06) +
+#     covid_on_deathcert(ons_deaths.cause_of_death_07) +
+#     covid_on_deathcert(ons_deaths.cause_of_death_08) +
+#     covid_on_deathcert(ons_deaths.cause_of_death_09) +
+#     covid_on_deathcert(ons_deaths.cause_of_death_10) +
+#     covid_on_deathcert(ons_deaths.cause_of_death_11) +
+#     covid_on_deathcert(ons_deaths.cause_of_death_12) +
+#     covid_on_deathcert(ons_deaths.cause_of_death_13) +
+#     covid_on_deathcert(ons_deaths.cause_of_death_14) +
+#     covid_on_deathcert(ons_deaths.cause_of_death_15)
 # )
 
 # Ethnicity in 6 categories ------------------------------------------------------------
