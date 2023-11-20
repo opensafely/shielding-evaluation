@@ -63,7 +63,29 @@ List SEIUHRD(List pars){
     NumericVector Dw(nw);
     NumericVector time(nt);
     NumericVector cmdtmean(nt);
-
+    
+    //weekly H and D by age
+    NumericVector Hapw(na);
+    NumericVector Dapw(na);
+    NumericVector Ha1w(nw);
+    NumericVector Ha2w(nw);
+    NumericVector Ha3w(nw);
+    NumericVector Ha4w(nw);
+    NumericVector Ha5w(nw);
+    NumericVector Ha6w(nw);
+    NumericVector Ha7w(nw);
+    NumericVector Ha8w(nw);
+    NumericVector Ha9w(nw);
+    NumericVector Da1w(nw);
+    NumericVector Da2w(nw);
+    NumericVector Da3w(nw);
+    NumericVector Da4w(nw);
+    NumericVector Da5w(nw);
+    NumericVector Da6w(nw);
+    NumericVector Da7w(nw);
+    NumericVector Da8w(nw);
+    NumericVector Da9w(nw);
+    
     // read parameters
     const NumericVector u = as<NumericVector>(pars["u"]); 
     const NumericVector y = as<NumericVector>(pars["y"]); 
@@ -208,18 +230,37 @@ List SEIUHRD(List pars){
    	    Nt[it+1]  += Nat + dN;
    	    Hpw       += dHin;
    	    Dpw       += dDin;
-   	    
+   	    Hapw[ia]   = dHin;
+   	    Dapw[ia]   = dDin;
   }; //ia
         if (week - week0 == 1) {
           Hw[week-1] = Hpw;
           Hpw=0;
           Dw[week-1] = Dpw;
           Dpw=0;
-        }
+          Ha1w[week-1] = Hapw[0];
+          Ha2w[week-1] = Hapw[1];
+          Ha3w[week-1] = Hapw[2];
+          Ha4w[week-1] = Hapw[3];
+          Ha5w[week-1] = Hapw[4];
+          Ha6w[week-1] = Hapw[5];
+          Ha7w[week-1] = Hapw[6];
+          Ha8w[week-1] = Hapw[7];
+          Ha9w[week-1] = Hapw[8];
+          Da1w[week-1] = Dapw[0];
+          Da2w[week-1] = Dapw[1];
+          Da3w[week-1] = Dapw[2];
+          Da4w[week-1] = Dapw[3];
+          Da5w[week-1] = Dapw[4];
+          Da6w[week-1] = Dapw[5];
+          Da7w[week-1] = Dapw[6];
+          Da8w[week-1] = Dapw[7];
+          Da9w[week-1] = Dapw[8];
+      }
 	}; //it
 	
     // TODO: output by AGE
-  DataFrame simt = DataFrame::create(
+    Rcpp::DataFrame byw = Rcpp::DataFrame::create(
         Named("time") = time[iw],
         Named("St")   = St[iw],
         Named("Et")   = Et[iw],
@@ -233,6 +274,27 @@ List SEIUHRD(List pars){
         Named("Hw")   = Hw,
         Named("Dw")   = Dw,
         Named("cmdtmean") = cmdtmean[iw]);
-	return simt;
-};
+    
+    Rcpp::DataFrame byw_age = Rcpp::DataFrame::create(
+      Named("H1w") = Ha1w,
+      Named("H2w") = Ha2w,
+      Named("H3w") = Ha3w,
+      Named("H4w") = Ha4w,
+      Named("H5w") = Ha5w,
+      Named("H6w") = Ha6w,
+      Named("H7w") = Ha7w,
+      Named("H8w") = Ha8w,
+      Named("H9w") = Ha9w,
+      Named("D1w") = Da1w,
+      Named("D2w") = Da2w,
+      Named("D3w") = Da3w,
+      Named("D4w") = Da4w,
+      Named("D5w") = Da5w,
+      Named("D6w") = Da6w,
+      Named("D7w") = Da7w,
+      Named("D8w") = Da8w,
+      Named("D9w") = Da9w);
 
+      return Rcpp::List::create(Rcpp::Named("byw") = byw,
+                                Rcpp::Named("byw_age") = byw_age);
+}

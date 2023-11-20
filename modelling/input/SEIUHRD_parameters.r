@@ -40,7 +40,7 @@ pars <- within(pars, {
     Sa0    <- Na0-Ea0-Ia0-Ua0-Ha0-Ra0-Da0
     logPI0 <- log10((Ea0[2]+Ia0[2]+Ua0[2])/Na0[2]) #proportion of infection in age-group 2
     pdm    <- 1               #peak hosp/Iw=(6000/Npop)/0.02 #proportion of data in relation to model
-    k      <- 200             #dispersion/shape parameter of NB likelihood (and noise if simulating), Davies 2020 Nat Med
+    k      <- 1#200             #dispersion/shape parameter of NB likelihood (and noise if simulating), Davies 2020 Nat Med
     cmdim1 <- na
     cmdim2 <- na
     cmdim3 <- 52
