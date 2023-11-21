@@ -347,7 +347,7 @@ if (pset$imodel==1) {
 ##Age profiles
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
   if(pset$imodel==2) {
-    datHa <- tibble(Weeks = mE$byw$time[iseq]/7,
+    datHa <- tibble(Weeks = mE$byw$time[iseqH]/7,
                     H1w   = mE$byw_age$H1w[iseqH],
                     H2w   = mE$byw_age$H2w[iseqH],
                     H3w   = mE$byw_age$H3w[iseqH],
@@ -357,7 +357,7 @@ if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
                     H7w   = mE$byw_age$H7w[iseqH],
                     H8w   = mE$byw_age$H8w[iseqH],
                     H9w   = mE$byw_age$H9w[iseqH])
-    datDa <- tibble(Weeks = mE$byw$time[iseq]/7,
+    datDa <- tibble(Weeks = mE$byw$time[iseqD]/7,
                     D1w   = mE$byw_age$D1w[iseqD],
                     D2w   = mE$byw_age$D2w[iseqD],
                     D3w   = mE$byw_age$D3w[iseqD],
