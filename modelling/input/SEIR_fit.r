@@ -110,12 +110,12 @@ LogLikelihood2 <- function(theta){
   pars$R0  = theta[3]#*R0Max 
   pars$pE0 = theta[4] 
   #pars$pdm = theta[5]
-  #sdHScaled  = theta[5]#6]                #auxiliary parameter for normal noise  
-  #sdDScaled  = theta[6]                #auxiliary parameter for normal noise
-  pkH       = theta[5]; #kempir_mmodel #pars$k; #sdH; 
-  pkD       = theta[6]; #kempir_mmodel2 #pars$k; #sdD;
-  kH=1/(pkH*pkH) # pk = 1/sqrt(k) => k = 1/pk^2
-  kD=1/(pkD*pkD)
+  sdHScaled  = theta[5]#6]                #auxiliary parameter for normal noise  
+  sdDScaled  = theta[6]                #auxiliary parameter for normal noise
+  #pkH       = theta[5]; #kempir_mmodel #pars$k; #sdH; 
+  #pkD       = theta[6]; #kempir_mmodel2 #pars$k; #sdD;
+  #kH=1/(pkH*pkH) # pk = 1/sqrt(k) => k = 1/pk^2
+  #kD=1/(pkD*pkD)
   #Dependent
   pars$Ea0 = pars$Na0*pars$pE0
   pars$Sa0 = pars$Na0-pars$Ra0-pars$Ea0-pars$Ia0
@@ -135,13 +135,13 @@ LogLikelihood2 <- function(theta){
   #sdD = sd2osd1*sdH
   #Negative binomial likelihood - product over weeks
     #return( sum(dnbinom(x = zd, size = kH, mu = muH, log = T)))
-    return( sum(dnbinom(x = zd, size = kH, mu = muH, log = T)) +
-            sum(dnbinom(x = wd, size = kD, mu = muD, log = T)))
+    #return( sum(dnbinom(x = zd, size = kH, mu = muH, log = T)) +
+    #        sum(dnbinom(x = wd, size = kD, mu = muD, log = T)))
   #Poisson
     #return( sum(dpois(x = zd, lambda = muH, log = T)))
   #Normal likelihood - product over weeks
-    #return(sum(dnorm(zd, mean = muH, sd = sdHScaled*sdMax,  log = T)) 
-    #    +  sum(dnorm(wd, mean = muD, sd = sdDScaled*sdMax2, log = T)))
+    return(sum(dnorm(zd, mean = muH, sd = sdHScaled*sdMax,  log = T)) 
+        +  sum(dnorm(wd, mean = muD, sd = sdDScaled*sdMax2, log = T)))
 }
 
 ## Likelihood definition, parameter ranges
@@ -150,7 +150,7 @@ if (pset$imodel==1) {
   LogLikelihood = LogLikelihood1; LOWER=c(1,1,1,1,1)*0.0001; UPPER = c(1,1,R0Max,1,1)   
   } else {
     LOWER = c(1,1,1,1,1,1)*0.0001; #c(c(1,1,1,1,1)*0.0001,pkLower,pkLower2); #c(1,1,1,1,1,1)*0.0001;
-    UPPER = c(1,1,R0Max,1,pkUpper,pkUpper2);   #c(1,1,30,1,pkUpper);  #c(1,1,30,1,2,pkUpper,pkUpper2) #c(1,1,30,1,kUpper,kUpper)
+    UPPER = c(1,1,R0Max,1,1,1);   #c(1,1,R0Max,1,pkUpper,pkUpper2);   #c(1,1,30,1,pkUpper);  #c(1,1,30,1,2,pkUpper,pkUpper2) #c(1,1,30,1,kUpper,kUpper)
     LogLikelihood = LogLikelihood2; } #rEI, rIR, R0, pE0, sd or p# pdm,
 
 #Beta priors
@@ -213,7 +213,7 @@ mE        <- model(parsE)
 ## UNCERTAINTY
 ## Sample the chains
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
-Weeks     = 1:length(mE$byw$time)
+Weeks     = 1:length(zd) #length(mE$byw$time)
 npar      = length(LOWER)
 nsample   = 300#1000#3000;
 psample = getSample(out, parametersOnly = T, numSamples = nsample, start=(niter/3)/3) #parametersOnly = F
@@ -317,7 +317,7 @@ if(pset$iplatform==0) {
   iseqD = iseq                    } else { 
   if (pset$imodel==1) {
   iseq = iweeksmodel  } else { 
-  iseqH= iweeksmodelH 
+  iseqH= iweeksmodelH #iweeksdataH ?
   iseqD= iweeksmodelD }           }
 
 
@@ -347,7 +347,7 @@ if (pset$imodel==1) {
 ##Age profiles
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
   if(pset$imodel==2) {
-    datHa <- tibble(Weeks = mE$byw$time[iseqH]/7,
+    datHa <- tibble(Weeks = mE$byw$time[iseqH]/7, #[iseq]/7,
                     H1w   = mE$byw_age$H1w[iseqH],
                     H2w   = mE$byw_age$H2w[iseqH],
                     H3w   = mE$byw_age$H3w[iseqH],
@@ -357,7 +357,7 @@ if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
                     H7w   = mE$byw_age$H7w[iseqH],
                     H8w   = mE$byw_age$H8w[iseqH],
                     H9w   = mE$byw_age$H9w[iseqH])
-    datDa <- tibble(Weeks = mE$byw$time[iseqD]/7,
+    datDa <- tibble(Weeks = mE$byw$time[iseqD]/7, #[iseq]/7,
                     D1w   = mE$byw_age$D1w[iseqD],
                     D2w   = mE$byw_age$D2w[iseqD],
                     D3w   = mE$byw_age$D3w[iseqD],
@@ -408,18 +408,19 @@ print(p1)
 
 ## posterior sample plot
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
+iz = seq_along(Weeks)
 par(mfrow = c(2,1))
 ##
-matplot(Weeks,zsample,type='l',col="grey", xlab="Weeks", ylab="Hospitalisations per week") # sample trajectories
-points (datH$Weeks,datH$DataHw, col="black") # data
-lines  (Weeks,mE$byw$Hw,type='l',col='red') # MAP estimate
+matplot(Weeks,      zsample,       col="grey", type='l', xlab="Weeks", ylab="Hospitalisations per week") # sample trajectories
+points (datH$Weeks, datH$DataHw,   col="black") # data
+lines  (Weeks,      mE$byw$Hw[iz], col='red') # MAP estimate
 legend(max(Weeks)*0.7, max(zsample), legend=c("sample", "data", "MAP"),
        col=c("grey", "black", "red"), lty=1:2, cex=0.8)
 
 #labels()
-matplot(Weeks,wsample,type='l',col="grey", xlab="Weeks", ylab="Deaths per week", ylim=range(zsample)) # sample trajectories
-points (datD$Weeks,datD$DataDw, col="black") # data
-lines  (Weeks,mE$byw$Dw,type='l',col='red') # MAP estimate
+matplot(Weeks,      wsample,       col="grey", type='l', xlab="Weeks", ylab="Deaths per week", ylim=range(zsample)) # sample trajectories
+points (datD$Weeks, datD$DataDw,   col="black") # data
+lines  (Weeks,      mE$byw$Dw[iz], col='red') # MAP estimate
 legend(max(Weeks)*0.7, max(zsample), legend=c("sample", "data", "MAP"),
        col=c("grey", "black", "red"), lty=1:2, cex=0.8)
 }
