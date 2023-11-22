@@ -213,9 +213,10 @@ mE        <- model(parsE)
 ## UNCERTAINTY
 ## Sample the chains
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
-Weeks     = 1:length(zd) #length(mE$byw$time)
+Weeks     = seq_along(zd) #length(mE$byw$time)
+iweeksz   = Weeks
 npar      = length(LOWER)
-nsample   = 300#1000#3000;
+nsample   = 1000#300#1000#3000;
 psample = getSample(out, parametersOnly = T, numSamples = nsample, start=(niter/3)/3) #parametersOnly = F
 # run model for each parameter set in the sample
 zsample = matrix(0,length(Weeks),nsample)
@@ -231,8 +232,8 @@ for(i in 1:nsample){
   parsES$Sa0 = parsES$Na0-parsES$Ra0-parsES$Ea0-parsES$Ia0
   parsES$beta= BETA(parsES)
   outs        = model(as.vector(parsES))
-  zsample[,i] = outs$byw$Hw
-  wsample[,i] = outs$byw$Dw
+  zsample[,i] = outs$byw$Hw[iweeksz]
+  wsample[,i] = outs$byw$Dw[iweeksz]
 } }
 
 
@@ -312,7 +313,7 @@ N  = pars$Npop
 rE = 1#parsE$pdm #
 rM = 1#pars$pdm  #
 if(pset$iplatform==0) { 
-  iseq  = seq_along(mE$byw$time) 
+  iseq  = iweeksz #seq_along(mE$byw$time) 
   iseqH = iseq
   iseqD = iseq                    } else { 
   if (pset$imodel==1) {
@@ -408,19 +409,18 @@ print(p1)
 
 ## posterior sample plot
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
-iz = seq_along(Weeks)
 par(mfrow = c(2,1))
 ##
 matplot(Weeks,      zsample,       col="grey", type='l', xlab="Weeks", ylab="Hospitalisations per week") # sample trajectories
 points (datH$Weeks, datH$DataHw,   col="black") # data
-lines  (Weeks,      mE$byw$Hw[iz], col='red') # MAP estimate
+lines  (Weeks,      mE$byw$Hw[iweeksz], col='red') # MAP estimate
 legend(max(Weeks)*0.7, max(zsample), legend=c("sample", "data", "MAP"),
        col=c("grey", "black", "red"), lty=1:2, cex=0.8)
 
 #labels()
 matplot(Weeks,      wsample,       col="grey", type='l', xlab="Weeks", ylab="Deaths per week", ylim=range(zsample)) # sample trajectories
 points (datD$Weeks, datD$DataDw,   col="black") # data
-lines  (Weeks,      mE$byw$Dw[iz], col='red') # MAP estimate
+lines  (Weeks,      mE$byw$Dw[iweeksz], col='red') # MAP estimate
 legend(max(Weeks)*0.7, max(zsample), legend=c("sample", "data", "MAP"),
        col=c("grey", "black", "red"), lty=1:2, cex=0.8)
 }
