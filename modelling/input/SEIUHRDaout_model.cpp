@@ -91,13 +91,16 @@ List SEIUHRD(List pars){
     const NumericVector y = as<NumericVector>(pars["y"]); 
     const NumericVector h = as<NumericVector>(pars["h"]); 
     const NumericVector m = as<NumericVector>(pars["m"]); 
+    const NumericVector d = as<NumericVector>(pars["d"]); 
     
     const double beta_infectivity = pars["beta"];
     const double phm  = pars["phm"];
     const double fu   = pars["fu"];
+    const double ad   = pars["ad"];
     const double rEI  = pars["rEI"];
     const double rEU  = pars["rEU"];
     const double rIR  = pars["rIR"];
+    const double rID  = pars["rID"];
     const double rUR  = pars["rUR"];
     const double rIH  = pars["rIH"];
     const double rHR  = pars["rHR"];
@@ -167,6 +170,7 @@ List SEIUHRD(List pars){
         double ya = y[ia];
         double ha = h[ia];
         double ma = m[ia]*phm;
+        double da = d[ia]*ad;
 
         for (int ib = 0; ib < na; ib++) {
             int    icm = (week-1)*cmdim1*cmdim2 + ib*cmdim1 + ia;
@@ -178,7 +182,7 @@ List SEIUHRD(List pars){
         // state update for next timestep
         double dS  = dt*(-lambda*Sat       + rRS*Rat);
         double dE  = dt*( lambda*Sat       - (rEU*(1-ya)+rEI*ya)*Eat);
-        double dI  = dt*( rEI*ya*Eat       - (rIR*(1-ha)+rIH*ha)*Iat);
+        double dI  = dt*( rEI*ya*Eat       - (rIR*(1-ha-da)+rIH*ha+rID*da)*Iat);
         double dU  = dt*( rEU*(1-ya)*Eat   - rUR*Uat);
 
         double dC1 = dt*( lambda*Sat - rCi*C1at);
@@ -194,8 +198,8 @@ List SEIUHRD(List pars){
         double dH4 = dt*( rHi*H3at   - rHi*H4at);
         double dH5 = dt*( rHi*H4at   - ((rHR*5)*(1-ma)+rHi*ma)*H5at); //Recovery time def could be different
 
-        double dR  = dt*( rUR*Uat + rIR*(1-ha)*Iat + (rHR*5)*(1-ma)*H5at - rRS*Rat);
-        double dDin= dt*( rHi*ma*H5at );
+        double dR  = dt*( rUR*Uat + rIR*(1-ha-da)*Iat + (rHR*5)*(1-ma)*H5at - rRS*Rat);
+        double dDin= dt*( rHi*ma*H5at + rID*da*Iat);
         double dD  = dDin;
         double dN  = dS + dE + dU + dI + dH1 + dH2 + dH3 + dH4 + dH5 + dR + dD;
 

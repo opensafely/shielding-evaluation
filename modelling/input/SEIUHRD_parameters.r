@@ -8,6 +8,8 @@ pars <- within(pars, {
     agedens<- c(0.0541, 0.0833, 0.0705, 0.1484, 0.1371, 0.1268, 0.1366, 0.1071, 0.1360);  agedens=agedens/sum(agedens) #sum 1 <= sum 0.9999
                               #population age distribution based on Census 2021, GOV.uk, CoMix age-bands 
     u_mean <- mean(u)
+    ad     <- 0.1 #small, aim 0.5 #propotionality faction in d - assumed and estimated
+    d      <- 2*h*m #use=d*ad #fraction of direct deaths among critically infected - assumed
     phm    <- 1               #correction in proportion of H that become D
     dt     <- 0.1 #0.01#      #time step (days)
     ndays  <- 364             #no. days
@@ -22,6 +24,7 @@ pars <- within(pars, {
     rIH    <- 1/8.5           #hospitalisation, Davied Lancet PH
     rHR    <- 1/8.6           #recovery at hospital	
     rHD    <- rHR             #death, Roz - varied during pandemic; 7d in Davies Lancet PH
+    rID    <- 1/(1/rIH+1/rHD) #death outside hospital - assumed here
     rRS    <- 0
     rC     <- 1/8.5           #rate of loss of positivity, Davies Lancet ID
     R0     <- 2.23 #3               #2020-wild-type basic reproduction rate, Knock et al 2021
