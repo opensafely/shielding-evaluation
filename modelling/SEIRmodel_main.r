@@ -86,7 +86,10 @@ if (pset$iplatform==0) {
 ## pdf
 ## txt
 if (pset$DOfit==1) {
-  source(file=paste0(input_dir,"/SEIR_fit.r")) }
+  if (pset$iplatform<2) {
+    source(file=paste0(input_dir,"/SEIR_fit.r")) } else {
+    if (dim_sc[1]>1000) {
+    source(file=paste0(input_dir,"/SEIR_fit.r")) }      }
+}
 
-
-
+  
