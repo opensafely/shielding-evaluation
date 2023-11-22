@@ -63,7 +63,7 @@ if (pset$imodel==1) {model <- SEIR}
 if (pset$imodel==2) {model <- SEIUHRD} #; sd2osd1 = mean(wd)/mean(zd)}
 
 ### Likelihood in R and model in Rcpp
-R0Max    = 20
+R0Max    = 10 #20
 sdMax    = sd(zd)
 pkLower  = 0.1       #k  NB likelihood and data
 pkUpper  = 5       
@@ -110,10 +110,11 @@ LogLikelihood2 <- function(theta){
   pars$R0  = theta[3]#*R0Max 
   pars$pE0 = theta[4] 
   #pars$pdm = theta[5]
-  sdHScaled  = theta[5]#6]                #auxiliary parameter for normal noise  
-  sdDScaled  = theta[6]                #auxiliary parameter for normal noise
-  #pkH       = theta[5]; #kempir_mmodel #pars$k; #sdH; 
-  #pkD       = theta[6]; #kempir_mmodel2 #pars$k; #sdD;
+  pars$ad  = theta[5]
+  sdHScaled  = theta[6]                #auxiliary parameter for normal noise  
+  sdDScaled  = theta[7]                #auxiliary parameter for normal noise
+  #pkH       = theta[6]; #kempir_mmodel #pars$k; #sdH; 
+  #pkD       = theta[7]; #kempir_mmodel2 #pars$k; #sdD;
   #kH=1/(pkH*pkH) # pk = 1/sqrt(k) => k = 1/pk^2
   #kD=1/(pkD*pkD)
   #Dependent
@@ -149,8 +150,8 @@ niter = 200000#9000#120000#200000 #30000 #120000 #90000 #60000 #150000 #30000 #5
 if (pset$imodel==1) {
   LogLikelihood = LogLikelihood1; LOWER=c(1,1,1,1,1)*0.0001; UPPER = c(1,1,R0Max,1,1)   
   } else {
-    LOWER = c(1,1,1,1,1,1)*0.0001; #c(c(1,1,1,1,1)*0.0001,pkLower,pkLower2); #c(1,1,1,1,1,1)*0.0001;
-    UPPER = c(1,1,R0Max,1,1,1);   #c(1,1,R0Max,1,pkUpper,pkUpper2);   #c(1,1,30,1,pkUpper);  #c(1,1,30,1,2,pkUpper,pkUpper2) #c(1,1,30,1,kUpper,kUpper)
+    LOWER = c(1,1,1,1,1,1,1)*0.001; #c(c(1,1,1,1,1,1)*0.0001,pkLower,pkLower2); #c(1,1,1,1,1,1)*0.0001;
+    UPPER = c(1,1,R0Max,1,1,1,1);   #c(1,1,R0Max,1,1,pkUpper,pkUpper2);   #c(1,1,30,1,pkUpper);  #c(1,1,30,1,2,pkUpper,pkUpper2) #c(1,1,30,1,kUpper,kUpper)
     LogLikelihood = LogLikelihood2; } #rEI, rIR, R0, pE0, sd or p# pdm,
 
 #Beta priors
@@ -203,6 +204,7 @@ parsE$rEI <- MAPE$parametersMAP[1]
 parsE$rIR <- MAPE$parametersMAP[2]
 parsE$R0  <- MAPE$parametersMAP[3]#*R0Max
 parsE$pE0 <- MAPE$parametersMAP[4]
+parsE$ad  <- MAPE$parametersMAP[5]
 #parsE$pdm <- MAPE$parametersMAP[5]
 #dependent
 parsE$Ea0 = parsE$Na0*parsE$pE0
@@ -238,7 +240,7 @@ for(i in 1:nsample){
 
 
 #True parameters (except last two)
-thetaTrue = c(pars$rEI, pars$rIR, pars$R0, pars$pE0, pars$phm, 1, 1); #pars$pdm, 
+thetaTrue = c(pars$rEI, pars$rIR, pars$R0, pars$pE0, pars$ad, 1, 1); #pars$phm, 1, 1); 
 
 
 #Expected parameters
@@ -287,7 +289,7 @@ if (pset$imodel==1) {
   if(pset$iplatform==0) { iwH=iweeksmodel; iwD=iweeksmodel} else {iwH=iweeksmodelH; iwD=iweeksmodelD}
   print(paste0("#H data pts fitted: ", length(iwH)))
   print(paste0("#D data pts fitted: ", length(iwD))) }
-print(paste0("Expected: ", c("rEI = ","rIR = ", "R0 = ", "pE0 = ", "phm =", "kH = ", "kD = "), round(thetaTrue,3))) #"pdm = ",
+print(paste0("Expected: ", c("rEI = ","rIR = ", "R0 = ", "pE0 = ", "ad =", "kH = ", "kD = "), round(thetaTrue,3))) #"pdm = ",
 #print(paste0("Expected: ", c("rEI = ","rIR = ", "R0 = ", "pE0 = ", "phm =", "varH = ", "varD = "), round(thetaTrue,3))) #"pdm = ",
 cat("\n");
 print(summary(out)); cat("\n")
