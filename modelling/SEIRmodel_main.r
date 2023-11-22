@@ -89,7 +89,8 @@ if (pset$DOfit==1) {
   if (pset$iplatform<2) {
     source(file=paste0(input_dir,"/SEIR_fit.r")) } else {
     if (dim_sc[1]>1000) {
-    source(file=paste0(input_dir,"/SEIR_fit.r")) }      }
+    source(file=paste0(input_dir,"/SEIR_fit.r")) } else {
+    source(file=paste0(input_dir,"/SEIR_fit_(skip-fit-iplatform=2).r")) }      }
 }
 
   
