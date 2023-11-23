@@ -111,12 +111,12 @@ LogLikelihood2 <- function(theta){
   pars$pE0 = theta[4] 
   #pars$pdm = theta[5]
   pars$ad  = theta[5]
-  sdHScaled  = theta[6]                #auxiliary parameter for normal noise  
-  sdDScaled  = theta[7]                #auxiliary parameter for normal noise
-  #pkH       = theta[6]; #kempir_mmodel #pars$k; #sdH; 
-  #pkD       = theta[7]; #kempir_mmodel2 #pars$k; #sdD;
-  #kH=1/(pkH*pkH) # pk = 1/sqrt(k) => k = 1/pk^2
-  #kD=1/(pkD*pkD)
+  #sdHScaled  = theta[6]                #auxiliary parameter for normal noise  
+  #sdDScaled  = theta[7]                #auxiliary parameter for normal noise
+  pkH       = theta[6]; #kempir_mmodel #pars$k; #sdH; 
+  pkD       = theta[7]; #kempir_mmodel2 #pars$k; #sdD;
+  kH=1/(pkH*pkH) # pk = 1/sqrt(k) => k = 1/pk^2
+  kD=1/(pkD*pkD)
   #Dependent
   pars$Ea0 = pars$Na0*pars$pE0
   pars$Sa0 = pars$Na0-pars$Ra0-pars$Ea0-pars$Ia0
@@ -136,22 +136,22 @@ LogLikelihood2 <- function(theta){
   #sdD = sd2osd1*sdH
   #Negative binomial likelihood - product over weeks
     #return( sum(dnbinom(x = zd, size = kH, mu = muH, log = T)))
-    #return( sum(dnbinom(x = zd, size = kH, mu = muH, log = T)) +
-    #        sum(dnbinom(x = wd, size = kD, mu = muD, log = T)))
+    return( sum(dnbinom(x = zd, size = kH, mu = muH, log = T)) +
+            sum(dnbinom(x = wd, size = kD, mu = muD, log = T)))
   #Poisson
     #return( sum(dpois(x = zd, lambda = muH, log = T)))
   #Normal likelihood - product over weeks
-    return(sum(dnorm(zd, mean = muH, sd = sdHScaled*sdMax,  log = T)) 
-        +  sum(dnorm(wd, mean = muD, sd = sdDScaled*sdMax2, log = T)))
+    #return(sum(dnorm(zd, mean = muH, sd = sdHScaled*sdMax,  log = T)) 
+    #    +  sum(dnorm(wd, mean = muD, sd = sdDScaled*sdMax2, log = T)))
 }
 
 ## Likelihood definition, parameter ranges
-niter = 200000#9000#120000#200000 #30000 #120000 #90000 #60000 #150000 #30000 #50000 #40000
+niter = 200000#30000#9000#120000#200000 #30000 #120000 #90000 #60000 #150000 #30000 #50000 #40000
 if (pset$imodel==1) {
   LogLikelihood = LogLikelihood1; LOWER=c(1,1,1,1,1)*0.0001; UPPER = c(1,1,R0Max,1,1)   
   } else {
-    LOWER = c(1,1,1,1,1,1,1)*0.001; #c(c(1,1,1,1,1,1)*0.0001,pkLower,pkLower2); #c(1,1,1,1,1,1)*0.0001;
-    UPPER = c(1,1,R0Max,1,1,1,1);   #c(1,1,R0Max,1,1,pkUpper,pkUpper2);   #c(1,1,30,1,pkUpper);  #c(1,1,30,1,2,pkUpper,pkUpper2) #c(1,1,30,1,kUpper,kUpper)
+    LOWER = c(c(1,1,1,1,1)*0.0001,pkLower,pkLower2); #c(1,1,1,1,1,1,1)*0.0001; #c(1,1,1,1,1,1)*0.0001;
+    UPPER = c(1,1,R0Max,1,1,pkUpper,pkUpper2);       #c(1,1,R0Max,1,1,1,1);    #c(1,1,30,1,pkUpper);  #c(1,1,30,1,2,pkUpper,pkUpper2) #c(1,1,30,1,kUpper,kUpper)
     LogLikelihood = LogLikelihood2; } #rEI, rIR, R0, pE0, sd or p# pdm,
 
 #Beta priors
@@ -218,7 +218,7 @@ if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
 Weeks     = seq_along(zd) #length(mE$byw$time)
 iweeksz   = Weeks
 npar      = length(LOWER)
-nsample   = 1000#300#1000#3000;
+nsample   = 1000#500#1000#3000;
 psample = getSample(out, parametersOnly = T, numSamples = nsample, start=(niter/3)/3) #parametersOnly = F
 # run model for each parameter set in the sample
 zsample = matrix(0,length(Weeks),nsample)
