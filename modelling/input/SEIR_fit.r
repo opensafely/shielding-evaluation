@@ -64,9 +64,14 @@ if (pset$imodel==2) {model <- SEIUHRD} #; sd2osd1 = mean(wd)/mean(zd)}
 
 ### Likelihood in R and model in Rcpp
 R0Max    = 10 #20
+#logR0Max = log(R0Max)
 sdMax    = sd(zd)
 pkLower  = 0.1       #k  NB likelihood and data
-pkUpper  = 5       
+pkUpper  = 5
+tMax     = 10
+pE0Max   = 0.10
+pE0Min   = 0.005    #pop = 120k
+logpE0Max = log(pE0Max)
 
 if (pset$imodel==2) {
 sdMax2   = sd(wd)
@@ -105,10 +110,12 @@ LogLikelihood1 <- function(theta){
 source(file = paste0(input_dir,"/SEIUHRD_BETA.r")) #Used within Likelihood2
 LogLikelihood2 <- function(theta){
   #Proposed
-  pars$rEI = theta[1] 
-  pars$rIR = theta[2] 
-  pars$R0  = theta[3]#*R0Max 
-  pars$pE0 = theta[4] 
+  tEI = theta[1]*tMax
+  tIR = theta[2]*tMax
+  pars$rEI = 1/tEI
+  pars$rIR = 1/tIR 
+  pars$R0  = exp(theta[3])#*logR0Max)#*R0Max 
+  pars$pE0 = exp(-theta[4] + logpE0Max) # exp(-r+logpE0Max), r=log(pE0Max/pE0)= 0,3 <= pE0=Max,0.005 (120k pop), fpr Max=0.1
   #pars$pdm = theta[5]
   pars$ad  = theta[5]
   #sdHScaled  = theta[6]                #auxiliary parameter for normal noise  
@@ -117,6 +124,8 @@ LogLikelihood2 <- function(theta){
   pkD       = theta[7]; #kempir_mmodel2 #pars$k; #sdD;
   kH=1/(pkH*pkH) # pk = 1/sqrt(k) => k = 1/pk^2
   kD=1/(pkD*pkD)
+  #pdm = exp(theta[8])
+  #pars$pdm = pdm
   #Dependent
   pars$Ea0 = pars$Na0*pars$pE0
   pars$Sa0 = pars$Na0-pars$Ra0-pars$Ea0-pars$Ia0
@@ -132,7 +141,7 @@ LogLikelihood2 <- function(theta){
   MeanH[1]= max(MeanH[1],1); #avoid NAs
   MeanD[1]= max(MeanD[1],1); #avoid NAs
   muH = MeanH                #pars$pdm*MeanH #
-  muD = MeanD #pars$pdm*MeanD       #
+  muD = MeanD #pars$pdm*MeanD #MeanD #pars$pdm*MeanD       #
   #sdD = sd2osd1*sdH
   #Negative binomial likelihood - product over weeks
     #return( sum(dnbinom(x = zd, size = kH, mu = muH, log = T)))
@@ -146,13 +155,13 @@ LogLikelihood2 <- function(theta){
 }
 
 ## Likelihood definition, parameter ranges
-niter = 200000#30000#9000#120000#200000 #30000 #120000 #90000 #60000 #150000 #30000 #50000 #40000
+niter = 200000 #30000 #120000 #90000 #60000 #150000 #30000 #50000 #40000
 if (pset$imodel==1) {
   LogLikelihood = LogLikelihood1; LOWER=c(1,1,1,1,1)*0.0001; UPPER = c(1,1,R0Max,1,1)   
   } else {
-    LOWER = c(c(1,1,1,1,1)*0.0001,pkLower,pkLower2); #c(1,1,1,1,1,1,1)*0.0001; #c(1,1,1,1,1,1)*0.0001;
-    UPPER = c(1,1,R0Max,1,1,pkUpper,pkUpper2);       #c(1,1,R0Max,1,1,1,1);    #c(1,1,30,1,pkUpper);  #c(1,1,30,1,2,pkUpper,pkUpper2) #c(1,1,30,1,kUpper,kUpper)
-    LogLikelihood = LogLikelihood2; } #rEI, rIR, R0, pE0, sd or p# pdm,
+    LOWER = c(c(1,1)/tMax,0,0,c(1)*0.0001,pkLower,pkLower2); #c(1,1,1,1,1,1,1)*0.0001; #c(1,1,1,1,1,1)*0.0001;
+    UPPER = c(1,1,log(R0Max),log(pE0Max/pE0Min),1,pkUpper,pkUpper2);       #c(1,1,R0Max,1,1,1,1);    #c(1,1,30,1,pkUpper);  #c(1,1,30,1,2,pkUpper,pkUpper2) #c(1,1,30,1,kUpper,kUpper)
+    LogLikelihood = LogLikelihood2; } #rEI, rIR, R0, pE0, al, sd, sd2
 
 #Beta priors
     #PRIOR <- createBetaPrior(4,5,lower = LOWER, upper = UPPER)
@@ -200,10 +209,10 @@ tout3 <- system.time(out3 <- runMCMC(bayesianSetup=setup, settings=settings) )
 ## MAP Estimates
 parsE     <- pars
 MAPE      <- MAP(out)
-parsE$rEI <- MAPE$parametersMAP[1]
-parsE$rIR <- MAPE$parametersMAP[2]
-parsE$R0  <- MAPE$parametersMAP[3]#*R0Max
-parsE$pE0 <- MAPE$parametersMAP[4]
+parsE$rEI <- 1/(tMax*MAPE$parametersMAP[1])
+parsE$rIR <- 1/(tMax*MAPE$parametersMAP[2])
+parsE$R0  <- exp(MAPE$parametersMAP[3])#*logR0Max)#*R0Max
+parsE$pE0 <- exp(-MAPE$parametersMAP[4] + logpE0Max)
 parsE$ad  <- MAPE$parametersMAP[5]
 #parsE$pdm <- MAPE$parametersMAP[5]
 #dependent
@@ -225,10 +234,10 @@ zsample = matrix(0,length(Weeks),nsample)
 wsample = matrix(0,length(Weeks),nsample)
 parsES  = pars
 for(i in 1:nsample){
-  parsES$rEI <- as.vector(psample[i,1])
-  parsES$rIR <- as.vector(psample[i,2])
-  parsES$R0  <- as.vector(psample[i,3])#*R0Max
-  parsES$pE0 <- as.vector(psample[i,4])
+  parsES$rEI <- 1/(tMax*as.vector(psample[i,1]))
+  parsES$rIR <- 1/(tMax*as.vector(psample[i,2]))
+  parsES$R0  <- exp(as.vector(psample[i,3]))#*logR0Max)#*R0Max
+  parsES$pE0 <- exp(-as.vector(psample[i,4]) + logpE0Max)
   #dependent
   parsES$Ea0 = parsES$Na0*parsES$pE0
   parsES$Sa0 = parsES$Na0-parsES$Ra0-parsES$Ea0-parsES$Ia0
