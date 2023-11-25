@@ -47,16 +47,16 @@ actions:
     needs: [clean_the_data]
     outputs:
       moderately_sensitive:
-        txt10: output/modelling/J4j2_Simul_run.txt
-        csv10: output/modelling/J4j2_Simul_R0_by_week.csv
-        txt11: output/modelling/J4j2_Contact_matrix_year-start-24Feb20_stats.txt
-        pdf10: output/modelling/J4j2_Data_Incidence.pdf
-        pdf11: output/modelling/J4j2_Fit_MCMC_BT.pdf
-        pdf12: output/modelling/J4j2_Fit_Variables_estimated.pdf
-        pdf13: output/modelling/J4j2_Fit_Variables_data1.pdf
-        pdf14: output/modelling/J4j2_Fit_Variables_data2.pdf
-        txt12: output/modelling/J4j2_Fit_Bayesian_report.txt
-        pdf15: output/figures/J4j2_covid_hosp_over_time2again.pdf
-        pdf16: output/figures/J4j2_covid_deaths_over_time2again.pdf
+        txt10: output/modelling/J4k_Simul_run.txt
+        csv10: output/modelling/J4k_Simul_R0_by_week.csv
+        txt11: output/modelling/J4k_Contact_matrix_year-start-24Feb20_stats.txt
+        pdf10: output/modelling/J4k_Data_Incidence.pdf
+        pdf11: output/modelling/J4k_Fit_MCMC_BT.pdf
+        pdf12: output/modelling/J4k_Fit_Variables_estimated.pdf
+        pdf13: output/modelling/J4k_Fit_Variables_data1.pdf
+        pdf14: output/modelling/J4k_Fit_Variables_data2.pdf
+        txt12: output/modelling/J4k_Fit_Bayesian_report.txt
+        pdf15: output/figures/J4k_covid_hosp_over_time2again.pdf
+        pdf16: output/figures/J4k_covid_deaths_over_time2again.pdf
 
  

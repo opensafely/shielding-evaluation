@@ -58,53 +58,23 @@ if (pset$iplatform>0) {
    ## Compile & run model (weekly points)
    sourceCpp(file = paste0(input_dir,"/",pset$File_model_choice))  
   }
-### Multiple model options
-if (pset$imodel==1) {model <- SEIR}
-if (pset$imodel==2) {model <- SEIUHRD} #; sd2osd1 = mean(wd)/mean(zd)}
+### model options
+model <- SEIUHRD
 
 ### Likelihood in R and model in Rcpp
-R0Max    = 10 #20
-#logR0Max = log(R0Max)
+R0Max    = 10
 sdMax    = sd(zd)
+sdMax2   = sd(wd)
 pkLower  = 0.1       #k  NB likelihood and data
+pkLower2 = 0.1
 pkUpper  = 5
+pkUpper2 = 5
 tMax     = 10
 pE0Max   = 0.10
 pE0Min   = 0.005    #pop = 120k
 logpE0Max = log(pE0Max)
-
-if (pset$imodel==2) {
-sdMax2   = sd(wd)
-pkLower2 = 0.1       #k  NB likelihood and dat
-pkUpper2 = 5       } 
-
-
-#Model 1
-LogLikelihood1 <- function(theta){
-  #Proposed
-  pars$rEI = theta[1] 
-  pars$rIR = theta[2] 
-  pars$R0  = theta[3]#*R0Max
-  pars$pE0 = theta[4] 
-  #pars$pdm = theta[5]
-  sdscaled  = theta[5]               #auxiliary parameter for normal noise
-  #Dependent
-  pars$Ea0 = pars$Na0*pars$pE0
-  pars$Sa0 = pars$Na0-pars$Ra0-pars$Ea0-pars$Ia0
-  pars$beta= pars$R0*(pars$rIR+pars$d)/pars$u_mean
-  #Model in Rcpp with proposed parameters
-  m <- model(pars)
-  #likelihood of (weekly) data
-  if (pset$iplatform==0) {
-    Mean=m$Iw              } else {
-    Mean=m$Iw[iweeksmodel] }; 
-  if (Mean[1]==0) Mean[1]=1; #avoid NAs
-  mu = Mean  #pars$pdm*Mean
-  #Negative binomial likelihood - product over weeks
-    #return( sum(dnbinom(x = zd, size = 1/p, mu = mu, log=T))) #expect k=1/p=200=> p=0.005
-  #Normal likelihood - product over weeks
-    return(sum(dnorm(zd, mean = mu, sd = sdScaled*sdMax, log = T)))
-}
+pdmMin = 0.1
+pdmMax = 2
 
 #Model 2
 source(file = paste0(input_dir,"/SEIUHRD_BETA.r")) #Used within Likelihood2
@@ -116,16 +86,14 @@ LogLikelihood2 <- function(theta){
   pars$rIR = 1/tIR 
   pars$R0  = exp(theta[3])#*logR0Max)#*R0Max 
   pars$pE0 = exp(-theta[4] + logpE0Max) # exp(-r+logpE0Max), r=log(pE0Max/pE0)= 0,3 <= pE0=Max,0.005 (120k pop), fpr Max=0.1
-  #pars$pdm = theta[5]
-  pars$ad  = theta[5]
+  pars$pdm = exp(+theta[5]) #pdm=0.1,2 - theta=0,2.3
+  #pars$ad  = theta[5]
   #sdHScaled  = theta[6]                #auxiliary parameter for normal noise  
   #sdDScaled  = theta[7]                #auxiliary parameter for normal noise
   pkH       = theta[6]; #kempir_mmodel #pars$k; #sdH; 
   pkD       = theta[7]; #kempir_mmodel2 #pars$k; #sdD;
   kH=1/(pkH*pkH) # pk = 1/sqrt(k) => k = 1/pk^2
   kD=1/(pkD*pkD)
-  #pdm = exp(theta[8])
-  #pars$pdm = pdm
   #Dependent
   pars$Ea0 = pars$Na0*pars$pE0
   pars$Sa0 = pars$Na0-pars$Ra0-pars$Ea0-pars$Ia0
@@ -141,14 +109,10 @@ LogLikelihood2 <- function(theta){
   MeanH[1]= max(MeanH[1],1); #avoid NAs
   MeanD[1]= max(MeanD[1],1); #avoid NAs
   muH = MeanH                #pars$pdm*MeanH #
-  muD = MeanD #pars$pdm*MeanD #MeanD #pars$pdm*MeanD       #
-  #sdD = sd2osd1*sdH
+  muD = pars$pdm*MeanD #MeanD #pars$pdm*MeanD
   #Negative binomial likelihood - product over weeks
-    #return( sum(dnbinom(x = zd, size = kH, mu = muH, log = T)))
     return( sum(dnbinom(x = zd, size = kH, mu = muH, log = T)) +
             sum(dnbinom(x = wd, size = kD, mu = muD, log = T)))
-  #Poisson
-    #return( sum(dpois(x = zd, lambda = muH, log = T)))
   #Normal likelihood - product over weeks
     #return(sum(dnorm(zd, mean = muH, sd = sdHScaled*sdMax,  log = T)) 
     #    +  sum(dnorm(wd, mean = muD, sd = sdDScaled*sdMax2, log = T)))
@@ -156,21 +120,18 @@ LogLikelihood2 <- function(theta){
 
 ## Likelihood definition, parameter ranges
 niter = 200000 #30000 #120000 #90000 #60000 #150000 #30000 #50000 #40000
-if (pset$imodel==1) {
-  LogLikelihood = LogLikelihood1; LOWER=c(1,1,1,1,1)*0.0001; UPPER = c(1,1,R0Max,1,1)   
-  } else {
-    LOWER = c(c(1,1)/tMax,0,0,c(1)*0.0001,pkLower,pkLower2); #c(1,1,1,1,1,1,1)*0.0001; #c(1,1,1,1,1,1)*0.0001;
-    UPPER = c(1,1,log(R0Max),log(pE0Max/pE0Min),1,pkUpper,pkUpper2);       #c(1,1,R0Max,1,1,1,1);    #c(1,1,30,1,pkUpper);  #c(1,1,30,1,2,pkUpper,pkUpper2) #c(1,1,30,1,kUpper,kUpper)
-    LogLikelihood = LogLikelihood2; } #rEI, rIR, R0, pE0, al, sd, sd2
+LOWER = c(c(1,1)/tMax,0,        0,                  log(pdmMin), pkLower, pkLower2); 
+UPPER = c(1,1,        log(R0Max),log(pE0Max/pE0Min),log(pdmMax), pkUpper, pkUpper2);
+LogLikelihood = LogLikelihood2; #rEI, rIR, R0, pE0, pdm/al, sd, sd2
 
 #Beta priors
-    #PRIOR <- createBetaPrior(4,5,lower = LOWER, upper = UPPER)
-    PRIOR <- createBetaPrior(3,4,lower = LOWER, upper = UPPER)
-    #PRIOR <- createBetaPrior(3,3,lower = LOWER, upper = UPPER)
-    setup    = createBayesianSetup(likelihood=LogLikelihood, prior =PRIOR) #parallel = T,
+#PRIOR <- createBetaPrior(3,3,lower = LOWER, upper = UPPER)
+#PRIOR <- createBetaPrior(4,5,lower = LOWER, upper = UPPER)
+PRIOR <- createBetaPrior(3,4,lower = LOWER, upper = UPPER)
+setup    = createBayesianSetup(likelihood=LogLikelihood, prior =PRIOR) #parallel = T,
 #Normal priors
-    #PRIOR <- createTruncatedNormalPrior(0,.5,lower = LOWER, upper = UPPER)
-    #setup    = createBayesianSetup(likelihood=LogLikelihood, prior =PRIOR) #parallel = T,
+#PRIOR <- createTruncatedNormalPrior(0,.5,lower = LOWER, upper = UPPER)
+#setup    = createBayesianSetup(likelihood=LogLikelihood, prior =PRIOR) #parallel = T,
 #Uniform priors
    #setup    = createBayesianSetup(likelihood=LogLikelihood, lower = LOWER, upper = UPPER) #parallel = T,
    PARSTART = 0.5*UPPER
@@ -213,8 +174,8 @@ parsE$rEI <- 1/(tMax*MAPE$parametersMAP[1])
 parsE$rIR <- 1/(tMax*MAPE$parametersMAP[2])
 parsE$R0  <- exp(MAPE$parametersMAP[3])#*logR0Max)#*R0Max
 parsE$pE0 <- exp(-MAPE$parametersMAP[4] + logpE0Max)
-parsE$ad  <- MAPE$parametersMAP[5]
-#parsE$pdm <- MAPE$parametersMAP[5]
+#parsE$ad  <- MAPE$parametersMAP[5]
+parsE$pdm <- exp(MAPE$parametersMAP[5])
 #dependent
 parsE$Ea0 = parsE$Na0*parsE$pE0
 parsE$Sa0 = parsE$Na0-parsE$Ra0-parsE$Ea0-parsE$Ia0
@@ -238,13 +199,14 @@ for(i in 1:nsample){
   parsES$rIR <- 1/(tMax*as.vector(psample[i,2]))
   parsES$R0  <- exp(as.vector(psample[i,3]))#*logR0Max)#*R0Max
   parsES$pE0 <- exp(-as.vector(psample[i,4]) + logpE0Max)
+  parsES$pdm <- exp(as.vector(psample[i,5]))
   #dependent
   parsES$Ea0 = parsES$Na0*parsES$pE0
   parsES$Sa0 = parsES$Na0-parsES$Ra0-parsES$Ea0-parsES$Ia0
   parsES$beta= BETA(parsES)
   outs        = model(as.vector(parsES))
   zsample[,i] = outs$byw$Hw[iweeksz]
-  wsample[,i] = outs$byw$Dw[iweeksz]
+  wsample[,i] = outs$byw$Dw[iweeksz]/parsES$pdm
 } }
 
 
@@ -281,13 +243,13 @@ if (!is.element(pset$iplatform,1)) { #cant estimate  with dummy data (1)
 dev  = sqrt(mEm  + mEm^2*abs(kempir_mmodel)) #abs() to tackle dummy data negative k
 if (pset$imodel==2) {
 dev2 = sqrt(mEm2 + mEm2^2*abs(kempir_mmodel2)) }
-thetaTrue[c(length(thetaTrue)-1,length(thetaTrue))] = c(dev,dev2) #pars$pdm, 
+thetaTrue[c(length(thetaTrue)-1,length(thetaTrue))] = c(dev,dev2) 
 
 ##NB data - NB likelihood
 if(pset$iplatform==0){ #simulation: true parameters
-  thetaTrue[c(length(thetaTrue)-1,length(thetaTrue))] = c(pars$k,pars$k)  #pars$pdm, 
+  thetaTrue[c(length(thetaTrue)-1,length(thetaTrue))] = c(pars$k,pars$k)  
   } else {             #not simulation
-  thetaTrue[c(length(thetaTrue)-1,length(thetaTrue))] = c(kempir_mdata, kempir_mdata2) } #pars$pdm,
+  thetaTrue[c(length(thetaTrue)-1,length(thetaTrue))] = c(kempir_mdata, kempir_mdata2) }
     
 ## Summary - output
 sink(file = paste0(output_dir,"/",pset$File_fit_summary),append=FALSE,split=FALSE) #append=TRUE,split=FALSE)
@@ -298,8 +260,8 @@ if (pset$imodel==1) {
   if(pset$iplatform==0) { iwH=iweeksmodel; iwD=iweeksmodel} else {iwH=iweeksmodelH; iwD=iweeksmodelD}
   print(paste0("#H data pts fitted: ", length(iwH)))
   print(paste0("#D data pts fitted: ", length(iwD))) }
-print(paste0("Expected: ", c("rEI = ","rIR = ", "R0 = ", "pE0 = ", "ad =", "kH = ", "kD = "), round(thetaTrue,3))) #"pdm = ",
-#print(paste0("Expected: ", c("rEI = ","rIR = ", "R0 = ", "pE0 = ", "phm =", "varH = ", "varD = "), round(thetaTrue,3))) #"pdm = ",
+print(paste0("Expected: ", c("rEI = ","rIR = ", "R0 = ", "pE0 = ", "pdm/ad =", "kH = ", "kD = "), round(thetaTrue,3))) #"pdm = ",
+print(paste0("Likelihood NB. Estimated proportion deaths outside hospital = ", round(pars$ad/(1+pars$ad),3)))
 cat("\n");
 print(summary(out)); cat("\n")
 print(paste0("Mean by chain and parameter:"))
@@ -321,29 +283,19 @@ sink()
 
 ## Plots - dataframe
 N  = pars$Npop
-rE = 1#parsE$pdm #
-rM = 1#pars$pdm  #
+rE = parsE$pdm #1#
+
 if(pset$iplatform==0) { 
   iseq  = iweeksz #seq_along(mE$byw$time) 
   iseqH = iseq
   iseqD = iseq                    } else { 
-  if (pset$imodel==1) {
-  iseq = iweeksmodel  } else { 
+
   iseqH= iweeksmodelH #iweeksdataH ?
-  iseqD= iweeksmodelD }           }
+  iseqD= iweeksmodelD             }
 
 
-if (pset$imodel==1) { 
-  dat  <- tibble(Weeks  = mE$byw$time[iseq]/7,
-                 Iwe    = rE* mE$byw$Iw[iseq],   #treat PIwe (PHwe) as mu (muH) = pdm*Mean
-                 DataIw = zd) 
-  if (pset$iplatform==0) {
-  dat  <- tibble(dat, 
-                 Iw     = rM* datM$Iw[iseq]) }
-    
- } else if (pset$imodel==2) {
   datH <- tibble(Weeks  = mE$byw$time[iseqH]/7,  
-                 Hwe    =     mE$byw$Hw[iseqH],  
+                 Hwe    =     mE$byw$Hw[iseqH],  #treat PIwe (PHwe) as mu (muH) = pdm*Mean
                  DataHw = zd)
   datD <- tibble(Weeks  = mE$byw$time[iseqD]/7,  
                  Dwe    = rE* mE$byw$Dw[iseqD],  
@@ -354,7 +306,7 @@ if (pset$imodel==1) {
                  Hw    = datM$Hw[iseqH])
   datD <- tibble(datD, 
                  Dw    = datM$Dw[iseqD])    }
-  }
+
 
 ##Age profiles
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
