@@ -82,7 +82,7 @@ frqs <- function(data, vars, name){
 
 
 ########H & D aggregated separately - unlinked at patient level
-HDaggregated=1;
+HDaggregated=0#1;
 if(HDaggregated==1){ #} & dim_sc[1]>1000){
 #DATw   <- DAT %>% filter(!is.na(admission_date)) %>% frqs(c(weekH), "weekfreqH") %>% frqs(c(weekD), "weekfreqD") %>% ungroup()
 #DATaw  <- DAT %>% filter(!is.na(admission_date)) %>% frqs(c(weekH, age_cat), "weekfreqHa") %>% frqs(c(weekD, age_cat), "weekfreqDa")
