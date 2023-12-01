@@ -46,7 +46,7 @@ DAT <- shielding_cohort                                    %>%
   select(-c(covid_admission))                              %>% # no longer need
   filter(!is.na(age_cat))                                  %>% # remove missing age_cat
   mutate(ageg =  as.integer(factor(age_cat)))              %>% # 1:9 <> 0-4 5-11 12-17 18-29 30-39 40-49 50-59 60-69 70+ 
-  mutate(age_cat = paste0("'", age_cat))                   %>% #for excel writing
+  #mutate(age_cat = paste0("'", age_cat))                   %>% #for excel writing
   mutate(shield1 = as.numeric(min(c(admission_date, ons_death_date), na.rm = T) > shielding_v1_startdate)) %>%
   mutate(shield1 = replace_na(0)) %>%
   #mutate(shield2 = as.numeric(shielding=="High Risk", na.rm = T)) %>%
