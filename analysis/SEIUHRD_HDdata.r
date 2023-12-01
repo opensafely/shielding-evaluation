@@ -90,6 +90,9 @@ if(HDaggregated==1){ #} & dim_sc[1]>1000){
 ###Weekly by age and shielding #frqs=count unique pair of values (week,age, shield)
 #DATasw <- DAT %>% filter(!is.na(admission_date)) %>% frqs(c(weekH, age_cat, shielding_v1_binary), "weekfreqHas") %>% 
 #Aggregate H (NA D or not), and D (NA H or not)
+
+  DAT %>% select(-c(ons_death_date, shielding_v1_startdate)) %>% arrange(age_cat) %>% print(n=20)
+
 DATasw <- DAT %>% frqs(c(weekH, age_cat, shielding_v1_binary), "weekfreqHas") %>% 
     frqs(c(weekD, age_cat, shielding_v1_binary), "weekfreqDas") %>% 
                   ungroup() %>%
