@@ -52,7 +52,7 @@ actions:
         csv03: output/HDsynthesis/datDd.csv
         pdf02: output/HDsynthesis/HDdata_Incidence.pdf
         txt01: output/HDsynthesis/HDdata_summary.txt
-        csv04: output/HDsynthesis/HDdata_a1to9.csv
+        #csv04: output/HDsynthesis/HDdata_a1to9.csv
         csv041: output/HDsynthesis/HDdata_a1.csv
         csv042: output/HDsynthesis/HDdata_a2.csv
         csv043: output/HDsynthesis/HDdata_a3.csv
