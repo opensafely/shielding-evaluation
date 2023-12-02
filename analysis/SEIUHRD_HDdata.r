@@ -46,7 +46,7 @@ DAT <- shielding_cohort                                    %>%
   select(-c(covid_admission))                              %>% # no longer need
   filter(!is.na(age_cat))                                  %>% # remove missing age_cat
   mutate(ageg =  as.integer(factor(age_cat)))              %>% # 1:9 <> 0-4 5-11 12-17 18-29 30-39 40-49 50-59 60-69 70+ 
-  #mutate(age_cat = paste0("'", age_cat))                   %>% #for excel writing
+  mutate(age_cat = paste0("'", age_cat))                   %>% #for excel writing
   mutate(shield1 = as.numeric(min(c(admission_date, ons_death_date), na.rm = T) > shielding_v1_startdate)) %>%
   mutate(shield1 = replace_na(0)) %>%
   #mutate(shield2 = as.numeric(shielding=="High Risk", na.rm = T)) %>%
@@ -76,8 +76,9 @@ DAT <- DAT %>%
 frqs <- function(data, vars, name){
   data %>% 
     group_by(across({{vars}}))    %>%
-    mutate({{name}} := n())       }
-    #.group = "keep" or "drop" ?
+    mutate({{name}} := n())  %>% #     }
+    ungroup() }
+	#.group = "keep" or "drop" ?
 
 
 
@@ -91,11 +92,12 @@ if(HDaggregated==1){ #} & dim_sc[1]>1000){
 #DATasw <- DAT %>% filter(!is.na(admission_date)) %>% frqs(c(weekH, age_cat, shielding_v1_binary), "weekfreqHas") %>% 
 #Aggregate H (NA D or not), and D (NA H or not)
 
-  DAT %>% select(-c(patient_id, ons_death_date, shielding_v1_binary, shielding_v1_startdate)) %>% arrange(age_cat) %>% print(n=20)
+  DAT %>% select(-c(patient_id, ons_death_date, shielding_v1_startdate)) %>% arrange(age_cat) %>% print(n=20)
 
 DATasw <- DAT %>% frqs(c(weekH, age_cat, shielding_v1_binary), "weekfreqHas") %>% 
-    frqs(c(weekD, age_cat, shielding_v1_binary), "weekfreqDas") %>% 
-                  ungroup() %>%
+                  #ungroup() %>%
+                  frqs(c(weekD, age_cat, shielding_v1_binary), "weekfreqDas") %>% 
+                  #ungroup() %>%
                   select(-c(patient_id, ons_death_date, admission_date, shielding_v1_startdate)) %>%
                   relocate(shielding_v1_binary,.after=shield1) %>%
                   arrange(ageg)
@@ -127,24 +129,42 @@ d2<-tibble(
   weekH8=v,freqH8=v, weekD8=v,freqD8=v,
   weekH9=v,freqH9=v, weekD9=v,freqD9=v)
 
-dwH = !is.na(DATasw$weekH)
-dwD = !is.na(DATasw$weekD)
-for (i in 1:9){
-  c4=4*i; c3=c4-1; c2=c4-2; c1=c4-3; 
-  dai = DATasw$ageg==i
-  ldai = sum(dai)
-  ldaidwH = sum(dai & dwH)
-  ldaidwD = sum(dai & dwD)
-  if(ldai>0){
-    if(ldaidwH>0){
-  d2[1:ldaidwH,c1] = DATasw$weekH      [dai & dwH]
-  d2[1:ldaidwH,c2] = DATasw$weekfreqHas[dai & dwH]}
-    if(ldaidwD>0){
-  d2[1:ldaidwD,c3] = DATasw$weekD      [dai & dwD]
-  d2[1:ldaidwD,c4] = DATasw$weekfreqDas[dai & dwD]}  } }
+#dwH = !is.na(DATasw$weekH)
+#dwD = !is.na(DATasw$weekD)
+#for (i in 1:9){
+#  c4=4*i; c3=c4-1; c2=c4-2; c1=c4-3; 
+#  dai = DATasw$ageg==i
+#  ldai = sum(dai)
+#  ldaidwH = sum(dai & dwH)
+#  ldaidwD = sum(dai & dwD)
+#  if(ldai>0){
+#    if(ldaidwH>0){
+#  d2[1:ldaidwH,c1] = DATasw$weekH      [dai & dwH]
+#  d2[1:ldaidwH,c2] = DATasw$weekfreqHas[dai & dwH]}
+#    if(ldaidwD>0){
+#  d2[1:ldaidwD,c3] = DATasw$weekD      [dai & dwD]
+#  d2[1:ldaidwD,c4] = DATasw$weekfreqDas[dai & dwD]}  } }
 
-write.csv(d2, file=paste0(output_dir,"/","HDdata_a1to9.csv"))
-
+#v2
+#dwH = !is.na(DATasw$weekH)
+#dwD = !is.na(DATasw$weekD)
+#for (i in 1:9){
+#  c4=4*i; c3=c4-1; c2=c4-2; c1=c4-3; 
+#  dai = DATasw$ageg==i
+#  ldai = sum(dai,na.rm =T)
+#  ldaidwH = sum(dai & dwH,na.rm =T)
+#  ldaidwD = sum(dai & dwD,na.rm =T)
+#  if(ldai>0){
+#    if(ldaidwH>0){
+#      d2[1:ldaidwH,c1] = DATasw$weekH      [dai & dwH]
+#      d2[1:ldaidwH,c2] = DATasw$weekfreqHas[dai & dwH]}
+#    if(ldaidwD>0){
+#      d2[1:ldaidwD,c3] = DATasw$weekD      [dai & dwD]
+#      d2[1:ldaidwD,c4] = DATasw$weekfreqDas[dai & dwD]}  } }
+#
+#
+#write.csv(d2, file=paste0(output_dir,"/","HDdata_a1to9.csv"))
+#
 } #HDAggretated
 
 
@@ -307,12 +327,12 @@ phd2 <- ggplot(datDhd, aes(x = WeeksD)) +
         labs(x = 'Weeks', y = 'Weekly deaths after admission')
 
 #file = paste0(output_dir,"/","HDdata_Incidence.pdf"
-pdf(file = paste0(output_dir,"/","Data_Incidence.pdf"))
+pdf(file = paste0(output_dir,"/","HDdata_Incidence.pdf"))
       gridExtra::grid.arrange(ph, pd, phd1, phd2, nrow = 2, ncol=2)
 dev.off()
 
-if (pset$iplatform==1) { 
-      gridExtra::grid.arrange(ph, pd, phd1, phd2, nrow = 2, ncol=2) }
+#if (pset$iplatform==1) { 
+#      gridExtra::grid.arrange(ph, pd, phd1, phd2, nrow = 2, ncol=2) }
 
 
 
