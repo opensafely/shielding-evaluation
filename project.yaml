@@ -39,29 +39,24 @@ actions:
         table2_shielding_v1: output/tables/shielding_v1_table2.html
         table2_shielding_v2: output/tables/shielding_v2_table2.html
   
-  HD_data:
+
+  SEIUHRD_fit:
     run: > 
       r:latest
-        analysis/SEIUHRD_HDdata.r
+        modelling/SEIRmodel_main.r
     needs: [clean_the_data]
     outputs:
       moderately_sensitive:
-        pdf01: output/HDsynthesis/HDdata_subsets.pdf
-        csv01: output/HDsynthesis/datDh.csv
-        csv02: output/HDsynthesis/datDhd.csv
-        csv03: output/HDsynthesis/datDd.csv
-        pdf02: output/HDsynthesis/HDdata_Incidence.pdf
-        txt01: output/HDsynthesis/HDdata_summary.txt
-        #csv04: output/HDsynthesis/HDdata_a1to9.csv
-        csv041: output/HDsynthesis/HDdata_a1.csv
-        csv042: output/HDsynthesis/HDdata_a2.csv
-        csv043: output/HDsynthesis/HDdata_a3.csv
-        csv044: output/HDsynthesis/HDdata_a4.csv
-        csv045: output/HDsynthesis/HDdata_a5.csv
-        csv046: output/HDsynthesis/HDdata_a6.csv
-        csv047: output/HDsynthesis/HDdata_a7.csv
-        csv048: output/HDsynthesis/HDdata_a8.csv
-        csv049: output/HDsynthesis/HDdata_a9.csv
-
+        txt10: output/modelling/J4j3_Simul_run.txt
+        csv10: output/modelling/J4j3_Simul_R0_by_week.csv
+        txt11: output/modelling/J4j3_Contact_matrix_year-start-24Feb20_stats.txt
+        pdf10: output/modelling/J4j3_Data_Incidence.pdf
+        pdf11: output/modelling/J4j3_Fit_MCMC_BT.pdf
+        pdf12: output/modelling/J4j3_Fit_Variables_estimated.pdf
+        pdf13: output/modelling/J4j3_Fit_Variables_data1.pdf
+        pdf14: output/modelling/J4j3_Fit_Variables_data2.pdf
+        txt12: output/modelling/J4j3_Fit_Bayesian_report.txt
+        pdf15: output/figures/J4j3_covid_hosp_over_time2again.pdf
+        pdf16: output/figures/J4j3_covid_deaths_over_time2again.pdf
 
  

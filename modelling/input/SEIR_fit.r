@@ -86,8 +86,8 @@ LogLikelihood2 <- function(theta){
   pars$rIR = 1/tIR 
   pars$R0  = exp(theta[3])#*logR0Max)#*R0Max 
   pars$pE0 = exp(-theta[4] + logpE0Max) # exp(-r+logpE0Max), r=log(pE0Max/pE0)= 0,3 <= pE0=Max,0.005 (120k pop), fpr Max=0.1
-  pars$pdm = exp(+theta[5]) #pdm=0.1,2 - theta=0,2.3
-  #pars$ad  = theta[5]
+  #pars$pdm = exp(+theta[5]) #pdm=0.1,2 - theta=0,2.3
+  pars$ad  = theta[5]
   #sdHScaled  = theta[6]                #auxiliary parameter for normal noise  
   #sdDScaled  = theta[7]                #auxiliary parameter for normal noise
   pkH       = theta[6]; #kempir_mmodel #pars$k; #sdH; 
@@ -109,7 +109,7 @@ LogLikelihood2 <- function(theta){
   MeanH[1]= max(MeanH[1],1); #avoid NAs
   MeanD[1]= max(MeanD[1],1); #avoid NAs
   muH = MeanH                #pars$pdm*MeanH #
-  muD = pars$pdm*MeanD #MeanD #pars$pdm*MeanD
+  muD = MeanD #pars$pdm*MeanD 
   #Negative binomial likelihood - product over weeks
     return( sum(dnbinom(x = zd, size = kH, mu = muH, log = T)) +
             sum(dnbinom(x = wd, size = kD, mu = muD, log = T)))
@@ -120,8 +120,8 @@ LogLikelihood2 <- function(theta){
 
 ## Likelihood definition, parameter ranges
 niter = 200000 #30000 #120000 #90000 #60000 #150000 #30000 #50000 #40000
-LOWER = c(c(1,1)/tMax,0,        0,                  log(pdmMin), pkLower, pkLower2); 
-UPPER = c(1,1,        log(R0Max),log(pE0Max/pE0Min),log(pdmMax), pkUpper, pkUpper2);
+LOWER = c(c(1,1)/tMax,0,        0,                  0, pkLower, pkLower2); #log(pdmMin), 
+UPPER = c(1,1,        log(R0Max),log(pE0Max/pE0Min),1, pkUpper, pkUpper2); #log(pdmMax), 
 LogLikelihood = LogLikelihood2; #rEI, rIR, R0, pE0, pdm/al, sd, sd2
 
 #Beta priors
@@ -174,8 +174,8 @@ parsE$rEI <- 1/(tMax*MAPE$parametersMAP[1])
 parsE$rIR <- 1/(tMax*MAPE$parametersMAP[2])
 parsE$R0  <- exp(MAPE$parametersMAP[3])#*logR0Max)#*R0Max
 parsE$pE0 <- exp(-MAPE$parametersMAP[4] + logpE0Max)
-#parsE$ad  <- MAPE$parametersMAP[5]
-parsE$pdm <- exp(MAPE$parametersMAP[5])
+parsE$ad  <- MAPE$parametersMAP[5]
+#parsE$pdm <- exp(MAPE$parametersMAP[5])
 #dependent
 parsE$Ea0 = parsE$Na0*parsE$pE0
 parsE$Sa0 = parsE$Na0-parsE$Ra0-parsE$Ea0-parsE$Ia0
@@ -199,14 +199,15 @@ for(i in 1:nsample){
   parsES$rIR <- 1/(tMax*as.vector(psample[i,2]))
   parsES$R0  <- exp(as.vector(psample[i,3]))#*logR0Max)#*R0Max
   parsES$pE0 <- exp(-as.vector(psample[i,4]) + logpE0Max)
-  parsES$pdm <- exp(as.vector(psample[i,5]))
+  #parsES$pdm <- exp(as.vector(psample[i,5]))
+  parsES$ad  <- as.vector(psample[i,5])
   #dependent
   parsES$Ea0 = parsES$Na0*parsES$pE0
   parsES$Sa0 = parsES$Na0-parsES$Ra0-parsES$Ea0-parsES$Ia0
   parsES$beta= BETA(parsES)
   outs        = model(as.vector(parsES))
   zsample[,i] = outs$byw$Hw[iweeksz]
-  wsample[,i] = outs$byw$Dw[iweeksz]/parsES$pdm
+  wsample[,i] = outs$byw$Dw[iweeksz]#/parsES$pdm
 } }
 
 
@@ -283,7 +284,7 @@ sink()
 
 ## Plots - dataframe
 N  = pars$Npop
-rE = parsE$pdm #1#
+rE = 1#parsE$pdm #
 
 if(pset$iplatform==0) { 
   iseq  = iweeksz #seq_along(mE$byw$time) 
