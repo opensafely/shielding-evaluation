@@ -46,8 +46,8 @@ actions:
     needs: [clean_the_data]
     outputs:
       moderately_sensitive:
-        pdf01: output/HDsynthesis/JDat2_HDdata_questions_answered.pdf
-        txt01: output/HDsynthesis/JDat2_HDdata_questions_answered.txt
+        pdf01: output/HDsynthesis/JDat3_HDdata_questions_answered.pdf
+        txt01: output/HDsynthesis/JDat3_HDdata_questions_answered.txt
 
 
  
