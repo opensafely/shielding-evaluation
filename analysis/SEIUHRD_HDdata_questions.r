@@ -19,8 +19,8 @@ DAT0  <- arrow::read_parquet(file = here::here("output/data_edited.gz.parquet"),
 #Keep while testing?
 dim_sc = dim(DAT0) #500, 89
 if (dim_sc[1]>1000){ #only operates on real data, as dummy data has 500 to 1000 rows
-  DAT0 <- DAT0[           which(DAT0$ons_death_date>="2020-01-01"),]                      #remove deaths prior to 2020 but registered from 2020
-  DAT0 <- DAT0[which(is.element(DAT0$ons_underlying_cause,c("U071","U072"))),] #remove deaths not caused by covid_deaths_over_time2
+  DAT0 <- DAT0[           which(DAT0$ons_death_date>="2020-01-01") | is.na(DAT0$ons_death_date),]                      #remove deaths prior to 2020 but registered from 2020
+  DAT0 <- DAT0[which(is.element(DAT0$ons_underlying_cause,c("U071","U072")) | is.na(DAT0$ons_underlying_cause)),] #remove deaths not caused by covid_deaths_over_time2
 }
 
 #DAT0 <- dataset #No filtering yet
@@ -54,7 +54,7 @@ DAT0 <- DAT0                                                %>%
 
 
 ######## Answers in text
-sink(file = paste0(output_dir, "/JDat2_HDdata_questions_answered.txt"),append=F,split=F)
+sink(file = paste0(output_dir, "/JDat3_HDdata_questions_answered.txt"),append=F,split=F)
 cat("\n")
 print(paste0("dataset rows ", dim(DAT0)[1], " and columns ", dim(DAT0)[2] ))
 cat("\n")
@@ -125,8 +125,8 @@ cat("\n")
 sink()
 
 ######## Answers in pdf
-pdf(file = paste0(output_dir,"/JDat2_HDdata_questions_answered.pdf")) #, height=)
-txt=readLines(paste0(output_dir,"/JDat2_HDdata_questions_answered.txt"))
+pdf(file = paste0(output_dir,"/JDat3_HDdata_questions_answered.pdf")) #, height=)
+txt=readLines(paste0(output_dir,"/JDat3_HDdata_questions_answered.txt"))
 plot.new()
 gridExtra::grid.table(txt, theme=ttheme_default(base_size = 7, padding = unit(c(1, 1),"mm") ))
 dev.off()
