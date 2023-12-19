@@ -13,17 +13,26 @@ source(here::here("analysis/functions/redaction.R"))
 output_dir <- here("output/HDsynthesis")
 fs::dir_create(output_dir)
 
-dataset  <- arrow::read_parquet(file = here::here("output/data_edited.gz.parquet"),
+DAT0  <- arrow::read_parquet(file = here::here("output/data_edited.gz.parquet"),
                                           compression = "gzip", compression_level = 5)
 #D
-dim_sc = dim(dataset) #500, 89
+#Keep while testing?
+dim_sc = dim(DAT0) #500, 89
 if (dim_sc[1]>1000){ #only operates on real data, as dummy data has 500 to 1000 rows
-  dataset <- dataset[           which(dataset$ons_death_date>="2020-01-01"),]                      #remove deaths prior to 2020 but registered from 2020
-  dataset <- dataset[which(is.element(dataset$ons_underlying_cause,c("U071","U072"))),] #remove deaths not caused by covid_deaths_over_time2
+  DAT0 <- DAT0[           which(DAT0$ons_death_date>="2020-01-01"),]                      #remove deaths prior to 2020 but registered from 2020
+  DAT0 <- DAT0[which(is.element(DAT0$ons_underlying_cause,c("U071","U072"))),] #remove deaths not caused by covid_deaths_over_time2
 }
 
+#DAT0 <- dataset #No filtering yet
+
+#TODO:
+#up to 2020-12-01
+#apply nec filters
+
+FILTER=0
+if(FILTER==1){
 #First filtering
-DAT0 <- dataset                                            %>%
+DAT0 <- DAT0                                                %>%
   ###patient id/age, care home, shielding, hosp/death 
   dplyr::select(patient_id,
                 age_cat,                                       # factor:  0-4 5-11 12-17 18-29 30-39 40-49 50-59 60-69 70+
@@ -38,20 +47,33 @@ DAT0 <- dataset                                            %>%
                 hirisk_shield_count)                       %>% # number:  0:n, high risk flags per patient
   ###age groups
   filter(!is.na(age_cat))                                      # remove patients with missing 'age_cat'
+}
+
+#use ?
+#covid_hosp_cat ~ "COVID-19 hospitalisations per person (n)",
+
 
 ######## Answers in text
-sink(file = paste0(output_dir, "/HDdata_questions_answered.txt"),append=F,split=F)
+sink(file = paste0(output_dir, "/JDat2_HDdata_questions_answered.txt"),append=F,split=F)
 cat("\n")
 print(paste0("dataset rows ", dim(DAT0)[1], " and columns ", dim(DAT0)[2] ))
 cat("\n")
 print(paste0("Number of patient entries ", sum(!is.na(DAT0$patient_id)) ))
-print(paste0("Number of unique patients (if not the above) ", length(unique(DAT0$patient_id)) ))
+print(paste0("Number of unique patients (if not as above) ", length(unique(DAT0$patient_id)) ))
 print(paste0("Number of missing patient id ", sum(is.na(DAT0$patient_id)) ))
 cat("\n")
 print(paste0("Number of patients ever hospitalised (i.e. at least once): "))
 print(paste0( sum(!is.na(DAT0$covid_hosp_admitted_1)) ))
 print(paste0( length(which(DAT0$all_covid_hosp>0)) ))
 cat("\n")
+
+print(paste0("Number of hospitalisations (inc re-admissions: "))
+print(paste0( sum( !is.na(DAT0$covid_hosp_admitted_1) | !is.na(DAT0$covid_hosp_admitted_2) | 
+                   !is.na(DAT0$covid_hosp_admitted_3) | !is.na(DAT0$covid_hosp_admitted_4) | 
+                   !is.na(DAT0$covid_hosp_admitted_5) | !is.na(DAT0$covid_hosp_admitted_6) ) ))
+print(paste0( sum(DAT0$all_covid_hosp,na.rm = T) ))
+cat("\n")
+
 print(paste0("Number of patients hospitalised more than once: "))
 print(paste0( sum(!is.na(DAT0$covid_hosp_admitted_1) & !is.na(DAT0$covid_hosp_admitted_2)) ))
 print(paste0( length(which(DAT0$all_covid_hosp>1)) ))
@@ -103,8 +125,8 @@ cat("\n")
 sink()
 
 ######## Answers in pdf
-pdf(file = paste0(output_dir,"/HDdata_questions_answered.pdf")) #, height=)
-txt=readLines(paste0(output_dir,"/HDdata_questions_answered.txt"))
+pdf(file = paste0(output_dir,"/JDat2_HDdata_questions_answered.pdf")) #, height=)
+txt=readLines(paste0(output_dir,"/JDat2_HDdata_questions_answered.txt"))
 plot.new()
 gridExtra::grid.table(txt, theme=ttheme_default(base_size = 7, padding = unit(c(1, 1),"mm") ))
 dev.off()
