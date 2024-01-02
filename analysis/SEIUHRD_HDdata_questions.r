@@ -63,6 +63,8 @@ DAT <- DAT                                                %>%
 #           covid_primary_cat          <= total_primarycare_covid - number of covid records as factor (0-5+)
 
 names1 = names(DAT)
+print(paste0("names1: ", names1))
+
 
 jobno = "JDat4_"
 filename1a = "HDdata_questions_answered_Hospital_wCH"
@@ -540,6 +542,8 @@ DAT <- DAT                                                 %>%
   ungroup()
 
 names2 = names(DAT)
+print(paste0("names2: ", names2))
+
 
 #NOTE RELEVANT: covid_hosp_admitted_i  (want admission_date=covid_hosp_admitted_1), 
 #               covid_hosp_discharge_i (want discharge_date=covid_hospt_discharge_1)
@@ -696,10 +700,10 @@ print(paste0("Patients that died in hopital age 70+:     ", nP_DH_70, ", mfracti
 cat("\n")
 cat("Deaths outside hospital \n")
 nP_DO      = sum(!is.na(DAT$ons_death_date) & (DAT$all_covid_hosp==0 | is.na(DAT$all_covid_hosp)), na.rm = T)
-nP_DOCH    = sum(!is.na(DAT$ons_death_date) & (DAT$all_covid_hosp==0 | is.na(DAT$all_covid_hosp)) 
-                 & (DAT$care_home==TRUE | DAT$care_home_nursing==TRUE), na.rm = T)
-print(paste0("Patients that died outside hospital:                        ", nP_DO))
-print(paste0("Patients in carehomes that died outside hospital:           ", nP_DOCH))
+#nP_DOCH    = sum(!is.na(DAT$ons_death_date) & (DAT$all_covid_hosp==0 | is.na(DAT$all_covid_hosp)) 
+#                 & (DAT$care_home==TRUE | DAT$care_home_nursing==TRUE), na.rm = T)
+print(paste0("Patients that died outside hospital (not in carehomes):      ", nP_DO))
+#print(paste0("Patients in carehomes that died outside hospital:           ", nP_DOCH))
 
 
 cat("\n")
@@ -867,10 +871,10 @@ DAT <- DAT                                                 %>%
   ###Remove patient id 
   select(-c(patient_id))
   #drop_na()    #Not yet for joint H and D and shielding
-  ungroup()
+  #ungroup()
 
 names3 = names(DAT)
-
+print(paste0("names3: ", names3))
 
 #Get
 # time series - also, with and wo carehomes
