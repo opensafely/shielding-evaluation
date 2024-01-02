@@ -46,8 +46,15 @@ actions:
     needs: [clean_the_data]
     outputs:
       moderately_sensitive:
-        pdf01: output/HDsynthesis/JDat3_HDdata_questions_answered.pdf
-        txt01: output/HDsynthesis/JDat3_HDdata_questions_answered.txt
-
-
- 
+        pdf01: output/HDsynthesis/JDat4_HDdata_questions_answered_Hospital_wCH.pdf
+        txt01: output/HDsynthesis/JDat4_HDdata_questions_answered_Hospital_wCH.txt
+        pdf02: output/HDsynthesis/JDat4_HDdata_questions_answered_Deaths_wCH.pdf
+        txt02: output/HDsynthesis/JDat4_HDdata_questions_answered_Deaths_wCH.txt
+        pdf03: output/HDsynthesis/JDat4_HDdata_questions_answered_Shielding_wCH.pdf
+        txt03: output/HDsynthesis/JDat4_HDdata_questions_answered_Shielding_wCH.txt
+        pdf04: output/HDsynthesis/JDat4_HDdata_questions_answered_Hospital.pdf
+        txt04: output/HDsynthesis/JDat4_HDdata_questions_answered_Hospital.txt
+        pdf05: output/HDsynthesis/JDat4_HDdata_questions_answered_Deaths.pdf
+        txt05: output/HDsynthesis/JDat4_HDdata_questions_answered_Deaths.txt
+        pdf06: output/HDsynthesis/JDat4_HDdata_questions_answered_Shielding.pdf
+        txt06: output/HDsynthesis/JDat4_HDdata_questions_answered_Shielding.txt
