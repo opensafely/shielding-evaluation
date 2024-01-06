@@ -66,7 +66,7 @@ names1 = names(DAT)
 print(paste0("names1: ", names1))
 
 
-jobno = "JDat4_"
+jobno = "JDat5_"
 filename1a = "HDdata_questions_answered_Hospital_wCH"
 filename2a = "HDdata_questions_answered_Deaths_wCH"
 filename3a = "HDdata_questions_answered_Shielding_wCH"
@@ -319,6 +319,7 @@ nP_DOCH70  = sum(!is.na(DAT$ons_death_date) & (DAT$all_covid_hosp==0 | is.na(DAT
 nP_DONCH70 = sum(!is.na(DAT$ons_death_date) & (DAT$all_covid_hosp==0 | is.na(DAT$all_covid_hosp))
                  & !(DAT$care_home==TRUE | DAT$care_home_nursing==TRUE) & DAT$age_cat=="70+", na.rm = T)
 print(paste0("Patients that died outside hospital:                        ", nP_DO))
+print(paste0("Proportion of deaths outside hospital:                      ", nP_DO/nP_D))
 print(paste0("Patients in carehomes that died outside hospital:           ", nP_DOCH))
 print(paste0("Patients in carehomes age 70+ that died outside hospital:   ", nP_DOCH70))
 print(paste0("Proportion in carehomes age 70+ that died outside hospital: ", round(nP_DOCH70/nP_CH70,3) ))
@@ -527,18 +528,26 @@ DAT <- DAT                                                 %>%
   #mutate(shield1 = as.numeric( min(c(admission_date, ons_death_date), na.rm = T) > shielding_v1_startdate) ) %>% #Limit shielding by date
   ###Restrict to deaths or hospitalisations, not neither
   filter(!is.na(ons_death_date) | all_covid_hosp>0)          %>%   # Tried "| !is.na(admission_date))": too few
-  ###Restrict admissions to first admissions (NB: removed pivot_longer, hence one row per patient)
-  mutate(admission_date = covid_hosp_admitted_1)             %>%
-  mutate(discharge_date = covid_hosp_discharge_1)            %>%
+  ###Refer admissions to first admission (NB: removed pivot_longer, hence one row per patient)
+  mutate(admission_date  = covid_hosp_admitted_1)             %>%
+  ###Refer discharge to first discharge 
+  mutate(discharge_date  = covid_hosp_discharge_1)            %>%
+  ###Refer discharge to last discharge 
+  mutate(discharge_date2 = discharge_date)                    %>%
+  mutate(discharge_date2 = ifelse(!is.na(covid_hosp_admitted_2),covid_hosp_admitted_2,discharge_date2) ) %>%
+  mutate(discharge_date2 = ifelse(!is.na(covid_hosp_admitted_3),covid_hosp_admitted_3,discharge_date2) ) %>%
+  mutate(discharge_date2 = ifelse(!is.na(covid_hosp_admitted_4),covid_hosp_admitted_4,discharge_date2) ) %>%
+  mutate(discharge_date2 = ifelse(!is.na(covid_hosp_admitted_5),covid_hosp_admitted_5,discharge_date2) ) %>%
+  mutate(discharge_date2 = ifelse(!is.na(covid_hosp_admitted_6),covid_hosp_admitted_6,discharge_date2) ) %>%
+  
   ###Each patient has one row - other vars replaced by numeric flags
-  select(-c(care_home_nursing, care_home, #shielding, #covid_admission, #patient_id, #all_covid_hosp, 
+  select(-c(care_home_nursing, care_home, #shielding, #patient_id, #all_covid_hosp, 
             dplyr::contains("hosp_admitted"),
             dplyr::contains("hosp_discharge"), 
             dplyr::contains("hirisk"), 
             shielding_v1_binary, shielding_v1_startdate))    %>%   # no longer need 
-  ###For now, drop this
+  ###For now, drop these
   select(-c(shield1,shield1_date))                           %>%
-  #drop_na()    #Not yet for joint H and D and shielding
   ungroup()
 
 names2 = names(DAT)
@@ -565,15 +574,15 @@ cat("\n")
 
 cat("Patients \n")
 nP = sum(!is.na(DAT$patient_id), na.rm = T)
-nP_00 = round(sum(!is.na(DAT$patient_id) & DAT$age_cat=="0-4", na.rm = T), 3)
-nP_05 = round(sum(!is.na(DAT$patient_id) & DAT$age_cat=="5-11", na.rm = T), 3)
-nP_12 = round(sum(!is.na(DAT$patient_id) & DAT$age_cat=="12-17", na.rm = T), 3)
-nP_18 = round(sum(!is.na(DAT$patient_id) & DAT$age_cat=="18-29", na.rm = T), 3)
-nP_30 = round(sum(!is.na(DAT$patient_id) & DAT$age_cat=="30-39", na.rm = T), 3)
-nP_40 = round(sum(!is.na(DAT$patient_id) & DAT$age_cat=="40-49", na.rm = T), 3)
-nP_50 = round(sum(!is.na(DAT$patient_id) & DAT$age_cat=="50-59", na.rm = T), 3)
-nP_60 = round(sum(!is.na(DAT$patient_id) & DAT$age_cat=="60-69", na.rm = T), 3)
-nP_70 = round(sum(!is.na(DAT$patient_id) & DAT$age_cat=="70+", na.rm = T), 3)
+nP_00 = sum(!is.na(DAT$patient_id) & DAT$age_cat=="0-4", na.rm = T)
+nP_05 = sum(!is.na(DAT$patient_id) & DAT$age_cat=="5-11", na.rm = T)
+nP_12 = sum(!is.na(DAT$patient_id) & DAT$age_cat=="12-17", na.rm = T)
+nP_18 = sum(!is.na(DAT$patient_id) & DAT$age_cat=="18-29", na.rm = T)
+nP_30 = sum(!is.na(DAT$patient_id) & DAT$age_cat=="30-39", na.rm = T)
+nP_40 = sum(!is.na(DAT$patient_id) & DAT$age_cat=="40-49", na.rm = T)
+nP_50 = sum(!is.na(DAT$patient_id) & DAT$age_cat=="50-59", na.rm = T)
+nP_60 = sum(!is.na(DAT$patient_id) & DAT$age_cat=="60-69", na.rm = T)
+nP_70 = sum(!is.na(DAT$patient_id) & DAT$age_cat=="70+", na.rm = T)
 print(paste0("Patient entries ", nP ))
 print(paste0("Unique patients (if not as above) ", length(unique(DAT$patient_id)) )) #=> row <> one patient
 print(paste0("Missing patient id ", sum(is.na(DAT$patient_id)) ))
@@ -702,8 +711,9 @@ cat("Deaths outside hospital \n")
 nP_DO      = sum(!is.na(DAT$ons_death_date) & (DAT$all_covid_hosp==0 | is.na(DAT$all_covid_hosp)), na.rm = T)
 #nP_DOCH    = sum(!is.na(DAT$ons_death_date) & (DAT$all_covid_hosp==0 | is.na(DAT$all_covid_hosp)) 
 #                 & (DAT$care_home==TRUE | DAT$care_home_nursing==TRUE), na.rm = T)
-print(paste0("Patients that died outside hospital (not in carehomes):      ", nP_DO))
-#print(paste0("Patients in carehomes that died outside hospital:           ", nP_DOCH))
+print(paste0("Patients that died outside hospital (not in carehomes):     ", nP_DO))
+print(paste0("Proportion of deaths outside hospital:                      ", nP_DO/nP_D))
+#print(paste0("Patients in carehomes that died outside hospital:          ", nP_DOCH))
 
 
 cat("\n")
@@ -714,11 +724,14 @@ med_time_to_death = round(as.numeric( median(DAT$ons_death_date[which(DAT$all_co
 print(paste0("Mean (median) time in hospital from 1st admission to death:   ", men_time_to_death, " (", med_time_to_death, ")" ))
 
 cat("\n")
-cat("Deaths in hospital - average time to recovery \n")
+cat("Recovery in hospital - average time to recovery \n")
 ###Across all ages - as the fraction of mortality is by age
-men_time_to_recover = round(as.numeric(   mean(DAT$discharge_date - DAT$admission_date, na.rm =T)),3)
-med_time_to_recover = round(as.numeric( median(DAT$discharge_date - DAT$admission_date, na.rm =T)),3)
-print(paste0("Mean (median) time in hospital from 1st admission to recovery: ", men_time_to_recover, " (", med_time_to_recover, ")" ))
+men_time_to_recover  = round(as.numeric(   mean(DAT$discharge_date  - DAT$admission_date, na.rm =T)),3)
+med_time_to_recover  = round(as.numeric( median(DAT$discharge_date  - DAT$admission_date, na.rm =T)),3)
+#men_time_to_recover2 = round(as.numeric(   mean(DAT$discharge_date2 - DAT$admission_date, na.rm =T)),3)
+#med_time_to_recover2 = round(as.numeric( median(DAT$discharge_date2 - DAT$admission_date, na.rm =T)),3)
+print(paste0("Mean (median) recovery time in hospital, 1st admission to 1st discharge:  ", men_time_to_recover, " (", med_time_to_recover, ")" ))
+#print(paste0("Mean (median) recovery time in hospital, 1st admission to last discharge: ", men_time_to_recover2, " (", med_time_to_recover2, ")" ))
 
 sink()
 
@@ -798,6 +811,15 @@ nP_Hosp_40_s1 = length( which(DAT$shielding=="High Risk" & DAT$all_covid_hosp>0 
 nP_Hosp_50_s1 = length( which(DAT$shielding=="High Risk" & DAT$all_covid_hosp>0 & DAT$age_cat=="50-59") )
 nP_Hosp_60_s1 = length( which(DAT$shielding=="High Risk" & DAT$all_covid_hosp>0 & DAT$age_cat=="60-69") )
 nP_Hosp_70_s1 = length( which(DAT$shielding=="High Risk" & DAT$all_covid_hosp>0 & DAT$age_cat=="70+") )
+nP_Hosp_00_s0 = nP_Hosp_00 - nP_Hosp_00_s1
+nP_Hosp_05_s0 = nP_Hosp_05 - nP_Hosp_05_s1
+nP_Hosp_12_s0 = nP_Hosp_12 - nP_Hosp_12_s1
+nP_Hosp_18_s0 = nP_Hosp_18 - nP_Hosp_18_s1
+nP_Hosp_30_s0 = nP_Hosp_30 - nP_Hosp_30_s1
+nP_Hosp_40_s0 = nP_Hosp_40 - nP_Hosp_40_s1
+nP_Hosp_50_s0 = nP_Hosp_50 - nP_Hosp_50_s1
+nP_Hosp_60_s0 = nP_Hosp_60 - nP_Hosp_60_s1
+nP_Hosp_70_s0 = nP_Hosp_70 - nP_Hosp_70_s1
 
 nP_DH_00_s1   = length( which(DAT$shielding=="High Risk" & !is.na(DAT$ons_death_date) & DAT$all_covid_hosp>0 & DAT$age_cat=="0-4" ))
 nP_DH_05_s1   = length( which(DAT$shielding=="High Risk" & !is.na(DAT$ons_death_date) & DAT$all_covid_hosp>0 & DAT$age_cat=="5-11" ))
@@ -808,6 +830,15 @@ nP_DH_40_s1   = length( which(DAT$shielding=="High Risk" & !is.na(DAT$ons_death_
 nP_DH_50_s1   = length( which(DAT$shielding=="High Risk" & !is.na(DAT$ons_death_date) & DAT$all_covid_hosp>0 & DAT$age_cat=="50-59" ))
 nP_DH_60_s1   = length( which(DAT$shielding=="High Risk" & !is.na(DAT$ons_death_date) & DAT$all_covid_hosp>0 & DAT$age_cat=="60-69" ))
 nP_DH_70_s1   = length( which(DAT$shielding=="High Risk" & !is.na(DAT$ons_death_date) & DAT$all_covid_hosp>0 & DAT$age_cat=="70+" ))
+nP_DH_00_s0   = nP_DH_00 - nP_DH_00_s1
+nP_DH_05_s0   = nP_DH_05 - nP_DH_05_s1
+nP_DH_12_s0   = nP_DH_12 - nP_DH_12_s1
+nP_DH_18_s0   = nP_DH_18 - nP_DH_18_s1
+nP_DH_30_s0   = nP_DH_30 - nP_DH_30_s1
+nP_DH_40_s0   = nP_DH_40 - nP_DH_40_s1
+nP_DH_50_s0   = nP_DH_50 - nP_DH_50_s1
+nP_DH_60_s0   = nP_DH_60 - nP_DH_60_s1
+nP_DH_70_s0   = nP_DH_70 - nP_DH_70_s1
 
 mfraction_00_s1 = round(nP_DH_00_s1/nP_Hosp_00_s1, 3)
 mfraction_05_s1 = round(nP_DH_05_s1/nP_Hosp_05_s1, 3)
@@ -818,15 +849,34 @@ mfraction_40_s1 = round(nP_DH_40_s1/nP_Hosp_40_s1, 3)
 mfraction_50_s1 = round(nP_DH_50_s1/nP_Hosp_50_s1, 3)
 mfraction_60_s1 = round(nP_DH_60_s1/nP_Hosp_60_s1, 3)
 mfraction_70_s1 = round(nP_DH_70_s1/nP_Hosp_70_s1, 3)
-print(paste0("Shiedling patients died in hopital age 0-4:     ", nP_DH_00_s1, ", mfraction  ", mfraction_00_s1 ))
-print(paste0("Shiedling patients died in hopital age 5-11:    ", nP_DH_05_s1, ", mfraction  ", mfraction_05_s1 ))
-print(paste0("Shiedling patients died in hopital age 12-17:   ", nP_DH_12_s1, ", mfraction  ", mfraction_12_s1 ))
-print(paste0("Shiedling patients died in hopital age 18-29:   ", nP_DH_18_s1, ", mfraction  ", mfraction_18_s1 ))
-print(paste0("Shiedling patients died in hopital age 30-39:   ", nP_DH_30_s1, ", mfraction  ", mfraction_30_s1 ))
-print(paste0("Shiedling patients died in hopital age 40-49:   ", nP_DH_40_s1, ", mfraction  ", mfraction_40_s1 ))
-print(paste0("Shiedling patients died in hopital age 50-59:   ", nP_DH_50_s1, ", mfraction  ", mfraction_50_s1 ))
-print(paste0("Shiedling patients died in hopital age 60-69:   ", nP_DH_60_s1, ", mfraction  ", mfraction_60_s1 ))
-print(paste0("Shiedling patients died in hopital age 70+:     ", nP_DH_70_s1, ", mfraction  ", mfraction_70_s1 ))
+mfraction_00_s0 = round(nP_DH_00_s0/nP_Hosp_00_s0, 3)
+mfraction_05_s0 = round(nP_DH_05_s0/nP_Hosp_05_s0, 3)
+mfraction_12_s0 = round(nP_DH_12_s0/nP_Hosp_12_s0, 3)
+mfraction_18_s0 = round(nP_DH_18_s0/nP_Hosp_18_s0, 3)
+mfraction_30_s0 = round(nP_DH_30_s0/nP_Hosp_30_s0, 3)
+mfraction_40_s0 = round(nP_DH_40_s0/nP_Hosp_40_s0, 3)
+mfraction_50_s0 = round(nP_DH_50_s0/nP_Hosp_50_s0, 3)
+mfraction_60_s0 = round(nP_DH_60_s0/nP_Hosp_60_s0, 3)
+mfraction_70_s0 = round(nP_DH_70_s0/nP_Hosp_70_s0, 3)
+
+print(paste0("Shiedling patients died in hopital age 0-4:    ", nP_DH_00_s1, ", mfraction  ", mfraction_00_s1 ))
+print(paste0("Shiedling patients died in hopital age 5-11:   ", nP_DH_05_s1, ", mfraction  ", mfraction_05_s1 ))
+print(paste0("Shiedling patients died in hopital age 12-17:  ", nP_DH_12_s1, ", mfraction  ", mfraction_12_s1 ))
+print(paste0("Shiedling patients died in hopital age 18-29:  ", nP_DH_18_s1, ", mfraction  ", mfraction_18_s1 ))
+print(paste0("Shiedling patients died in hopital age 30-39:  ", nP_DH_30_s1, ", mfraction  ", mfraction_30_s1 ))
+print(paste0("Shiedling patients died in hopital age 40-49:  ", nP_DH_40_s1, ", mfraction  ", mfraction_40_s1 ))
+print(paste0("Shiedling patients died in hopital age 50-59:  ", nP_DH_50_s1, ", mfraction  ", mfraction_50_s1 ))
+print(paste0("Shiedling patients died in hopital age 60-69:  ", nP_DH_60_s1, ", mfraction  ", mfraction_60_s1 ))
+print(paste0("Shiedling patients died in hopital age 70+:    ", nP_DH_70_s1, ", mfraction  ", mfraction_70_s1 ))
+print(paste0("Non-shield patients died in hopital age 0-4:   ", nP_DH_00_s1, ", mfraction  ", mfraction_00_s0 ))
+print(paste0("Non-shield patients died in hopital age 5-11:  ", nP_DH_05_s0, ", mfraction  ", mfraction_05_s0 ))
+print(paste0("Non-shield patients died in hopital age 12-17: ", nP_DH_12_s0, ", mfraction  ", mfraction_12_s0 ))
+print(paste0("Non-shield patients died in hopital age 18-29: ", nP_DH_18_s0, ", mfraction  ", mfraction_18_s0 ))
+print(paste0("Non-shield patients died in hopital age 30-39: ", nP_DH_30_s0, ", mfraction  ", mfraction_30_s0 ))
+print(paste0("Non-shield patients died in hopital age 40-49: ", nP_DH_40_s0, ", mfraction  ", mfraction_40_s0 ))
+print(paste0("Non-shield patients died in hopital age 50-59: ", nP_DH_50_s0, ", mfraction  ", mfraction_50_s0 ))
+print(paste0("Non-shield patients died in hopital age 60-69: ", nP_DH_60_s0, ", mfraction  ", mfraction_60_s0 ))
+print(paste0("Non-shield patients died in hopital age 70+:   ", nP_DH_70_s0, ", mfraction  ", mfraction_70_s0 ))
 
 sink()
 
