@@ -39,33 +39,33 @@ actions:
         table2_shielding_v1: output/tables/shielding_v1_table2.html
         table2_shielding_v2: output/tables/shielding_v2_table2.html
   
-  HD_data_questions:
-    run: > 
-      r:latest
-        analysis/SEIUHRD_HDdata_questions.r
-    needs: [clean_the_data]
-    outputs:
-      moderately_sensitive:
-        txt01: output/HDsynthesis/JDat6_HDdata_questions_answered_Hospital_wCH.txt
-        txt02: output/HDsynthesis/JDat6_HDdata_questions_answered_Deaths_wCH.txt
-        txt03: output/HDsynthesis/JDat6_HDdata_questions_answered_Shielding_wCH.txt
-        txt04: output/HDsynthesis/JDat6_HDdata_questions_answered_Hospital.txt
-        txt05: output/HDsynthesis/JDat6_HDdata_questions_answered_Deaths.txt
-        txt06: output/HDsynthesis/JDat6_HDdata_questions_answered_Shielding.txt
-
-  # HD_data:
+  # HD_data_questions:
     # run: > 
       # r:latest
-        # analysis/runmkd.r
+        # analysis/SEIUHRD_HDdata_questions.r
     # needs: [clean_the_data]
     # outputs:
       # moderately_sensitive:
-        # csv01b: output/HDsynthesis/JDat6_Carehomes_included_H.csv
-        # csv02b: output/HDsynthesis/JDat6_Carehomes_included_D.csv
-        # csv03b: output/HDsynthesis/JDat6_Carehomes_included_DH.csv
-        # csv04b: output/HDsynthesis/JDat6_Carehomes_included_DO.csv
-        # csv05b: output/HDsynthesis/JDat6_Hdata.csv
-        # csv06b: output/HDsynthesis/JDat6_HRdata.csv
-        # csv07b: output/HDsynthesis/JDat6_DHdata.csv
-        # csv08b: output/HDsynthesis/JDat6_DOdata.csv
-        # html01: output/HDsynthesis/HDdata.html
+        # txt01: output/HDsynthesis/JDat6_HDdata_questions_answered_Hospital_wCH.txt
+        # txt02: output/HDsynthesis/JDat6_HDdata_questions_answered_Deaths_wCH.txt
+        # txt03: output/HDsynthesis/JDat6_HDdata_questions_answered_Shielding_wCH.txt
+        # txt04: output/HDsynthesis/JDat6_HDdata_questions_answered_Hospital.txt
+        # txt05: output/HDsynthesis/JDat6_HDdata_questions_answered_Deaths.txt
+        # txt06: output/HDsynthesis/JDat6_HDdata_questions_answered_Shielding.txt
+
+  HD_data:
+    run: > 
+      r:latest
+        analysis/runmkd.R
+    needs: [clean_the_data]
+    outputs:
+      moderately_sensitive:
+        csv01b: output/HDsynthesis/JDat7_Carehomes_included_H.csv
+        csv02b: output/HDsynthesis/JDat7_Carehomes_included_D.csv
+        csv03b: output/HDsynthesis/JDat7_Carehomes_included_DH.csv
+        csv04b: output/HDsynthesis/JDat7_Carehomes_included_DO.csv
+        csv05b: output/HDsynthesis/JDat7_Hdata.csv
+        csv06b: output/HDsynthesis/JDat7_HRdata.csv
+        csv07b: output/HDsynthesis/JDat7_DHdata.csv
+        csv08b: output/HDsynthesis/JDat7_DOdata.csv
+        html01: output/HDsynthesis/HDdata.html

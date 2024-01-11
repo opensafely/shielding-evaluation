@@ -38,7 +38,7 @@ Select HD data, filter, save and plot.
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 
 
-jobno = "JDat6_"
+jobno = "JDat7_"
 
 ######## Functions #############################################################
 ######### Data rounding/truncation
