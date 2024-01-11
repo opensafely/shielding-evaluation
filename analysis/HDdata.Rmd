@@ -1,7 +1,23 @@
+---
+title: "Report title"
+date: "`r Sys.Date()`"
+author: "Johnny Filipe"
+#output: html_document
+output: html_document
+#   bookdown::html_document2: 
+#   toc: false
+#   number_sections: false
+# bibliography: references.bib
+---
+
+```{r setup, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+# 10jan24 - Rmarkdown vrs
+##
 ## Data subsets, plots, dat files
 ## All, H, DH, DO
 ## Aggregation by week, ageg, shielding
 ## (see HDdata_test.R for tests on simulated data)
+# This will create the factory in the working directory
 
 library(arrow)
 library(data.table)
@@ -12,6 +28,15 @@ library(here)
 library(lubridate)
 library(magrittr)
 library(tidyverse)
+
+#new_factory(outputs = paste0(here::here("output/HDsynthesis")))
+
+```
+
+Select HD data, filter, save and plot.  
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
 
 jobno = "JDat6_"
 
@@ -49,7 +74,7 @@ fig <- function(data, x , y, col, facets, xname='Date', yname='Weekly admissions
 ######## Get Source Data #######################################################
 source(here::here("analysis/functions/redaction.R"))
 
-output_dir <- here("output/HDsynthesis")
+output_dir <- here::here("output/HDsynthesis")
 fs::dir_create(output_dir)
 
 DAT  <- arrow::read_parquet(file = here::here("output/data_edited.gz.parquet"),
@@ -143,7 +168,7 @@ print(paste0(names1))
 
 
 ### Carehomes plots and data
-pdf(file = paste0(output_dir,"/",jobno,"Carehomes_included_H,D.pdf"), width = 8, height = 6)
+#- pdf(file = paste0(output_dir,"/",jobno,"Carehomes_included_H,D.pdf"), width = 8, height = 6)
 
 ## PLot Hospitalisations by carehome use
   dat <- DAT %>% filter(!is.na(weekH) | all_covid_hosp>0) %>% 
@@ -191,8 +216,8 @@ pdf(file = paste0(output_dir,"/",jobno,"Carehomes_included_H,D.pdf"), width = 8,
   fig0(dat, x=weekD, y=freqDch, col=carehome, xname ='Week', yname ='Deaths outside Hospital')
   ### save data - truncated
   dati <- dat %>% mutate(freqDch = ifelse(freqDch<=7,"<=7",freqDch)) %>%
-                  write.csv(file=paste0(output_dir,"/",jobno,"Carehomes_included_DO.csv"))
-dev.off()
+                   write.csv(file=paste0(output_dir,"/",jobno,"Carehomes_included_DO.csv"))
+#- dev.off()
 
 
 ### Hospital re-admissions plots and data
@@ -228,7 +253,7 @@ print(paste0(names2))
 #TODO: shield1 rather than shield
 
 
-pdf(file = paste0(output_dir,"/",jobno,"HDdata_Timeseries_H,HR,DH,DO.pdf"), width = 8, height = 6)
+#- pdf(file = paste0(output_dir,"/",jobno,"HDdata_Timeseries_H,HR,DH,DO.pdf"), width = 8, height = 6)
 
 ### DATA Hospitalisations (first admission) by week, age, and shielding ########
   dat <- DAT %>% filter(!is.na(weekH) | all_covid_hosp>0) %>%
@@ -335,7 +360,7 @@ pdf(file = paste0(output_dir,"/",jobno,"HDdata_Timeseries_H,HR,DH,DO.pdf"), widt
   datDO <- dat %>% rename(WeeksD=weekD, Dataw=freqDas, DatesD=dateD)          #fit data
   dat   <- dat %>% mutate(freqDas = ifelse(freqDas<=7,"<=7",freqDas)) %>% 
                    write.csv(file=paste0(output_dir,"/",jobno,"DOdata.csv"))  #show data
-dev.off()
+#- dev.off()
 
 
 
@@ -366,16 +391,16 @@ dev.off()
   p4 <- ggplot(dat, aes(x = weekD)) +
         geom_point(aes(y = freqD))  + labs(x = 'Week', y =paste0('Deaths outside Hospital (tot ', nDO,')') )
 
-pdf(file = paste0(output_dir,"/",jobno,"HDdata_Incidence_H,HR,DH,DO.pdf"))
+#- pdf(file = paste0(output_dir,"/",jobno,"HDdata_Incidence_H,HR,DH,DO.pdf"))
   gridExtra::grid.arrange(p1, p2, p3, p4, nrow = 2, ncol=2)
-dev.off()
+#- dev.off()
 
 
 
 
 #### Summary of statistics and parameter estimates
 ##### Data & metadata for _fit
-sink(file = paste0(output_dir,"/",jobno,"HDdata_summary.txt"),append=F,split=F)
+#- sink(file = paste0(output_dir,"/",jobno,"HDdata_summary.txt"),append=F,split=F)
 
 #TODO: assess date/week range of each TS - use it or set missing data to zero?
 
@@ -1054,7 +1079,7 @@ print(paste0(names1))
 print(paste0("names2"))
 print(paste0(names2))
 
-sink()
+#- sink()
 
-
+```
 
