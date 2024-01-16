@@ -39,62 +39,62 @@ actions:
         table2_shielding_v1: output/tables/shielding_v1_table2.html
         table2_shielding_v2: output/tables/shielding_v2_table2.html
   
-  # HD_data_questions:
-    # run: > 
-      # r:latest
-        # analysis/SEIUHRD_HDdata_questions.r
-    # needs: [clean_the_data]
-    # outputs:
-      # moderately_sensitive:
-        # txt01: output/HDsynthesis/JDat6_HDdata_questions_answered_Hospital_wCH.txt
-        # txt02: output/HDsynthesis/JDat6_HDdata_questions_answered_Deaths_wCH.txt
-        # txt03: output/HDsynthesis/JDat6_HDdata_questions_answered_Shielding_wCH.txt
-        # txt04: output/HDsynthesis/JDat6_HDdata_questions_answered_Hospital.txt
-        # txt05: output/HDsynthesis/JDat6_HDdata_questions_answered_Deaths.txt
-        # txt06: output/HDsynthesis/JDat6_HDdata_questions_answered_Shielding.txt
-
-  HD_data:
+  HD_data_questions:
     run: > 
       r:latest
-        analysis/runmkd.R
+        analysis/SEIUHRD_HDdata_questions.r
     needs: [clean_the_data]
     outputs:
       moderately_sensitive:
-        csv01b: output/HDsynthesis/JDat8_Carehomes_included_H.csv
-        svg01b: output/HDsynthesis/JDat8_Carehomes_included_H.svg
-        csv02b: output/HDsynthesis/JDat8_Carehomes_included_D.csv
-        svg02b: output/HDsynthesis/JDat8_Carehomes_included_D.svg
-        csv03b: output/HDsynthesis/JDat8_Carehomes_included_DH.csv
-        svg03b: output/HDsynthesis/JDat8_Carehomes_included_DH.svg
-        csv04b: output/HDsynthesis/JDat8_Carehomes_included_DO.csv
-        svg04b: output/HDsynthesis/JDat8_Carehomes_included_DO.svg
-        csv05b: output/HDsynthesis/JDat8_Hdata.csv
-        svg051: output/HDsynthesis/JDat8_Hdata_all.svg
-        svg052: output/HDsynthesis/JDat8_Hdata_by_age.svg
-        svg053: output/HDsynthesis/JDat8_Hdata_by_shi.svg
-        svg054: output/HDsynthesis/JDat8_Hdata_s0_by_age.svg
-        svg055: output/HDsynthesis/JDat8_Hdata_s1_by_age.svg
-        csv06b: output/HDsynthesis/JDat8_HRdata.csv
-        svg061: output/HDsynthesis/JDat8_HRdata_all.svg
-        svg062: output/HDsynthesis/JDat8_HRdata_by_age.svg
-        svg063: output/HDsynthesis/JDat8_HRdata_by_shi.svg
-        svg064: output/HDsynthesis/JDat8_HRdata_s0_by_age.svg
-        svg065: output/HDsynthesis/JDat8_HRdata_s1_by_age.svg
-        csv07b: output/HDsynthesis/JDat8_DHdata.csv
-        svg071: output/HDsynthesis/JDat8_DHdata_all.svg
-        svg072: output/HDsynthesis/JDat8_DHdata_by_age.svg
-        svg073: output/HDsynthesis/JDat8_DHdata_by_shi.svg
-        svg074: output/HDsynthesis/JDat8_DHdata_s0_by_age.svg
-        svg075: output/HDsynthesis/JDat8_DHdata_s1_by_age.svg
-        csv08b: output/HDsynthesis/JDat8_DOdata.csv
-        svg081: output/HDsynthesis/JDat8_DOdata_all.svg
-        svg082: output/HDsynthesis/JDat8_DOdata_by_age.svg
-        svg083: output/HDsynthesis/JDat8_DOdata_by_shi.svg
-        svg084: output/HDsynthesis/JDat8_DOdata_s0_by_age.svg
-        svg085: output/HDsynthesis/JDat8_DOdata_s1_by_age.svg       
-        csv091: output/HDsynthesis/JDat8_H,HR,DH,DOdata_H.csv
-        csv092: output/HDsynthesis/JDat8_H,HR,DH,DOdata_HR.csv
-        csv093: output/HDsynthesis/JDat8_H,HR,DH,DOdata_DH.csv
-        csv094: output/HDsynthesis/JDat8_H,HR,DH,DOdata_DO.csv
-        svg09b: output/HDsynthesis/JDat8_H,HR,DH,DOdata.svg
-        html01: output/HDsynthesis/HDdata.html
+        txt01: output/HDsynthesis/JDat9_HDdata_questions_answered_Hospital_wCH.txt
+        txt02: output/HDsynthesis/JDat9_HDdata_questions_answered_Deaths_wCH.txt
+        txt03: output/HDsynthesis/JDat9_HDdata_questions_answered_Shielding_wCH.txt
+        txt04: output/HDsynthesis/JDat9_HDdata_questions_answered_Hospital.txt
+        txt05: output/HDsynthesis/JDat9_HDdata_questions_answered_Deaths.txt
+        txt06: output/HDsynthesis/JDat9_HDdata_questions_answered_Shielding.txt
+
+  # HD_data:
+    # run: > 
+      # r:latest
+        # analysis/runmkd.R
+    # needs: [clean_the_data]
+    # outputs:
+      # moderately_sensitive:
+        # csv01b: output/HDsynthesis/JDat8_Carehomes_included_H.csv
+        # svg01b: output/HDsynthesis/JDat8_Carehomes_included_H.svg
+        # csv02b: output/HDsynthesis/JDat8_Carehomes_included_D.csv
+        # svg02b: output/HDsynthesis/JDat8_Carehomes_included_D.svg
+        # csv03b: output/HDsynthesis/JDat8_Carehomes_included_DH.csv
+        # svg03b: output/HDsynthesis/JDat8_Carehomes_included_DH.svg
+        # csv04b: output/HDsynthesis/JDat8_Carehomes_included_DO.csv
+        # svg04b: output/HDsynthesis/JDat8_Carehomes_included_DO.svg
+        # csv05b: output/HDsynthesis/JDat8_Hdata.csv
+        # svg051: output/HDsynthesis/JDat8_Hdata_all.svg
+        # svg052: output/HDsynthesis/JDat8_Hdata_by_age.svg
+        # svg053: output/HDsynthesis/JDat8_Hdata_by_shi.svg
+        # svg054: output/HDsynthesis/JDat8_Hdata_s0_by_age.svg
+        # svg055: output/HDsynthesis/JDat8_Hdata_s1_by_age.svg
+        # csv06b: output/HDsynthesis/JDat8_HRdata.csv
+        # svg061: output/HDsynthesis/JDat8_HRdata_all.svg
+        # svg062: output/HDsynthesis/JDat8_HRdata_by_age.svg
+        # svg063: output/HDsynthesis/JDat8_HRdata_by_shi.svg
+        # svg064: output/HDsynthesis/JDat8_HRdata_s0_by_age.svg
+        # svg065: output/HDsynthesis/JDat8_HRdata_s1_by_age.svg
+        # csv07b: output/HDsynthesis/JDat8_DHdata.csv
+        # svg071: output/HDsynthesis/JDat8_DHdata_all.svg
+        # svg072: output/HDsynthesis/JDat8_DHdata_by_age.svg
+        # svg073: output/HDsynthesis/JDat8_DHdata_by_shi.svg
+        # svg074: output/HDsynthesis/JDat8_DHdata_s0_by_age.svg
+        # svg075: output/HDsynthesis/JDat8_DHdata_s1_by_age.svg
+        # csv08b: output/HDsynthesis/JDat8_DOdata.csv
+        # svg081: output/HDsynthesis/JDat8_DOdata_all.svg
+        # svg082: output/HDsynthesis/JDat8_DOdata_by_age.svg
+        # svg083: output/HDsynthesis/JDat8_DOdata_by_shi.svg
+        # svg084: output/HDsynthesis/JDat8_DOdata_s0_by_age.svg
+        # svg085: output/HDsynthesis/JDat8_DOdata_s1_by_age.svg       
+        # csv091: output/HDsynthesis/JDat8_H,HR,DH,DOdata_H.csv
+        # csv092: output/HDsynthesis/JDat8_H,HR,DH,DOdata_HR.csv
+        # csv093: output/HDsynthesis/JDat8_H,HR,DH,DOdata_DH.csv
+        # csv094: output/HDsynthesis/JDat8_H,HR,DH,DOdata_DO.csv
+        # svg09b: output/HDsynthesis/JDat8_H,HR,DH,DOdata.svg
+        # html01: output/HDsynthesis/HDdata.html
