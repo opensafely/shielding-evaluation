@@ -14,19 +14,41 @@ output_dir <- here("output/HDsynthesis")
 fs::dir_create(output_dir)
 
 DAT  <- arrow::read_parquet(file = here::here("output/data_edited.gz.parquet"),
-                                          compression = "gzip", compression_level = 5)
-#Study date range
+        compression = "gzip", compression_level = 5) %>%
+        ###age groups
+        filter(!is.na(age_cat))           # remove patients with missing 'age_cat'
+
+#Dataset date range
+Date01="2020-01-01" #study_start_date = datetime.date(2020, 1, 1)
+Date02="2021-09-01" #study_end_date = datetime.date(2021, 9, 1)
+
+#Study date range -applied further below
 Date1="2020-01-01"
 Date2="2020-12-01"
+
+#Statistics on unfiltered cohort 
+#- inc patients who died of non-covid cause 2020-01-01, 2012-09-01
+nP_tot = sum(!is.na(DAT$patient_id), na.rm = T)
+nP_00_tot = sum(!is.na(DAT$patient_id) & DAT$age_cat=="0-4", na.rm = T)
+nP_05_tot = sum(!is.na(DAT$patient_id) & DAT$age_cat=="5-11", na.rm = T)
+nP_12_tot = sum(!is.na(DAT$patient_id) & DAT$age_cat=="12-17", na.rm = T)
+nP_18_tot = sum(!is.na(DAT$patient_id) & DAT$age_cat=="18-29", na.rm = T)
+nP_30_tot = sum(!is.na(DAT$patient_id) & DAT$age_cat=="30-39", na.rm = T)
+nP_40_tot = sum(!is.na(DAT$patient_id) & DAT$age_cat=="40-49", na.rm = T)
+nP_50_tot = sum(!is.na(DAT$patient_id) & DAT$age_cat=="50-59", na.rm = T)
+nP_60_tot = sum(!is.na(DAT$patient_id) & DAT$age_cat=="60-69", na.rm = T)
+nP_70_tot = sum(!is.na(DAT$patient_id) & DAT$age_cat=="70+", na.rm = T)
+nP_sum_tot = (nP_00_tot+nP_05_tot+nP_12_tot+nP_18_tot+nP_30_tot+nP_40_tot+nP_50_tot+nP_60_tot+nP_70_tot)
 
 #D
 dim_sc = dim(DAT) #500, 89
 if (dim_sc[1]>1000){ #only operates on real data, as dummy data has 500 to 1000 rows
-  DAT <- DAT[           which(DAT$ons_death_date>="2020-01-01") | is.na(DAT$ons_death_date),]                      #remove deaths prior to 2020 but registered from 2020
+  DAT <- DAT[           which(DAT$ons_death_date>="2020-01-01") | is.na(DAT$ons_death_date),]  #remove deaths prior to 2020 but registered from 2020
   DAT <- DAT[which(is.element(DAT$ons_underlying_cause,c("U071","U072")) | is.na(DAT$ons_underlying_cause)),] #remove deaths not caused by covid_deaths_over_time2
 } 
 #NOTE: excludes patients that died from other causes => reduces denominators
 #TODO: should I include patients that died of other causes to calculate e.g. %patients shielding?
+
 
 
 ### Data rounding/truncation
@@ -59,8 +81,12 @@ DAT <- DAT                                                %>%
   ###age groups
   filter(!is.na(age_cat))                                 #%>% # remove patients with missing 'age_cat'
 
-  #Cohort in full, without excluding H, D events from between 2020-12-01, 2012-09-01 
-  #but, patients without events are incuded via the NAs
+
+#Statistics on almost-unfiltered cohort 
+#- inc H, D events from between 2020-12-01, 2012-09-01 
+#      (patients without events are included via the NAs)
+#- exc patients who died of non-covid cause 2020-01-01, 2012-09-01
+#
   nP_all_dates = sum(!is.na(DAT$patient_id), na.rm = T)
   nP_00_all_dates = sum(!is.na(DAT$patient_id) & DAT$age_cat=="0-4", na.rm = T)
   nP_05_all_dates = sum(!is.na(DAT$patient_id) & DAT$age_cat=="5-11", na.rm = T)
@@ -134,20 +160,22 @@ print(paste0("Dataset rows ", dim(DAT)[1], " and columns ", dim(DAT)[2] ))
 cat("\n")
 cat("Patients \n")
 nP = sum(!is.na(DAT$patient_id), na.rm = T)
-print(paste0("Patient entries:       ", nP ))
-print(paste0("Unique patients:       ", length(unique(DAT$patient_id)) )) #=> row <> one patient
-print(paste0("Missing patient id:    ", sum(is.na(DAT$patient_id)) ))
-print(paste0("Cohort inc >2020-12-01 ", nP_all_dates, ", inc hosp/deaths 2020-12-01 to 2021-09-01" ))
+print(paste0("Patient entries:        ", nP ))
+print(paste0("Unique patients:        ", length(unique(DAT$patient_id)) )) #=> row <> one patient
+print(paste0("Missing patient id:     ", sum(is.na(DAT$patient_id)) ))
+print(paste0("Cohort1 inc >2020-12-01 ", nP_all_dates, ", inc hosp/deaths 2020-12-01 to 2021-09-01" ))
+print(paste0("Cohort0 inc other-death ", nP_tot,       ", patients who died of non-covid causes" ))
 nP_HorD    = sum(!is.na(DAT$ons_death_date) |  DAT$all_covid_hosp>0)
 nP_noHorD  = sum( is.na(DAT$ons_death_date) & (DAT$all_covid_hosp==0 | is.na(DAT$all_covid_hosp)) )
 nP_CH_HorD = sum( (!is.na(DAT$ons_death_date) |  DAT$all_covid_hosp>0)
                   & (DAT$care_home==TRUE | DAT$care_home_nursing==TRUE))
 nP_CH_noHorD = sum( is.na(DAT$ons_death_date) & (DAT$all_covid_hosp==0 | is.na(DAT$all_covid_hosp))
                     & (DAT$care_home==TRUE | DAT$care_home_nursing==TRUE))
-print(paste0("Patients with hosp or death events:       ", nP_HorD,   ", %all patients: ", pct1(nP_HorD,   nP) ))
-print(paste0("Patients with hosp or death events:       ", nP_HorD,   ", %all cohort:   ", pct1(nP_HorD,   nP_all_dates) ))
-print(paste0("Patients with hosp or death events in CH: ", nP_CH_HorD,", %all events:   ", pct1(nP_CH_HorD,nP_HorD) ))
-print(paste0("Patients wout hosp or death events:       ", nP_noHorD, ", %all patients: ", pct1(nP_noHorD, nP) ))
+print(paste0("Patients with hosp or death events:       ", nP_HorD,   ", %patients: ", pct1(nP_HorD,   nP) ))
+print(paste0("Patients with hosp or death events:       ", nP_HorD,   ", %cohort1:  ", pct1(nP_HorD,   nP_all_dates) ))
+print(paste0("Patients with hosp or death events:       ", nP_HorD,   ", %cohort0:  ", pct1(nP_HorD,   nP_tot) ))
+print(paste0("Patients with hosp or death events in CH: ", nP_CH_HorD,", %events:   ", pct1(nP_CH_HorD,nP_HorD) ))
+print(paste0("Patients wout hosp or death events:       ", nP_noHorD, ", %patients: ", pct1(nP_noHorD, nP) ))
 
 cat("\n")
 cat("Patients by age \n")
@@ -173,7 +201,7 @@ print(paste0("Patient % age 70+:   ", pct1(nP_70,nP) ));
 print(paste0("Patient % all:       ", pct1(nP_sum,nP) ));
 
 cat("\n")
-cat("Cohort by age \n")
+cat("Cohort1 by age \n")
 print(paste0("Cohort % age 0-4:   ", pct1(nP_00_all_dates,nP_all_dates) )); 
 print(paste0("Cohort % age 5-11:  ", pct1(nP_05_all_dates,nP_all_dates) ));
 print(paste0("Cohort % age 12-17: ", pct1(nP_12_all_dates,nP_all_dates) ));
@@ -184,6 +212,19 @@ print(paste0("Cohort % age 50-59: ", pct1(nP_50_all_dates,nP_all_dates) ));
 print(paste0("Cohort % age 60-69: ", pct1(nP_60_all_dates,nP_all_dates) ));
 print(paste0("Cohort % age 70+:   ", pct1(nP_70_all_dates,nP_all_dates) ));
 print(paste0("Cohort % all:       ", pct1(nP_sum_all_dates,nP_all_dates) ));
+
+cat("\n")
+cat("Cohort0 by age \n")
+print(paste0("Cohort % age 0-4:   ", pct1(nP_00_tot,nP_tot) )); 
+print(paste0("Cohort % age 5-11:  ", pct1(nP_05_tot,nP_tot) ));
+print(paste0("Cohort % age 12-17: ", pct1(nP_12_tot,nP_tot) ));
+print(paste0("Cohort % age 18-29: ", pct1(nP_18_tot,nP_tot) ));
+print(paste0("Cohort % age 30-39: ", pct1(nP_30_tot,nP_tot) ));
+print(paste0("Cohort % age 40-49: ", pct1(nP_40_tot,nP_tot) ));
+print(paste0("Cohort % age 50-59: ", pct1(nP_50_tot,nP_tot) ));
+print(paste0("Cohort % age 60-69: ", pct1(nP_60_tot,nP_tot) ));
+print(paste0("Cohort % age 70+:   ", pct1(nP_70_tot,nP_tot) ));
+print(paste0("Cohort % all:       ", pct1(nP_sum_tot,nP_tot) ));
 
 cat("\n")
 cat("Carehome patients \n")
@@ -478,14 +519,14 @@ nP_HorD_s1   = sum(DAT$shielding=="High Risk" & (!is.na(DAT$ons_death_date) |  D
 nP_noHorD_s1 = sum(DAT$shielding=="High Risk" &  (is.na(DAT$ons_death_date) & (DAT$all_covid_hosp==0 | is.na(DAT$all_covid_hosp)) ))
 nP_HorD_s0   = sum(DAT$shielding!="High Risk" & (!is.na(DAT$ons_death_date) |  DAT$all_covid_hosp>0))
 nP_noHorD_s0 = sum(DAT$shielding!="High Risk" &  (is.na(DAT$ons_death_date) & (DAT$all_covid_hosp==0 | is.na(DAT$all_covid_hosp)) ))
-print(paste0("Patients shielding:        ", nP_s1, ", %patients: ", pct1(nP_s1,nP)
-             , ", %cohort:   ", pct1(nP_s1,nP_all_dates) ))
-print(paste0("Patients not shielding:    ", nP_s0, ", %patients: ", pct1(nP_s0,nP)
-             , ", %cohort:   ", pct1(nP_s0,nP_all_dates) ))
-print(paste0("Patients shielding with hosp/death events:  ", nP_HorD_s1,   ", %sh patients: ", pct1(nP_HorD_s1,  nP_s1) ))
-print(paste0("Patients shielding wout hosp/death events:  ", nP_noHorD_s1, ", %sh patients: ", pct1(nP_noHorD_s1,nP_s1) ))
-print(paste0("Patients not shield with hosp/death events: ", nP_HorD_s0,   ", %nsh patients: ", pct1(nP_HorD_s0,  nP_s0) ))
-print(paste0("Patients not shield wout hosp/death events: ", nP_noHorD_s0, ", %nsh patients: ", pct1(nP_noHorD_s0,nP_s0) ))
+print(paste0("Patients shield: ", nP_s1, ", %patients: ", pct1(nP_s1,nP), 
+             ", %cohort1: ", pct1(nP_s1,nP_all_dates), ", %cohort0: ", pct1(nP_s1,nP_tot) ))
+print(paste0("Patients not sh: ", nP_s0, ", %patients: ", pct1(nP_s0,nP), 
+             ", %cohort1: ", pct1(nP_s0,nP_all_dates), ", %cohort0: ", pct1(nP_s0,nP_tot) ))
+print(paste0("Patients shield with hosp/death events: ", nP_HorD_s1,   ", %sh patients: ", pct1(nP_HorD_s1,  nP_s1) ))
+print(paste0("Patients shield wout hosp/death events: ", nP_noHorD_s1, ", %sh patients: ", pct1(nP_noHorD_s1,nP_s1) ))
+print(paste0("Patients not sh with hosp/death events: ", nP_HorD_s0,   ", %nsh patients: ", pct1(nP_HorD_s0,  nP_s0) ))
+print(paste0("Patients not sh wout hosp/death events: ", nP_noHorD_s0, ", %nsh patients: ", pct1(nP_noHorD_s0,nP_s0) ))
 
 
 cat("Shielding by age \n")
@@ -520,7 +561,7 @@ print(paste0("Patient shielding % age 60-69: ", pct1(nP_60_s1,nP_s1) ))
 print(paste0("Patient shielding % age 70+:   ", pct1(nP_70_s1,nP_s1) ))
 print(paste0("Patient shielding % all ages:  ", pct1(nP_sum_s1,nP_s1) ))
 cat("\n")
-cat("Shielding by age, in the all-dates cohort \n")
+cat("Shielding by age, in cohort1 (all dates) \n")
 print(paste0("Cohort age 0-4   % shielding: ", pct1(nP_00_s1,nP_00_all_dates) ))
 print(paste0("Cohort age 5-11  % shielding: ", pct1(nP_05_s1,nP_05_all_dates) ))
 print(paste0("Cohort age 12-17 % shielding: ", pct1(nP_12_s1,nP_12_all_dates) ))
@@ -530,7 +571,17 @@ print(paste0("Cohort age 40-49 % shielding: ", pct1(nP_40_s1,nP_40_all_dates) ))
 print(paste0("Cohort age 50-59 % shielding: ", pct1(nP_50_s1,nP_50_all_dates) ))
 print(paste0("Cohort age 60-69 % shielding: ", pct1(nP_60_s1,nP_60_all_dates) ))
 print(paste0("Cohort age 70+   % shielding: ", pct1(nP_70_s1,nP_70_all_dates) ))
-
+cat(" \n")
+cat("Shielding by age, in cohort0 (all deaths, all dates) \n")
+print(paste0("Patient age 0-4   % shielding: ", pct1(nP_00_s1,nP_00_tot) ))
+print(paste0("Patient age 5-11  % shielding: ", pct1(nP_05_s1,nP_05_tot) ))
+print(paste0("Patient age 12-17 % shielding: ", pct1(nP_12_s1,nP_12_tot) ))
+print(paste0("Patient age 18-29 % shielding: ", pct1(nP_18_s1,nP_18_tot) ))
+print(paste0("Patient age 30-39 % shielding: ", pct1(nP_30_s1,nP_30_tot) ))
+print(paste0("Patient age 40-49 % shielding: ", pct1(nP_40_s1,nP_40_tot) ))
+print(paste0("Patient age 50-59 % shielding: ", pct1(nP_50_s1,nP_50_tot) ))
+print(paste0("Patient age 60-69 % shielding: ", pct1(nP_60_s1,nP_60_tot) ))
+print(paste0("Patient age 70+   % shielding: ", pct1(nP_70_s1,nP_70_tot) ))
 
 cat("\n")
 cat("Shielding patients in hospital \n")
@@ -888,12 +939,14 @@ nP_HorD_s1   = sum(DAT$shielding=="High Risk" & (!is.na(DAT$ons_death_date) |  D
 nP_noHorD_s1 = sum(DAT$shielding=="High Risk" &  (is.na(DAT$ons_death_date) & (DAT$all_covid_hosp==0 | is.na(DAT$all_covid_hosp)) ))
 nP_HorD_s0   = sum(DAT$shielding!="High Risk" & (!is.na(DAT$ons_death_date) |  DAT$all_covid_hosp>0))
 nP_noHorD_s0 = sum(DAT$shielding!="High Risk" &  (is.na(DAT$ons_death_date) & (DAT$all_covid_hosp==0 | is.na(DAT$all_covid_hosp)) ))
-print(paste0("Patients shielding:                         ", nP_s1,        ", %patients:     ", pct1(nP_s1,       nP) ))
-print(paste0("Patients not shield:                        ", nP_s0,        ", %patients:     ", pct1(nP_s0,       nP) ))
-print(paste0("Patients shielding with hosp/death events:  ", nP_HorD_s1,   ", %sh patients:  ", pct1(nP_HorD_s1,  nP_s1) ))
-print(paste0("Patients shielding wout hosp/death events:  ", nP_noHorD_s1, ", %sh patients:  ", pct1(nP_noHorD_s1,nP_s1) ))
-print(paste0("Patients not shield with hosp/death events: ", nP_HorD_s0,   ", %nsh patients: ", pct1(nP_HorD_s0,  nP_s0) ))
-print(paste0("Patients not shield wout hosp/death events: ", nP_noHorD_s0, ", %nsh patients: ", pct1(nP_noHorD_s0,nP_s0) ))
+print(paste0("Patients shield: ", nP_s1, ", %patients: ", pct1(nP_s1,nP), 
+             ", %cohort1: ", pct1(nP_s1,nP_all_dates), ", %cohort0: ", pct1(nP_s1,nP_tot) ))
+print(paste0("Patients not sh: ", nP_s0, ", %patients: ", pct1(nP_s0,nP), 
+             ", %cohort1: ", pct1(nP_s0,nP_all_dates), ", %cohort0: ", pct1(nP_s0,nP_tot) ))
+print(paste0("Patients shield with hosp/death events: ", nP_HorD_s1,   ", %sh patients:  ", pct1(nP_HorD_s1,  nP_s1) ))
+print(paste0("Patients shield wout hosp/death events: ", nP_noHorD_s1, ", %sh patients:  ", pct1(nP_noHorD_s1,nP_s1) ))
+print(paste0("Patients not sh with hosp/death events: ", nP_HorD_s0,   ", %nsh patients: ", pct1(nP_HorD_s0,  nP_s0) ))
+print(paste0("Patients not sh wout hosp/death events: ", nP_noHorD_s0, ", %nsh patients: ", pct1(nP_noHorD_s0,nP_s0) ))
 
 cat("Shielding by age \n")
 nP_00_s1 = sum(DAT$shielding=="High Risk" & DAT$age_cat=="0-4", na.rm = T)
@@ -926,6 +979,28 @@ print(paste0("Patient shielding % age 50-59: ", pct1(nP_50_s1,nP_s1) ))
 print(paste0("Patient shielding % age 60-69: ", pct1(nP_60_s1,nP_s1) ))
 print(paste0("Patient shielding % age 70+:   ", pct1(nP_70_s1,nP_s1) ))
 print(paste0("Patient shielding % all ages:  ", pct1(nP_sum_s1,nP_s1) ))
+cat("\n")
+cat("Shielding by age, in cohort1 (all dates) \n")
+print(paste0("Cohort age 0-4   % shielding: ", pct1(nP_00_s1,nP_00_all_dates) ))
+print(paste0("Cohort age 5-11  % shielding: ", pct1(nP_05_s1,nP_05_all_dates) ))
+print(paste0("Cohort age 12-17 % shielding: ", pct1(nP_12_s1,nP_12_all_dates) ))
+print(paste0("Cohort age 18-29 % shielding: ", pct1(nP_18_s1,nP_18_all_dates) ))
+print(paste0("Cohort age 30-39 % shielding: ", pct1(nP_30_s1,nP_30_all_dates) ))
+print(paste0("Cohort age 40-49 % shielding: ", pct1(nP_40_s1,nP_40_all_dates) ))
+print(paste0("Cohort age 50-59 % shielding: ", pct1(nP_50_s1,nP_50_all_dates) ))
+print(paste0("Cohort age 60-69 % shielding: ", pct1(nP_60_s1,nP_60_all_dates) ))
+print(paste0("Cohort age 70+   % shielding: ", pct1(nP_70_s1,nP_70_all_dates) ))
+cat(" \n")
+cat("Shielding by age, in cohort0 (all deaths, all dates) \n")
+print(paste0("Patient age 0-4   % shielding: ", pct1(nP_00_s1,nP_00_tot) ))
+print(paste0("Patient age 5-11  % shielding: ", pct1(nP_05_s1,nP_05_tot) ))
+print(paste0("Patient age 12-17 % shielding: ", pct1(nP_12_s1,nP_12_tot) ))
+print(paste0("Patient age 18-29 % shielding: ", pct1(nP_18_s1,nP_18_tot) ))
+print(paste0("Patient age 30-39 % shielding: ", pct1(nP_30_s1,nP_30_tot) ))
+print(paste0("Patient age 40-49 % shielding: ", pct1(nP_40_s1,nP_40_tot) ))
+print(paste0("Patient age 50-59 % shielding: ", pct1(nP_50_s1,nP_50_tot) ))
+print(paste0("Patient age 60-69 % shielding: ", pct1(nP_60_s1,nP_60_tot) ))
+print(paste0("Patient age 70+   % shielding: ", pct1(nP_70_s1,nP_70_tot) ))
 
 cat("\n")
 cat("Shielding/Not patients in hospital \n")
