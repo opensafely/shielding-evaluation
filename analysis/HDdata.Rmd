@@ -367,9 +367,9 @@ dat <- dat1 %>% frqs(c(weekH, age_cat, shield), "freqHas") %>%
                 arrange(ageg, shield, weekH)
 dat0 <- dat %>% filter(shield==0)
 dat1 <- dat %>% filter(shield==1)
-yname = paste0('Admissions not shielding (tot ', sum(dat0$freqHas,na.rm=T),')')
+yname = paste0('Admissions & recovery not sh (tot ', sum(dat0$freqHas,na.rm=T),')')
 p4 <- fig0(dat0, x=weekH, y=freqHas, col=age_cat, xname ='Week', yname = yname)
-yname = paste0('Admissions shielding (tot ',     sum(dat1$freqHas,na.rm=T),')') 
+yname = paste0('Admissions & recovery shield (tot ',     sum(dat1$freqHas,na.rm=T),')') 
 p5 <- fig0(dat1, x=weekH, y=freqHas, col=age_cat, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_s0_by_age.svg")); print(p4); invisible(dev.off())
 svglite(paste0(filepart,"_s1_by_age.svg")); print(p5); invisible(dev.off())
@@ -392,7 +392,7 @@ dat <- dat1 %>% frqs(c(weekD), "freqD") %>%
 yname = paste0('Deaths in Hospital (tot ', sum(dat$freqD,na.rm=T),')')
 p1 <- fig0(dat, x=weekD, y=freqD, col=NULL, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_all.svg")); print(p1); invisible(dev.off())
-datDH<- dat %>% rename(WeeksD=weekD, Dataz=freqD, DatesD=dateD)           #fit data
+datDH<- dat %>% rename(WeeksD=weekD, Dataw=freqD, DatesD=dateD)           #fit data
 dat  <- dat %>% mutate(freqD = ifelse(freqD<8,NA,freqD)) %>%
                 write.csv(file=paste0(filepart,"_all.csv"))               #show data
 #by_age
@@ -404,7 +404,7 @@ dat <- dat1 %>% frqs(c(weekD, age_cat), "freqDa") %>%
 yname = paste0('Deaths in Hospital (tot ', sum(dat$freqDa,na.rm=T),')')
 p2 <- fig0(dat, x=weekD, y=freqDa, col=age_cat, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_by_age.svg")); print(p2); invisible(dev.off())
-datDHa<-dat %>% rename(WeeksD=weekD, Dataz=freqDa, DatesD=dateD)           #fit data
+datDHa<-dat %>% rename(WeeksD=weekD, Dataw=freqDa, DatesD=dateD)           #fit data
 dat   <-dat %>% mutate(freqDa = ifelse(freqDa<8,NA,freqDa)) %>%
                 write.csv(file=paste0(filepart,"_by_age.csv"))             #show data
 #by_shield
@@ -416,7 +416,7 @@ dat <- dat1 %>% frqs(c(weekD, shield), "freqDs") %>%
 yname = paste0('Deaths in Hospital (tot ', sum(dat$freqDs,na.rm=T),')')
 p3 <- fig0(dat, x=weekD, y=freqDs, col=shield, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_by_shi.svg")); print(p3); invisible(dev.off())
-datDHs<-dat %>% rename(WeeksD=weekD, Dataz=freqDs, DatesD=dateD)           #fit data
+datDHs<-dat %>% rename(WeeksD=weekD, Dataw=freqDs, DatesD=dateD)           #fit data
 dat  <- dat %>% mutate(freqDs = ifelse(freqDs<8,NA,freqDs)) %>%
                 write.csv(file=paste0(filepart,"_by_shi.csv"))             #show data
 ### Plot 3.4, 3.5 by shielding
@@ -435,7 +435,7 @@ p5 <- fig0(dat1, x=weekD, y=freqDas, col=age_cat, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_s0_by_age.svg")); print(p4); invisible(dev.off())
 svglite(paste0(filepart,"_s1_by_age.svg")); print(p5); invisible(dev.off())
 dat   <- dat %>% select(-c(age_cat))
-datDHas<-dat %>% rename(WeeksD=weekD, Dataz=freqDas, DatesD=dateD)         #fit data
+datDHas<-dat %>% rename(WeeksD=weekD, Dataw=freqDas, DatesD=dateD)         #fit data
 dat   <- dat %>% mutate(freqDas = ifelse(freqDas<8,NA,freqDas)) %>%
                  write.csv(file=paste0(filepart,"_s_by_age.csv"))          #show data
 
@@ -452,7 +452,7 @@ dat <- dat1 %>% frqs(c(weekD), "freqD") %>%
 yname = paste0('Deaths outside Hospital (tot ', sum(dat$freqD,na.rm=T),')')
 p1 <- fig0(dat, x=weekD, y=freqD, col=NULL, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_all.svg")); print(p1); invisible(dev.off())
-datDO<- dat %>% rename(WeeksD=weekD, Dataz=freqD, DatesD=dateD)           #fit data
+datDO<- dat %>% rename(WeeksD=weekD, Dataw=freqD, DatesD=dateD)           #fit data
 dat  <- dat %>% mutate(freqD = ifelse(freqD<8,NA,freqD)) %>%
                 write.csv(file=paste0(filepart,"_all.csv"))               #show data
 #by_age
@@ -464,7 +464,7 @@ dat <- dat1 %>% frqs(c(weekD, age_cat), "freqDa") %>%
 yname = paste0('Deaths outside Hospital (tot ', sum(dat$freqDa,na.rm=T),')')
 p2 <- fig0(dat, x=weekD, y=freqDa, col=age_cat, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_by_age.svg")); print(p2); invisible(dev.off())
-datDOa<-dat %>% rename(WeeksD=weekD, Dataz=freqDa, DatesD=dateD)           #fit data
+datDOa<-dat %>% rename(WeeksD=weekD, Dataw=freqDa, DatesD=dateD)           #fit data
 dat   <-dat %>% mutate(freqDa = ifelse(freqDa<8,NA,freqDa)) %>%
                 write.csv(file=paste0(filepart,"_by_age.csv"))             #show data
 #by_shield
@@ -476,7 +476,7 @@ dat <- dat1 %>% frqs(c(weekD, shield), "freqDs") %>%
 yname = paste0('Deaths outside Hospital (tot ', sum(dat$freqDs,na.rm=T),')')
 p3 <- fig0(dat, x=weekD, y=freqDs, col=shield, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_by_shi.svg")); print(p3); invisible(dev.off())
-datDOs<-dat %>% rename(WeeksD=weekD, Dataz=freqDs, DatesD=dateD)           #fit data
+datDOs<-dat %>% rename(WeeksD=weekD, Dataw=freqDs, DatesD=dateD)           #fit data
 dat  <- dat %>% mutate(freqDs = ifelse(freqDs<8,NA,freqDs)) %>%
                 write.csv(file=paste0(filepart,"_by_shi.csv"))             #show data
 ### Plots 4.4, 4.5 Deaths outside Hospital by shielding
@@ -495,7 +495,7 @@ p5 <- fig0(dat1, x=weekD, y=freqDas, col=age_cat, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_s0_by_age.svg")); print(p4); invisible(dev.off())
 svglite(paste0(filepart,"_s1_by_age.svg")); print(p5); invisible(dev.off())
 dat   <- dat %>% select(-c(age_cat))
-datDOas<-dat %>% rename(WeeksD=weekD, Dataz=freqDas, DatesD=dateD)         #fit data
+datDOas<-dat %>% rename(WeeksD=weekD, Dataw=freqDas, DatesD=dateD)         #fit data
 dat   <- dat %>% mutate(freqDas = ifelse(freqDas<8,NA,freqDas)) %>%
                  write.csv(file=paste0(filepart,"_s_by_age.csv"))          #show data
 
