@@ -57,16 +57,20 @@ List SEIUHRD(List pars){
     NumericVector Ct(nt);
     NumericVector Ht(nt);
     NumericVector Rt(nt);
-    NumericVector Dt(nt);
+    NumericVector Dt(nt); //DHt(nt), DO(nt) not yet
     NumericVector Nt(nt);
     NumericVector Hw(nw);
     NumericVector Dw(nw);
+    NumericVector DHw(nw);
+    NumericVector DOw(nw);
     NumericVector time(nt);
     NumericVector cmdtmean(nt);
     
     //weekly H and D by age
     NumericVector Hapw(na);
     NumericVector Dapw(na);
+    NumericVector DHapw(na);
+    NumericVector DOapw(na);
     NumericVector Ha1w(nw);
     NumericVector Ha2w(nw);
     NumericVector Ha3w(nw);
@@ -85,7 +89,24 @@ List SEIUHRD(List pars){
     NumericVector Da7w(nw);
     NumericVector Da8w(nw);
     NumericVector Da9w(nw);
-    
+    NumericVector DHa1w(nw);
+    NumericVector DHa2w(nw);
+    NumericVector DHa3w(nw);
+    NumericVector DHa4w(nw);
+    NumericVector DHa5w(nw);
+    NumericVector DHa6w(nw);
+    NumericVector DHa7w(nw);
+    NumericVector DHa8w(nw);
+    NumericVector DHa9w(nw);
+    NumericVector DOa1w(nw);
+    NumericVector DOa2w(nw);
+    NumericVector DOa3w(nw);
+    NumericVector DOa4w(nw);
+    NumericVector DOa5w(nw);
+    NumericVector DOa6w(nw);
+    NumericVector DOa7w(nw);
+    NumericVector DOa8w(nw);
+    NumericVector DOa9w(nw);    
     // read parameters
     const NumericVector u = as<NumericVector>(pars["u"]); 
     const NumericVector y = as<NumericVector>(pars["y"]); 
@@ -128,7 +149,7 @@ List SEIUHRD(List pars){
         H4(ia,0) = 0;
         H5(ia,0) = 0;         Ht[0] += Ha0[ia];   Hw[0] += 0;
         R(ia,0)  = Ra0[ia];   Rt[0] += R(ia,0);
-        D(ia,0)  = Da0[ia];   Dt[0] += D(ia,0);   Dw[0] += 0;
+        D(ia,0)  = Da0[ia];   Dt[0] += D(ia,0);   Dw[0] += 0; DHw[0] += 0; DOw[0] += 0;
         N(ia,0)  = Na0[ia];   Nt[0] += N(ia,0);
     }
 
@@ -139,6 +160,8 @@ List SEIUHRD(List pars){
     int  week0 = 1;
     double Hpw = 0;
     double Dpw = 0;
+    double DHpw = 0;
+    double DOpw = 0;
     for (int it = 0; it < (nt-1); it++) {	//Crucial: nt-1
         week0 = week;
         week  = 1 + (int) time[it]/7;
@@ -200,7 +223,9 @@ List SEIUHRD(List pars){
 
         double dR  = dt*( rUR*Uat + rIR*(1-ha-da)*Iat + (rHR*5)*(1-ma)*H5at - rRS*Rat);
         double dDin= dt*( rHi*ma*H5at + rID*da*Iat);
-        double dD  = dDin;
+        double dDH = dt*( rHi*ma*H5at );//death incidence inside hospital
+        double dDO = dt*( rID*da*Iat ); //death incidence outside hospital
+        double dD  = dDH + dDO;
         double dN  = dS + dE + dU + dI + dH1 + dH2 + dH3 + dH4 + dH5 + dR + dD;
 
         S(ia,it+1)  = Sat  + dS;
@@ -218,7 +243,7 @@ List SEIUHRD(List pars){
         H4(ia,it+1) = H4at + dH4;
         H5(ia,it+1) = H5at + dH5;
         R(ia,it+1)  = Rat  + dR;
-        D(ia,it+1)  = Dat  + dD;
+        D(ia,it+1)  = Dat  + dD; //DH(ia,it+1) = DHat + dDH; //DO(ia,it+1) = DOat + dDO; //not yet
         N(ia,it+1)  = Nat  + dN;
         // time update (units of parameters)
         time[it+1] = (it+1)*dt;
@@ -234,32 +259,58 @@ List SEIUHRD(List pars){
    	    Nt[it+1]  += Nat + dN;
    	    Hpw       += dHin;
    	    Dpw       += dDin;
-   	    Hapw[ia]   = dHin;
-   	    Dapw[ia]   = dDin;
+   	    DHpw      += dDH;
+   	    DOpw      += dDO;
+   	    Hapw[ia]  += dHin; // = dHin;
+   	    Dapw[ia]  += dDin; // = dDin;
+   	    DHapw[ia] += dDH; 
+   	    DOapw[ia] += dDO; 
   }; //ia
         if (week - week0 == 1) {
           Hw[week-1] = Hpw;
           Hpw=0;
           Dw[week-1] = Dpw;
           Dpw=0;
-          Ha1w[week-1] = Hapw[0];
-          Ha2w[week-1] = Hapw[1];
-          Ha3w[week-1] = Hapw[2];
-          Ha4w[week-1] = Hapw[3];
-          Ha5w[week-1] = Hapw[4];
-          Ha6w[week-1] = Hapw[5];
-          Ha7w[week-1] = Hapw[6];
-          Ha8w[week-1] = Hapw[7];
-          Ha9w[week-1] = Hapw[8];
-          Da1w[week-1] = Dapw[0];
-          Da2w[week-1] = Dapw[1];
-          Da3w[week-1] = Dapw[2];
-          Da4w[week-1] = Dapw[3];
-          Da5w[week-1] = Dapw[4];
-          Da6w[week-1] = Dapw[5];
-          Da7w[week-1] = Dapw[6];
-          Da8w[week-1] = Dapw[7];
-          Da9w[week-1] = Dapw[8];
+          DHw[week-1]= DHpw;
+          DHpw=0;
+          DOw[week-1]= DOpw;
+          DOpw=0;
+          Ha1w[week-1]  = Hapw[0];  Hapw[0]=0; 
+          Ha2w[week-1]  = Hapw[1];  Hapw[1]=0;
+          Ha3w[week-1]  = Hapw[2];  Hapw[2]=0;
+          Ha4w[week-1]  = Hapw[3];  Hapw[3]=0;
+          Ha5w[week-1]  = Hapw[4];  Hapw[4]=0;
+          Ha6w[week-1]  = Hapw[5];  Hapw[5]=0;
+          Ha7w[week-1]  = Hapw[6];  Hapw[6]=0;
+          Ha8w[week-1]  = Hapw[7];  Hapw[7]=0;
+          Ha9w[week-1]  = Hapw[8];  Hapw[8]=0;
+          Da1w[week-1]  = Dapw[0];  Dapw[0]=0;
+          Da2w[week-1]  = Dapw[1];  Dapw[1]=0;
+          Da3w[week-1]  = Dapw[2];  Dapw[2]=0;
+          Da4w[week-1]  = Dapw[3];  Dapw[3]=0;
+          Da5w[week-1]  = Dapw[4];  Dapw[4]=0;
+          Da6w[week-1]  = Dapw[5];  Dapw[5]=0;
+          Da7w[week-1]  = Dapw[6];  Dapw[6]=0;
+          Da8w[week-1]  = Dapw[7];  Dapw[7]=0;
+          Da9w[week-1]  = Dapw[8];  Dapw[8]=0;
+          DHa1w[week-1] = DHapw[0]; DHapw[0]=0;
+          DHa2w[week-1] = DHapw[1]; DHapw[1]=0;
+          DHa3w[week-1] = DHapw[2]; DHapw[2]=0;
+          DHa4w[week-1] = DHapw[3]; DHapw[3]=0;
+          DHa5w[week-1] = DHapw[4]; DHapw[4]=0;
+          DHa6w[week-1] = DHapw[5]; DHapw[5]=0;
+          DHa7w[week-1] = DHapw[6]; DHapw[6]=0;
+          DHa8w[week-1] = DHapw[7]; DHapw[7]=0;
+          DHa9w[week-1] = DHapw[8]; DHapw[8]=0;
+          DOa1w[week-1] = DOapw[0]; DOapw[0]=0;
+          DOa2w[week-1] = DOapw[1]; DOapw[1]=0;
+          DOa3w[week-1] = DOapw[2]; DOapw[2]=0;
+          DOa4w[week-1] = DOapw[3]; DOapw[3]=0;
+          DOa5w[week-1] = DOapw[4]; DOapw[4]=0;
+          DOa6w[week-1] = DOapw[5]; DOapw[5]=0;
+          DOa7w[week-1] = DOapw[6]; DOapw[6]=0;
+          DOa8w[week-1] = DOapw[7]; DOapw[7]=0;
+          DOa9w[week-1] = DOapw[8]; DOapw[8]=0;
       }
 	}; //it
 	
@@ -277,6 +328,8 @@ List SEIUHRD(List pars){
         Named("Nt")   = Nt[iw],
         Named("Hw")   = Hw,
         Named("Dw")   = Dw,
+        Named("DHw")  = DHw,
+        Named("DOw")  = DOw,
         Named("cmdtmean") = cmdtmean[iw]);
     
     Rcpp::DataFrame byw_age = Rcpp::DataFrame::create(
@@ -299,6 +352,27 @@ List SEIUHRD(List pars){
       Named("D8w") = Da8w,
       Named("D9w") = Da9w);
 
-      return Rcpp::List::create(Rcpp::Named("byw") = byw,
-                                Rcpp::Named("byw_age") = byw_age);
+    Rcpp::DataFrame byw_aHO = Rcpp::DataFrame::create(
+      Named("DH1w") = DHa1w,
+      Named("DH2w") = DHa2w,
+      Named("DH3w") = DHa3w,
+      Named("DH4w") = DHa4w,
+      Named("DH5w") = DHa5w,
+      Named("DH6w") = DHa6w,
+      Named("DH7w") = DHa7w,
+      Named("DH8w") = DHa8w,
+      Named("DH9w") = DHa9w,
+      Named("DO1w") = DOa1w,
+      Named("DO2w") = DOa2w,
+      Named("DO3w") = DOa3w,
+      Named("DO4w") = DOa4w,
+      Named("DO5w") = DOa5w,
+      Named("DO6w") = DOa6w,
+      Named("DO7w") = DOa7w,
+      Named("DO8w") = DOa8w,
+      Named("DO9w") = DOa9w);
+    
+    return Rcpp::List::create(Rcpp::Named("byw") = byw,
+                              Rcpp::Named("byw_age") = byw_age,
+                              Rcpp::Named("byw_aHO") = byw_aHO);
 }

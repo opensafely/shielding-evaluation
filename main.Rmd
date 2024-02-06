@@ -1,0 +1,157 @@
+---
+title: "Fit_MCMC_BT"
+date: "`r Sys.Date()`"
+author: "Johnny Filipe"
+output: html_document
+---
+
+
+
+```{r libs, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+# 03feb24 - Rmarkdown vrs of main
+
+
+## SEIR and SEIUHRD compartment models: age-structured with CoMix-contacts 
+## 1-OS data, 2-contacts, parameters & R0, 3-Simulation, 4-MCMC fitting, plots & reports
+
+
+#1#Model########################################################################
+library(arrow)
+library(BayesianTools)
+library(ggplot2)
+library(gridExtra)
+library(here)
+library(lubridate)
+library(tidyverse)
+library(magrittr)
+library(Rcpp)
+#library(deSolve)
+#library(bench)
+library(glue)
+library(svglite)
+
+
+#new_factory(outputs = paste0(here::here("output/HDsynthesis")))
+
+```
+
+
+Setup, (data), contacts, R0, (simulation), fit
+Fit: Select parameters, run mcmc, see outputs.  
+
+
+```{r setup, echo=FALSE}
+
+#Source: see https://bookdown.org/yihui/rmarkdown-cookbook/source-script.html
+
+# 0-SET UP
+TIME  = format(Sys.time(),'%H.%M.%S_%d-%m-%Y')
+
+#jobno = "J5_" - use pset$Job
+
+#wd=repo
+input_dir  <- paste0(getwd(),"/modelling/input")
+output_dir <- paste0(getwd(),"/output/modelling")
+fs::dir_create(output_dir)
+
+print(paste0("input_dir:   ", input_dir))
+print(paste0("outpur_dir:  ", output_dir))
+  
+source(file = paste0(input_dir,"/setup.r"), local = knitr::knit_global())
+print("Main.Rmd: sourced setup.r")
+## Model choice
+if (pset$iplatform==0) { print(paste0("Model chosen: ",pset$MODEL[pset$imodel]))
+                         print(paste0("Platform: ",pset$PLATFORM[pset$iplatform+1])) }
+
+```
+
+```{r data, echo=FALSE}
+# 1-OS DATA
+## Options: Option_Writedfs (=1), Option_Printout (=0), Option_Writeout (=0), Freq_cutoff = 8
+## Input:   jobno = pset$Job
+## Return:  dim_sc = dim(DAT), dataframes for fitting (Option_Writedfs=1)
+## Output:  output_dir_HD=here::here("output/HDsynthesis"), csv, svg 
+## Plots:   same as svg
+if (pset$iplatform>0) {
+  if(pset$imodel==1) source(file = paste0(input_dir,"/SEIR_data.r"))
+  #output_dir_HD <- paste0(getwd(),"/output/HDsynthesys")
+  #fs::dir_create(output_dir_HD)
+  if(pset$imodel==2) source(file = paste0(input_dir,"/HDdata.R"), local = knitr::knit_global())
+  print("Main.Rmd: sourced HDdata.R")
+}
+
+```
+
+```{r model, echo=FALSE}
+# 2-MODEL contacts, parameters & R0 (for fitting or simulation)
+# 2-1-Contacts
+### Return:  cm, Week1_Model = "2020-02-24", Week2_Model = "2021-02-15"
+### Input:  "Contact_matrix_year-from-24Feb20_vector-lenght-9x9x52_norm=maxEV1.csv"
+### Output: "Contact_matrix_year-start-24Feb20_stats.txt"
+source(file = paste0(input_dir,"/contacts.r"), local = knitr::knit_global())
+print("Main.Rmd: sourced contacts.r")
+
+# 2-2-Parameters and initial condition
+### Return: pars$
+source(file = paste0(input_dir,"/",pset$File_parameters), local = knitr::knit_global())
+pars$cm  <- as.vector(cm)
+print("Main.Rmd: sourced parameters.r")
+
+# 2-3-Output settings and parameters
+### Output: screen
+#sink(file = paste0(output_dir,"/",pset$File_run), append=TRUE, split=FALSE)
+  cat(" \n")
+  print(format(Sys.time(),'%H.%M.%S_%d-%m-%Y'))
+  cat(" \n")
+  print("pset: \n "); #print(rev(pset))
+  cat("\n")
+  print(paste0("Date range in contact-data:   ", Week1_Model, ", ", Week2_Model)); cat("\n")
+  if(pset$iplatform>0) {
+  Week1_Data = week("2020-01-01") #HDdata.R, HDdata.Rmd
+  Week2_Data = week("2020-12-01")
+  print(paste0("Date range in H, D data:      ", "2020-01-01", " - ", "2020-12-01")); cat("\n")
+  print(paste0("Week range in H, D data:      ", Week1_Data,   " - ", Week2_Data  )); cat("\n") }
+  cat(" \n")
+  print("pars: \n "); #print(rev(pars[-1])); #exclude cm
+  cat("\n \n")
+#sink()
+
+# 2-4-R0 by week
+### Return: pars$beta
+### Output: Simul_R0_by_week.csv
+source(file = paste0(input_dir,"/R0.r"), local = knitr::knit_global())
+print("Main.Rmd: sourced R0.r")
+
+```
+
+```{r simulation, echo=FALSE}
+# 3-Simulation
+## Return:  mout, datM: ("", 1-9): Dataz , Dataw, Datav, H_mod, DH_mod, DO_mod
+## Input:   SEIUHRDaout_model.cpp
+## Output: "Simul_run.txt"; "Simul_Infected_and_R0_1-3.svg", "...,4-6.svg"
+## plots:   as svg; and Simulated & true incidence
+if (pset$iplatform==0) {
+  source(file = paste0(input_dir,"/simulation.r"), local = knitr::knit_global()) 
+  print("Main.Rmd: sourced simulation.r") }
+
+```
+
+```{r fit, echo=FALSE}
+##, eval = F}
+
+# 4-Fitting - H, DH, DO incidence
+## Input: SEIUHRDaout_model.cpp, BETA.r (return: beta)
+## Output: "Simul_run.txt", txt, svg, html
+## Return: datH, datD, datHa, datDHa, datDOa
+if (pset$DOfit==1) {
+if (pset$iplatform<2) {
+  source(file=paste0(input_dir,"/fit_mkd.r"), local = knitr::knit_global()) } else {
+  if (dim_sc[1]>1000) {
+  source(file=paste0(input_dir,"/fit_mkd.r"), local = knitr::knit_global()) } else {
+  source(file=paste0(input_dir,"/fit_(skip-fit-iplatform=2).r"), local = knitr::knit_global()) }      }
+  print("Main.Rmd: sourced fit_mkd.r")
+}
+  
+
+```
+

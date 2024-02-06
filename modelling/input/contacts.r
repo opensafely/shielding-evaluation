@@ -1,8 +1,8 @@
 ## Contact matrix
 ### Start of contact data and model
-Week1OfModel = "2020-02-24"
-Week2OfModel = "2021-02-15"
-print(paste0("Date range of contact data, ", Week1OfModel, ", ", Week2OfModel))
+Week1_Model = "2020-02-24"
+Week2_Model = "2021-02-15"
+print(paste0("Date range of contact data, ", Week1_Model, ", ", Week2_Model))
 
 ### max length (weeks) of contacts (pars$cmdim3) and model run (pset$nw)
 nd = pset$nw
@@ -50,7 +50,7 @@ for (i in 1:9) {
 
 #### output
 sink(file = paste0(output_dir,"/",pset$File_contact_summary), append=FALSE, split=FALSE)
-  print(paste0("Date range of contact-data  ", Week1OfModel, ", ", Week2OfModel))
+  print(paste0("Date range of contact-data  ", Week1_Model, ", ", Week2_Model))
   print("total contacts per day of each person in each age group, week 1")
   cm_colsumw1
   print("max eigenvalue of cm, weeks 1 to 52")
