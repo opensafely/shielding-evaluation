@@ -38,7 +38,7 @@ Select HD data, filter, save and plot.
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 
-jobno = "JDat11_"
+jobno = "JDat12_"
 
 ######## Functions #############################################################
 ######### Data rounding/truncation
@@ -164,7 +164,7 @@ StartDateD <- min(DAT$ons_death_date, na.rm = T)
 print(paste0("H start date: ", StartDateH))
 print(paste0("D start date: ", StartDateD))
 
-DAT <- DAT %>%
+DAT <- DAT %>% #NB: ceiling(1/7 + nweeks) = floor(nweeks) + 1
   mutate( weekH = ceiling(1/7+as.numeric(difftime(admission_date, "2020-01-01", units = "weeks"))), #day 1-7 = w1 #unique id across years
           dateH = StartDateH + weeks(weekH - week(StartDateH)) ) %>%              
   mutate( weekD = ceiling(1/7+as.numeric(difftime(ons_death_date, "2020-01-01", units = "weeks"))), #day 1-7 = w1
@@ -174,58 +174,59 @@ names1 = names(DAT)
 #print(paste0("names1"))
 #print(paste0(names1))
 
-
+## Replacemnet for low count
+Freq_cutoff = 8 #NA #replaces 0:7
 
 ### Carehomes plots and data
 
 ## PLot 0.1 Hospitalisations by carehome use
 dat <- DAT %>% filter(!is.na(weekH) | all_covid_hosp>0) %>% 
                frqs(c(weekH, carehome), "freqHch") %>% 
-               select(weekH, dateH, freqHch, carehome) %>%
+               select(carehome, weekH, dateH, freqHch) %>%
                group_by(carehome) %>%
                distinct(weekH, .keep_all = TRUE) %>%
                arrange(carehome, weekH)
 filename = "Carehomes_included_H"; filepart = paste0(output_dir,"/",jobno,filename)
 p <- fig0(dat, x=weekH, y=freqHch, col=carehome, xname ='Week', yname ='Hospital admissions')
 svglite(paste0(filepart,".svg")); print(p); invisible(dev.off())
-dati <- dat %>% mutate(freqHch = ifelse(freqHch<8,NA,freqHch)) %>%
+dati <- dat %>% mutate(freqHch = ifelse(freqHch<8,Freq_cutoff,freqHch)) %>%
                 write.csv(file=paste0(filepart,".csv"))
   
 ## PLot 0.2 Deaths anywhere by carehome use
 dat <- DAT %>% filter(!is.na(weekD) | !is.na(ons_death_date)) %>% 
                frqs(c(weekD, carehome), "freqDch") %>% 
-               select(weekD, dateD, freqDch, carehome) %>%
+               select(carehome, weekD, dateD, freqDch) %>%
                group_by(carehome) %>%
                distinct(weekD, .keep_all = TRUE) %>%
                arrange(carehome, weekD)
 filename = "Carehomes_included_D"; filepart = paste0(output_dir,"/",jobno,filename)
 p <- fig0(dat, x=weekD, y=freqDch, col=carehome, xname ='Week', yname ='Deaths anywhere')
 svglite(paste0(filepart,".svg")); print(p); invisible(dev.off())
-dati <- dat %>% mutate(freqDch = ifelse(freqDch<8,NA,freqDch)) %>%
+dati <- dat %>% mutate(freqDch = ifelse(freqDch<8,Freq_cutoff,freqDch)) %>%
                 write.csv(file=paste0(filepart,".csv"))
 
 ## PLot 0.3 Deaths in Hospital by carehome use
 dat <- DAT %>% filter((!is.na(weekD) | !is.na(ons_death_date)) & (!is.na(weekH) | all_covid_hosp>0))%>%                 frqs(c(weekD, carehome), "freqDch") %>% 
-               select(weekD, dateD, freqDch, carehome) %>%
+               select(carehome, weekD, dateD, freqDch) %>%
                group_by(carehome) %>%
                distinct(weekD, .keep_all = TRUE) %>%
                arrange(carehome, weekD)
 filename = "Carehomes_included_DH"; filepart = paste0(output_dir,"/",jobno,filename)
 p <- fig0(dat, x=weekD, y=freqDch, col=carehome, xname ='Week', yname ='Deaths in Hospital')
 svglite(paste0(filepart,".svg")); print(p); invisible(dev.off())
-dati <- dat %>% mutate(freqDch = ifelse(freqDch<8,NA,freqDch)) %>%
+dati <- dat %>% mutate(freqDch = ifelse(freqDch<8,Freq_cutoff,freqDch)) %>%
                 write.csv(file=paste0(filepart,".csv"))
 
 ## PLot 0.4 Deaths outside Hospital by carehome use
 dat <- DAT %>% filter((!is.na(weekD) | !is.na(ons_death_date)) & (is.na(weekH) | all_covid_hosp==0))%>%                 frqs(c(weekD, carehome), "freqDch") %>% 
-               select(weekD, dateD, freqDch, carehome) %>%
+               select(carehome, weekD, dateD, freqDch) %>%
                group_by(carehome) %>%
                distinct(weekD, .keep_all = TRUE) %>%
                arrange(carehome, weekD)
 filename = "Carehomes_included_DO"; filepart = paste0(output_dir,"/",jobno,filename)
 p <- fig0(dat, x=weekD, y=freqDch, col=carehome, xname ='Week', yname ='Deaths outside Hospital')
 svglite(paste0(filepart,".svg")); print(p); invisible(dev.off())
-dati <- dat %>% mutate(freqDch = ifelse(freqDch<8,NA,freqDch)) %>%
+dati <- dat %>% mutate(freqDch = ifelse(freqDch<8,Freq_cutoff,freqDch)) %>%
                 write.csv(file=paste0(filepart,".csv"))
 
 
@@ -262,13 +263,14 @@ names2 = names(DAT)
 
 
 ## Function to insert dataframe (data rows only) into long-pivot dataframe (data & missing data rows)
-Include_dat_a <- function(fX,fdat,WHAT){
+Include_dat_a <- function(fX,fdat,WHAT,MERGE){
   if (WHAT=="H") {
     X   <- fX    %>% rename(week=weekH, freq=freqHa, date=dateH) 
     dat <- fdat  %>% rename(week=weekH, freq=freqHa, date=dateH) }
   if (WHAT=="D") {
     X   <- fX    %>% rename(week=weekD, freq=freqDa, date=dateD)
     dat <- fdat  %>% rename(week=weekD, freq=freqDa, date=dateD) } 
+  if (MERGE=="NOMERGE")  { dat <- dat %>% rename(ageg2=ageg)}
   uages = unique(dat$ageg2)
   #print(names(X))
   #print(names(dat))
@@ -287,7 +289,17 @@ if (WHAT=="H") X <- X  %>% rename(weekH=week, freqHa=freq, dateH=date)
 if (WHAT=="D") X <- X  %>% rename(weekD=week, freqDa=freq, dateD=date) 
 return(X)
 } #data; print(X[which(X$freqHa>0),]) 
-#=> seems to work on H
+#=> worked on H
+
+#Long-pivot including the data and 0s (where data missing, no reporting)
+Longdf <- function(lageg,nageg,nweek,WHAT){
+  ageg  = rep(lageg:9,each=nweek)
+  week  = rep(1:nweek,times=nageg)
+  freq  = rep(0,times=nageg*nweek) #No reporting occurred
+  date  = as.Date(rep(NA,times=nageg*nweek))
+  if (WHAT=="H") X <- tibble(ageg2=ageg, weekH=week,dateH=date,freqHa=freq)
+  if (WHAT=="D") X <- tibble(ageg2=ageg, weekD=week,dateD=date,freqDa=freq)
+  return(X) }
 
 
 ### DATA 1 Hospitalisations (first admission) by week, age, and shielding ######
@@ -302,61 +314,66 @@ dat <- dat1 %>% frqs(c(weekH), "freqH") %>%
 yname = paste0('Admissions (tot ', sum(dat$freqH,na.rm=T),')')
 p1 <- fig0(dat, x=weekH, y=freqH, col=NULL, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_all.svg")); print(p1); invisible(dev.off())
-datH <- dat %>% rename(WeeksH=weekH, Dataz=freqH, DatesH=dateH)           #fit data
-dat  <- dat %>% mutate(freqH = ifelse(freqH<8,NA,freqH)) %>%
+datH <- dat %>% rename(Week=weekH, Date=dateH, Freq=freqH)                #fit data
+dat  <- dat %>% mutate(freqH = ifelse(freqH<8,Freq_cutoff,freqH)) %>%
                 write.csv(file=paste0(filepart,"_all.csv"))               #show data
 #by_age
 dat <- dat1 %>% frqs(c(weekH, age_cat), "freqHa") %>% 
-                select(weekH, dateH, freqHa, age_cat, ageg) %>% 
+                select(ageg, weekH, dateH, freqHa, age_cat) %>% 
                 group_by(ageg) %>%
                 distinct(weekH, .keep_all = TRUE) %>%
                 arrange(ageg, weekH)
 yname = paste0('Admissions (tot ', sum(dat$freqHa,na.rm=T),')')
 p2 <- fig0(dat, x=weekH, y=freqHa, col=age_cat, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_by_age.svg")); print(p2); invisible(dev.off())
-datHa<- dat %>% rename(WeeksH=weekH, Dataz=freqHa, DatesH=dateH)           #fit data
-dat  <- dat %>% mutate(freqHa = ifelse(freqHa<8,NA,freqHa)) %>%
+datHa<- dat %>% rename(Week=weekH, Date=dateH, Freq=freqHa)                #fit data
+datw <- dat %>% mutate(freqHa = ifelse(freqHa<8,Freq_cutoff,freqHa)) %>%
                 write.csv(file=paste0(filepart,"_by_age.csv"))             #show data
+#Long-pivot FULL including the data and 0s (where data missing, no reporting) - no ageg merging
+nweek = max(range(c(range(DAT$weekH,na.rm=T),range(DAT$weekD,na.rm=T))))
+X <- Longdf(1,9,nweek,"H") %>%
+     Include_dat_a(., dat, "H", "NOMERGE")  #dat; print(X[which(X$freqHa>0),]) 
+datHa_l <- X  %>% rename(Week=weekH, Date=dateH, Freq=freqHa, ageg=ageg2)
+X       <- X  %>% rename(Week=weekH, Date=dateH, Freq=freqHa, ageg=ageg2) %>%
+                  write.csv(.,file=paste0(filepart,"_by_age_long.csv")) #fit data
 #MERGE ageg 1-4, save long-pivot data frame (all ages x all weeks (x shield))
-lageg = 4
+lageg = 4; lage_cat="0-29"
 nageg = 9-lageg+1
-dat  <- dat1 %>% mutate(ageg2=ifelse(ageg<=lageg,lageg,ageg)) %>%
-                 frqs(c(weekH, ageg2), "freqHa")      %>% 
-                 select(weekH, dateH, freqHa, ageg2)  %>% 
-                 group_by(ageg2)                      %>%
-                 distinct(weekH, .keep_all = TRUE)    %>%
+dat  <- dat1 %>% mutate(age_cat2= age_cat)                               %>%
+                 mutate(age_cat2=as.factor(ifelse(ageg<=lageg,lage_cat,levels(age_cat2)[age_cat2] ))) %>%
+                 mutate(ageg2   = ifelse(ageg<=lageg,lageg, ageg))       %>%
+                 frqs(c(weekH, ageg2), "freqHa")                %>% 
+                 select(ageg2, weekH, dateH, freqHa, age_cat2)  %>% 
+                 group_by(ageg2)                                %>%
+                 distinct(weekH, .keep_all = TRUE)              %>%
                  arrange(ageg2, weekH)
 yname = paste0('Admissions, 6 strata (tot ', sum(dat$freqHa,na.rm=T),')')
-p2 <- fig0(dat, x=weekH, y=freqHa, col=ageg2, xname ='Week', yname = yname)
+p2 <- fig0(dat, x=weekH, y=freqHa, col=age_cat2, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_by_age_merged.svg")); print(p2); invisible(dev.off())
-#Long-pivot including the data and 0 where data missing (no reporting)
-nweek = max(range(c(range(DAT$weekH,na.rm=T),range(DAT$weekD,na.rm=T))))
-ageg2 = rep(lageg:9,each=nweek)
-week  = rep(1:nweek,times=nageg)
-freq  = rep(0,times=nageg*nweek) #No reporting occurred
-date  = as.Date(rep(NA,times=nageg*nweek))
-X     <- tibble(ageg2=ageg2, weekH=week,dateH=date,freqHa=freq)   %>%
-         Include_dat_a(., dat, "H")
-datmHa<- X   %>% rename(WeeksH=weekH, Dataz=freqHa, DatesH=dateH) %>%
-                 write.csv(.,file=paste0(filepart,"_by_age_merged_long.csv"))    #fit data
-dat   <- dat %>% mutate(freqHa = ifelse(freqHa<8,NA,freqHa))      %>%
-                 write.csv(.,file=paste0(filepart,"_by_age_merged.csv"))         #show data
+#Long-pivot MERGED including the data and 0s (where data missing, no reporting - merged agegs
+X <- Longdf(lageg,nageg,nweek,"H") %>%
+     Include_dat_a(., dat, "H", "MERGE")    #dat; print(X[which(X$freqHa>0),]) 
+datHa_m_l<- X  %>% rename(Week=weekH, Date=dateH, Freq=freqHa)
+X        <- X  %>% rename(Week=weekH, Date=dateH, Freq=freqHa) %>%
+                   write.csv(.,file=paste0(filepart,"_by_age_merged_long.csv"))    #fit data
+dat      <-dat %>% mutate(freqHa = ifelse(freqHa<8,Freq_cutoff,freqHa))      %>%
+                   write.csv(.,file=paste0(filepart,"_by_age_merged.csv"))         #show data
 #by_shield
 dat <- dat1 %>% frqs(c(weekH, shield), "freqHs") %>% 
-                select(weekH, dateH, freqHs, shield) %>% 
+                select(shield, weekH, dateH, freqHs) %>% 
                 group_by(shield) %>%
                 distinct(weekH, .keep_all = TRUE) %>%
                 arrange(shield, weekH)
 yname = paste0('Admissions (tot ', sum(dat$freqHs,na.rm=T),')')
 p3 <- fig0(dat, x=weekH, y=freqHs, col=shield, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_by_shi.svg")); print(p3); invisible(dev.off())
-datHs<- dat %>% rename(WeeksH=weekH, Dataz=freqHs, DatesH=dateH)           #fit data
-dat  <- dat %>% mutate(freqHs = ifelse(freqHs<8,NA,freqHs)) %>%
+datHs<- dat %>% rename(Week=weekH, Date=dateH, Freq=freqHs)                #fit data
+dat  <- dat %>% mutate(freqHs = ifelse(freqHs<8,Freq_cutoff,freqHs)) %>%
                 write.csv(file=paste0(filepart,"_by_shi.csv"))             #show data
 ### Plots 1.4, 1.5 by shielding cohort
 #shi_by_age
 dat <- dat1 %>% frqs(c(weekH, age_cat, shield), "freqHas") %>% 
-                select(weekH, dateH, freqHas, age_cat, ageg, shield) %>% 
+                select(shield, ageg, weekH, dateH, freqHas, age_cat) %>% 
                 group_by(ageg, shield) %>%
                 distinct(weekH, .keep_all = TRUE) %>%
                 arrange(ageg, shield, weekH)
@@ -369,8 +386,8 @@ p5 <- fig0(dat1, x=weekH, y=freqHas, col=age_cat, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_s0_by_age.svg")); print(p4); invisible(dev.off())
 svglite(paste0(filepart,"_s1_by_age.svg")); print(p5); invisible(dev.off())
 dat   <- dat %>% select(-c(age_cat))
-datHas<- dat %>% rename(WeeksH=weekH, Dataz=freqHas, DatesH=dateH)         #fit data
-dat   <- dat %>% mutate(freqHas = ifelse(freqHas<8,NA,freqHas)) %>%
+datHas<- dat %>% rename(Week=weekH, Date=dateH, Freq=freqHas)              #fit data
+dat   <- dat %>% mutate(freqHas = ifelse(freqHas<8,Freq_cutoff,freqHas)) %>%
                  write.csv(file=paste0(filepart,"_s_by_age.csv"))          #show data
 #merge ageg 1-4 - shield age
 #TODO...
@@ -388,39 +405,39 @@ dat <- dat1 %>% frqs(c(weekH), "freqH") %>%
 yname = paste0('Admissions & recovery (tot ', sum(dat$freqH,na.rm=T),')')
 p1 <- fig0(dat, x=weekH, y=freqH, col=NULL, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_all.svg")); print(p1); invisible(dev.off())
-datHR<- dat %>% rename(WeeksH=weekH, Dataz=freqH, DatesH=dateH)           #fit data
-dat  <- dat %>% mutate(freqH = ifelse(freqH<8,NA,freqH)) %>%
+datHR<- dat %>% rename(Week=weekH, Date=dateH, Freq=freqH)                #fit data
+dat  <- dat %>% mutate(freqH = ifelse(freqH<8,Freq_cutoff,freqH)) %>%
                 write.csv(file=paste0(filepart,"_all.csv"))               #show data
 #by_age
 dat <- dat1 %>% frqs(c(weekH, age_cat), "freqHa") %>% 
-                select(weekH, dateH, freqHa, age_cat, ageg) %>% 
+                select(ageg, weekH, dateH, freqHa, age_cat) %>% 
                 group_by(ageg) %>%
                 distinct(weekH, .keep_all = TRUE) %>%
                 arrange(ageg, weekH)
 yname = paste0('Admissions & recovery (tot ', sum(dat$freqHa,na.rm=T),')')
 p2 <- fig0(dat, x=weekH, y=freqHa, col=age_cat, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_by_age.svg")); print(p2); invisible(dev.off())
-datHRa<-dat %>% rename(WeeksH=weekH, Dataz=freqHa, DatesH=dateH)           #fit data
-dat  <- dat %>% mutate(freqHa = ifelse(freqHa<8,NA,freqHa)) %>%
+datHRa<-dat %>% rename(Week=weekH, Date=dateH, Freq=freqHa)                #fit data
+datw <- dat %>% mutate(freqHa = ifelse(freqHa<8,Freq_cutoff,freqHa)) %>%
                 write.csv(file=paste0(filepart,"_by_age.csv"))             #show data
 #merge ageg 1-4
 #TODO...
 #by_shield
 dat <- dat1 %>% frqs(c(weekH, shield), "freqHs") %>% 
-                select(weekH, dateH, freqHs, shield) %>% 
+                select(shield, weekH, dateH, freqHs) %>% 
                 group_by(shield) %>%
                 distinct(weekH, .keep_all = TRUE) %>%
                 arrange(shield, weekH)
 yname = paste0('Admissions & recovery (tot ', sum(dat$freqHs,na.rm=T),')')
 p3 <- fig0(dat, x=weekH, y=freqHs, col=shield, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_by_shi.svg")); print(p3); invisible(dev.off())
-datHRs<-dat %>% rename(WeeksH=weekH, Dataz=freqHs, DatesH=dateH)             #fit data
-dat  <- dat %>% mutate(freqHs = ifelse(freqHs<8,NA,freqHs)) %>%
+datHRs<-dat %>% rename(Week=weekH, Date=dateH, Freq=freqHs)                  #fit data
+dat  <- dat %>% mutate(freqHs = ifelse(freqHs<8,Freq_cutoff,freqHs)) %>%
                 write.csv(file=paste0(filepart,"_by_shi.csv"))               #show data
 ### Plots 2.4, 2.5 by shielding cohort
 #shi_by_age
 dat <- dat1 %>% frqs(c(weekH, age_cat, shield), "freqHas") %>% 
-                select(weekH, dateH, freqHas, age_cat, ageg, shield) %>% 
+                select(shield, ageg, weekH, dateH, freqHas, age_cat) %>%
                 group_by(ageg, shield) %>%
                 distinct(weekH, .keep_all = TRUE) %>%
                 arrange(ageg, shield, weekH)
@@ -433,8 +450,8 @@ p5 <- fig0(dat1, x=weekH, y=freqHas, col=age_cat, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_s0_by_age.svg")); print(p4); invisible(dev.off())
 svglite(paste0(filepart,"_s1_by_age.svg")); print(p5); invisible(dev.off())
 dat    <- dat %>% select(-c(age_cat))
-datHRas<- dat %>% rename(WeeksH=weekH, Dataz=freqHas, DatesH=dateH)         #fit data
-dat    <- dat %>% mutate(freqHas = ifelse(freqHas<8,NA,freqHas)) %>%
+datHRas<- dat %>% rename(Week=weekH, Date=dateH, Freq=freqHas)              #fit data
+dat    <- dat %>% mutate(freqHas = ifelse(freqHas<8,Freq_cutoff,freqHas)) %>%
                   write.csv(file=paste0(filepart,"_s_by_age.csv"))          #show data
 #merge ageg 1-4
 #TODO...
@@ -453,56 +470,65 @@ dat <- dat1 %>% frqs(c(weekD), "freqD") %>%
 yname = paste0('Deaths in Hospital (tot ', sum(dat$freqD,na.rm=T),')')
 p1 <- fig0(dat, x=weekD, y=freqD, col=NULL, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_all.svg")); print(p1); invisible(dev.off())
-datDH<- dat %>% rename(WeeksD=weekD, Dataw=freqD, DatesD=dateD)           #fit data
-dat  <- dat %>% mutate(freqD = ifelse(freqD<8,NA,freqD)) %>%
+datDH<- dat %>% rename(Week=weekD, Date=dateD, Freq=freqD)                #fit data
+dat  <- dat %>% mutate(freqD = ifelse(freqD<8,Freq_cutoff,freqD)) %>%
                 write.csv(file=paste0(filepart,"_all.csv"))               #show data
 #by_age
 dat <- dat1 %>% frqs(c(weekD, age_cat), "freqDa") %>% 
-                select(weekD, dateD, freqDa, age_cat, ageg) %>% 
+                select(ageg, weekD, dateD, freqDa, age_cat) %>% 
                 group_by(ageg) %>%
                 distinct(weekD, .keep_all = TRUE) %>%
                 arrange(ageg, weekD)
 yname = paste0('Deaths in Hospital (tot ', sum(dat$freqDa,na.rm=T),')')
 p2 <- fig0(dat, x=weekD, y=freqDa, col=age_cat, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_by_age.svg")); print(p2); invisible(dev.off())
-datDHa<-dat %>% rename(WeeksD=weekD, Dataw=freqDa, DatesD=dateD)           #fit data
-dat   <-dat %>% mutate(freqDa = ifelse(freqDa<8,NA,freqDa)) %>%
+datDHa<-dat %>% rename(Week=weekD, Date=dateD, Freq=freqDa)                #fit data
+datw  <-dat %>% mutate(freqDa = ifelse(freqDa<8,Freq_cutoff,freqDa)) %>%
                 write.csv(file=paste0(filepart,"_by_age.csv"))             #show data
+#Long-pivot FULL including the data and 0s (where data missing, no reporting) - no ageg merging
+X <- Longdf(1,9,nweek,"D") %>%
+     Include_dat_a(., dat, "D", "NOMERGE")  #dat; print(X[which(X$freqDa>0),]) 
+datDHa_l<- X  %>% rename(Week=weekD, Date=dateD, Freq=freqDa, ageg=ageg2)
+X       <- X  %>% rename(Week=weekD, Date=dateD, Freq=freqDa, ageg=ageg2) %>%
+                  write.csv(.,file=paste0(filepart,"_by_age_long.csv")) #fit data
 #MERGE ageg 1-6, save long-pivot data frame (all ages x all weeks (x shield))
-lageg = 6
+lageg = 6; lage_cat="0-49"
 nageg = 9-lageg+1
-dat  <- dat1 %>% mutate(ageg2=ifelse(ageg<=lageg,lageg,ageg)) %>%
-                 frqs(c(weekD, ageg2), "freqDa")      %>% 
-                 select(weekD, dateD, freqDa, ageg2)  %>% 
+dat  <- dat1 %>% mutate(age_cat2= age_cat)                               %>%
+                 mutate(age_cat2=as.factor(ifelse(ageg<=lageg,lage_cat,levels(age_cat2)[age_cat2] ))) %>%
+                 mutate(ageg2   = ifelse(ageg<=lageg,lageg, ageg))       %>%
+                 frqs(c(weekD, ageg2), "freqDa")      %>%
+                 select(ageg2, weekD, dateD, freqDa, age_cat2)  %>%
                  group_by(ageg2)                      %>%
                  distinct(weekD, .keep_all = TRUE)    %>%
                  arrange(ageg2, weekD)
 yname = paste0('Deaths in Hospital, 4 strata (tot ', sum(dat$freqDa,na.rm=T),')')
-p2 <- fig0(dat, x=weekD, y=freqDa, col=ageg2, xname ='Week', yname = yname)
+p2 <- fig0(dat, x=weekD, y=freqDa, col=age_cat2, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_by_age_merged.svg")); print(p2); invisible(dev.off())
-#Long-pivot including the data and 0 where data missing (no reporting)
-X     <- tibble(ageg2=ageg2, weekD=week, dateD=date,freqDa=freq)  %>%
-         Include_dat_a(., dat, "D")
-datmDHa<- X  %>% rename(WeeksD=weekD, Dataw=freqDa, DatesD=dateD) %>%
-                 write.csv(.,file=paste0(filepart,"_by_age_merged_long.csv"))    #fit data
-dat   <- dat %>% mutate(freqDa = ifelse(freqDa<8,NA,freqDa))      %>%
-                 write.csv(.,file=paste0(filepart,"_by_age_merged.csv"))         #show data
+#Long-pivot MERGED including the data and 0s (where data missing, no reporting - merged agegs
+X <- Longdf(lageg,nageg,nweek,"D") %>%
+     Include_dat_a(., dat, "D", "MERGED")    #dat; print(X[which(X$freqHa>0),]) 
+datDHa_m_l<- X  %>% rename(Week=weekD, Date=dateD, Freq=freqDa)
+X         <- X  %>% rename(Week=weekD, Date=dateD, Freq=freqDa) %>%
+                    write.csv(.,file=paste0(filepart,"_by_age_merged_long.csv"))    #fit data  
+dat       <-dat %>% mutate(freqDa = ifelse(freqDa<8,Freq_cutoff,freqDa))      %>%
+                    write.csv(.,file=paste0(filepart,"_by_age_merged.csv"))         #show data
 #by_shield
 dat <- dat1 %>% frqs(c(weekD, shield), "freqDs") %>% 
-                select(weekD, dateD, freqDs, shield) %>% 
+                select(shield, weekD, dateD, freqDs) %>% 
                 group_by(shield) %>%
                 distinct(weekD, .keep_all = TRUE) %>%
                 arrange(shield, weekD)
 yname = paste0('Deaths in Hospital (tot ', sum(dat$freqDs,na.rm=T),')')
 p3 <- fig0(dat, x=weekD, y=freqDs, col=shield, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_by_shi.svg")); print(p3); invisible(dev.off())
-datDHs<-dat %>% rename(WeeksD=weekD, Dataw=freqDs, DatesD=dateD)           #fit data
-dat  <- dat %>% mutate(freqDs = ifelse(freqDs<8,NA,freqDs)) %>%
+datDHs<-dat %>% rename(Week=weekD, Date=dateD, Freq=freqDs)                #fit data
+dat  <- dat %>% mutate(freqDs = ifelse(freqDs<8,Freq_cutoff,freqDs)) %>%
                 write.csv(file=paste0(filepart,"_by_shi.csv"))             #show data
 ### Plot 3.4, 3.5 by shielding
 #shi_by_age
 dat <- dat1 %>% frqs(c(weekD, age_cat, shield), "freqDas") %>% 
-                select(weekD, dateD, freqDas, age_cat, ageg, shield) %>% 
+                select(shield, ageg, weekD, dateD, freqDas, age_cat) %>% 
                 group_by(ageg, shield) %>%
                 distinct(weekD, .keep_all = TRUE) %>%
                 arrange(ageg, shield, weekD)
@@ -515,8 +541,8 @@ p5 <- fig0(dat1, x=weekD, y=freqDas, col=age_cat, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_s0_by_age.svg")); print(p4); invisible(dev.off())
 svglite(paste0(filepart,"_s1_by_age.svg")); print(p5); invisible(dev.off())
 dat   <- dat %>% select(-c(age_cat))
-datDHas<-dat %>% rename(WeeksD=weekD, Dataw=freqDas, DatesD=dateD)         #fit data
-dat   <- dat %>% mutate(freqDas = ifelse(freqDas<8,NA,freqDas)) %>%
+datDHas<-dat %>% rename(Week=weekD, Date=dateD, Freq=freqDas)              #fit data
+dat   <- dat %>% mutate(freqDas = ifelse(freqDas<8,Freq_cutoff,freqDas)) %>%
                  write.csv(file=paste0(filepart,"_s_by_age.csv"))          #show data
 #merge ageg 1-6
 #TODO...
@@ -534,56 +560,65 @@ dat <- dat1 %>% frqs(c(weekD), "freqD") %>%
 yname = paste0('Deaths outside Hospital (tot ', sum(dat$freqD,na.rm=T),')')
 p1 <- fig0(dat, x=weekD, y=freqD, col=NULL, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_all.svg")); print(p1); invisible(dev.off())
-datDO<- dat %>% rename(WeeksD=weekD, Dataw=freqD, DatesD=dateD)           #fit data
-dat  <- dat %>% mutate(freqD = ifelse(freqD<8,NA,freqD)) %>%
+datDO<- dat %>% rename(Week=weekD, Date=dateD, Freq=freqD)               #fit data
+dat  <- dat %>% mutate(freqD = ifelse(freqD<8,Freq_cutoff,freqD)) %>%
                 write.csv(file=paste0(filepart,"_all.csv"))               #show data
 #by_age
 dat <- dat1 %>% frqs(c(weekD, age_cat), "freqDa") %>% 
-                select(weekD, dateD, freqDa, age_cat, ageg) %>% 
+                select(ageg, weekD, dateD, freqDa, age_cat) %>% 
                 group_by(ageg) %>%
                 distinct(weekD, .keep_all = TRUE) %>%
                 arrange(ageg, weekD)
 yname = paste0('Deaths outside Hospital (tot ', sum(dat$freqDa,na.rm=T),')')
 p2 <- fig0(dat, x=weekD, y=freqDa, col=age_cat, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_by_age.svg")); print(p2); invisible(dev.off())
-datDOa<-dat %>% rename(WeeksD=weekD, Dataw=freqDa, DatesD=dateD)           #fit data
-dat   <-dat %>% mutate(freqDa = ifelse(freqDa<8,NA,freqDa)) %>%
+datDOa<-dat %>% rename(Week=weekD, Date=dateD, Freq=freqDa)                #fit data
+datw  <-dat %>% mutate(freqDa = ifelse(freqDa<8,Freq_cutoff,freqDa)) %>%
                 write.csv(file=paste0(filepart,"_by_age.csv"))             #show data
+#Long-pivot FULL including the data and 0s (where data missing, no reporting) - no ageg merging
+X <- Longdf(1,9,nweek,"D") %>%
+     Include_dat_a(., dat, "D", "NOMERGE")  #dat; print(X[which(X$freqDa>0),]) 
+datDOa_l<- X  %>% rename(Week=weekD, Date=dateD, Freq=freqDa, ageg=ageg2)
+X       <- X  %>% rename(Week=weekD, Date=dateD, Freq=freqDa, ageg=ageg2) %>%
+                  write.csv(.,file=paste0(filepart,"_by_age_long.csv")) #fit data
 #MERGE ageg 1-6, save long-pivot data frame (all ages x all weeks (x shield))
-lageg = 6
+lageg = 6; lage_cat="0-49"
 nageg = 9-lageg+1
-dat  <- dat1 %>% mutate(ageg2=ifelse(ageg<=lageg,lageg,ageg)) %>%
-                 frqs(c(weekD, ageg2), "freqDa")      %>% 
-                 select(weekD, dateD, freqDa, ageg2)  %>% 
+dat  <- dat1 %>% mutate(age_cat2= age_cat)                               %>%
+                 mutate(age_cat2=as.factor(ifelse(ageg<=lageg,lage_cat,levels(age_cat2)[age_cat2] ))) %>%
+                 mutate(ageg2   = ifelse(ageg<=lageg,lageg, ageg))       %>%
+                 frqs(c(weekD, ageg2), "freqDa")      %>%
+                 select(ageg2, weekD, dateD, freqDa, age_cat2)  %>%
                  group_by(ageg2)                      %>%
                  distinct(weekD, .keep_all = TRUE)    %>%
                  arrange(ageg2, weekD)
 yname = paste0('Deaths outside Hospital, 4 strata (tot ', sum(dat$freqDa,na.rm=T),')')
-p2 <- fig0(dat, x=weekD, y=freqDa, col=ageg2, xname ='Week', yname = yname)
+p2 <- fig0(dat, x=weekD, y=freqDa, col=age_cat2, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_by_age_merged.svg")); print(p2); invisible(dev.off())
-#Long-pivot including the data and 0 where data missing (no reporting)
-X     <- tibble(ageg2=ageg2, weekD=week, dateD=date,freqDa=freq)  %>%
-         Include_dat_a(., dat, "D")
-datmDOa<- X  %>% rename(WeeksD=weekD, Dataw=freqDa, DatesD=dateD) %>%
-                 write.csv(.,file=paste0(filepart,"_by_age_merged_long.csv"))    #fit data
-dat   <- dat %>% mutate(freqDa = ifelse(freqDa<8,NA,freqDa))      %>%
-                 write.csv(.,file=paste0(filepart,"_by_age_merged.csv"))         #show data
+#Long-pivot MERGED including the data and 0s (where data missing, no reporting - merged agegs
+X <- Longdf(lageg,nageg,nweek,"D") %>%
+     Include_dat_a(., dat, "D", "MERGED")    #dat; print(X[which(X$freqHa>0),]) 
+datDOa_m_l<- X  %>% rename(Week=weekD, Date=dateD, Freq=freqDa)
+X         <- X  %>% rename(Week=weekD, Date=dateD, Freq=freqDa) %>%
+                    write.csv(.,file=paste0(filepart,"_by_age_merged_long.csv"))    #fit data
+dat       <-dat %>% mutate(freqDa = ifelse(freqDa<8,Freq_cutoff,freqDa))      %>%
+                    write.csv(.,file=paste0(filepart,"_by_age_merged.csv"))         #show data
 #by_shield
 dat <- dat1 %>% frqs(c(weekD, shield), "freqDs") %>% 
-                select(weekD, dateD, freqDs, shield) %>% 
+                select(shield, weekD, dateD, freqDs) %>% 
                 group_by(shield) %>%
                 distinct(weekD, .keep_all = TRUE) %>%
                 arrange(shield, weekD)
 yname = paste0('Deaths outside Hospital (tot ', sum(dat$freqDs,na.rm=T),')')
 p3 <- fig0(dat, x=weekD, y=freqDs, col=shield, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_by_shi.svg")); print(p3); invisible(dev.off())
-datDOs<-dat %>% rename(WeeksD=weekD, Dataw=freqDs, DatesD=dateD)           #fit data
-dat  <- dat %>% mutate(freqDs = ifelse(freqDs<8,NA,freqDs)) %>%
+datDOs<-dat %>% rename(Week=weekD, Date=dateD, Freq=freqDs)                #fit data
+dat   <-dat %>% mutate(freqDs = ifelse(freqDs<8,Freq_cutoff,freqDs)) %>%
                 write.csv(file=paste0(filepart,"_by_shi.csv"))             #show data
 ### Plots 4.4, 4.5 Deaths outside Hospital by shielding
 #shi_by_age
 dat <- dat1 %>% frqs(c(weekD, age_cat, shield), "freqDas") %>% 
-                select(weekD, dateD, freqDas, age_cat, ageg, shield) %>% 
+                select(shield, ageg, weekD, dateD, freqDas, age_cat) %>% 
                 group_by(ageg, shield) %>%
                 distinct(weekD, .keep_all = TRUE) %>%
                 arrange(ageg, shield, weekD)
@@ -596,8 +631,8 @@ p5 <- fig0(dat1, x=weekD, y=freqDas, col=age_cat, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_s0_by_age.svg")); print(p4); invisible(dev.off())
 svglite(paste0(filepart,"_s1_by_age.svg")); print(p5); invisible(dev.off())
 dat   <- dat %>% select(-c(age_cat))
-datDOas<-dat %>% rename(WeeksD=weekD, Dataw=freqDas, DatesD=dateD)         #fit data
-dat   <- dat %>% mutate(freqDas = ifelse(freqDas<8,NA,freqDas)) %>%
+datDOas<-dat %>% rename(Week=weekD, Date=dateD, Freq=freqDas)             #fit data
+dat   <- dat %>% mutate(freqDas = ifelse(freqDas<8,Freq_cutoff,freqDas)) %>%
                  write.csv(file=paste0(filepart,"_s_by_age.csv"))          #show data
 #merge ageg 1-6
 #TODO...
@@ -618,7 +653,7 @@ nH = sum(dat$freqH,na.rm=T)
 p1 <- ggplot(dat, aes(x = weekH)) +
       geom_point(aes(y = freqH))  + 
       labs(x = 'Week', y = paste0('Admissions (tot ', nH,')'))
-dati <- dat %>% mutate(freqH = ifelse(freqH<8,"<8",freqH)) %>%
+dati <- dat %>% mutate(freqH = ifelse(freqH<8,Freq_cutoff,freqH)) %>%
                 write.csv(file=paste0(filepart,"_H.csv"))
 
 ### 5b DATA Hospitalisations with recovery #####################################
@@ -631,7 +666,7 @@ nHR = sum(dat$freqH,na.rm=T)
 p2 <- ggplot(dat, aes(x = weekH)) +
       geom_point(aes(y = freqH))  + 
       labs(x = 'Week', y =paste0('Admissions & recovery (tot ', nHR,')')) 
-dati <- dat %>% mutate(freqH = ifelse(freqH<8,"<8",freqH)) %>%
+dati <- dat %>% mutate(freqH = ifelse(freqH<8,Freq_cutoff,freqH)) %>%
                 write.csv(file=paste0(filepart,"_HR.csv"))
 
 ### 5c DATA Deaths in Hospital #################################################
@@ -644,7 +679,7 @@ nDH = sum(dat$freqD,na.rm=T)
 p3 <- ggplot(dat, aes(x = weekD)) +
       geom_point(aes(y = freqD))  + 
       labs(x = 'Week', y =paste0('Deaths in Hospital (tot ', nDH,')'))
-dati <- dat %>% mutate(freqD = ifelse(freqD<8,"<8",freqD)) %>%
+dati <- dat %>% mutate(freqD = ifelse(freqD<8,Freq_cutoff,freqD)) %>%
                 write.csv(file=paste0(filepart,"_DH.csv"))
 
 ### 5d DATA Deaths outside Hospital ############################################
@@ -657,7 +692,7 @@ nDO = sum(dat$freqD,na.rm=T)
 p4 <- ggplot(dat, aes(x = weekD)) +
       geom_point(aes(y = freqD))  + 
       labs(x = 'Week', y =paste0('Deaths outside Hospital (tot ', nDO,')') )
-dati <- dat %>% mutate(freqD = ifelse(freqD<8,"<8",freqD)) %>%
+dati <- dat %>% mutate(freqD = ifelse(freqD<8,Freq_cutoff,freqD)) %>%
                 write.csv(file=paste0(filepart,"_DO.csv"))
 
 gridExtra::grid.arrange(p1, p2, p3, p4, nrow = 2, ncol=2)
@@ -679,181 +714,181 @@ print(paste0("Date range: ", Date1," to ", Date2))
 cat("Time series date range \n")
 #TODO; use weekH or weekD rather than date?
 ##H
-DateLim_H   = range(  datH$DatesH)
-DateLim_H1  = range( datHa$DatesH[ which(datHa$ageg==1)],na.rm=T)
-DateLim_H2  = range( datHa$DatesH[ which(datHa$ageg==2)],na.rm=T)
-DateLim_H3  = range( datHa$DatesH[ which(datHa$ageg==3)],na.rm=T)
-DateLim_H4  = range( datHa$DatesH[ which(datHa$ageg==4)],na.rm=T)
-DateLim_H5  = range( datHa$DatesH[ which(datHa$ageg==5)],na.rm=T)
-DateLim_H6  = range( datHa$DatesH[ which(datHa$ageg==6)],na.rm=T)
-DateLim_H7  = range( datHa$DatesH[ which(datHa$ageg==7)],na.rm=T)
-DateLim_H8  = range( datHa$DatesH[ which(datHa$ageg==8)],na.rm=T)
-DateLim_H9  = range( datHa$DatesH[ which(datHa$ageg==9)],na.rm=T)
-DateLim_H10 = range(datHas$DatesH[which(datHas$ageg==1 & datHas$shield=="0")],na.rm=T)
-DateLim_H20 = range(datHas$DatesH[which(datHas$ageg==2 & datHas$shield=="0")],na.rm=T)
-DateLim_H30 = range(datHas$DatesH[which(datHas$ageg==3 & datHas$shield=="0")],na.rm=T)
-DateLim_H40 = range(datHas$DatesH[which(datHas$ageg==4 & datHas$shield=="0")],na.rm=T)
-DateLim_H50 = range(datHas$DatesH[which(datHas$ageg==5 & datHas$shield=="0")],na.rm=T)
-DateLim_H60 = range(datHas$DatesH[which(datHas$ageg==6 & datHas$shield=="0")],na.rm=T)
-DateLim_H70 = range(datHas$DatesH[which(datHas$ageg==7 & datHas$shield=="0")],na.rm=T)
-DateLim_H80 = range(datHas$DatesH[which(datHas$ageg==8 & datHas$shield=="0")],na.rm=T)
-DateLim_H90 = range(datHas$DatesH[which(datHas$ageg==9 & datHas$shield=="0")],na.rm=T)
-DateLim_H11 = range(datHas$DatesH[which(datHas$ageg==1 & datHas$shield=="1")],na.rm=T)
-DateLim_H21 = range(datHas$DatesH[which(datHas$ageg==2 & datHas$shield=="1")],na.rm=T)
-DateLim_H31 = range(datHas$DatesH[which(datHas$ageg==3 & datHas$shield=="1")],na.rm=T)
-DateLim_H41 = range(datHas$DatesH[which(datHas$ageg==4 & datHas$shield=="1")],na.rm=T)
-DateLim_H51 = range(datHas$DatesH[which(datHas$ageg==5 & datHas$shield=="1")],na.rm=T)
-DateLim_H61 = range(datHas$DatesH[which(datHas$ageg==6 & datHas$shield=="1")],na.rm=T)
-DateLim_H71 = range(datHas$DatesH[which(datHas$ageg==7 & datHas$shield=="1")],na.rm=T)
-DateLim_H81 = range(datHas$DatesH[which(datHas$ageg==8 & datHas$shield=="1")],na.rm=T)
-DateLim_H91 = range(datHas$DatesH[which(datHas$ageg==9 & datHas$shield=="1")],na.rm=T)
+DateLim_H   = range(  datH$Date)
+DateLim_H1  = range( datHa$Date[ which(datHa$ageg==1)],na.rm=T)
+DateLim_H2  = range( datHa$Date[ which(datHa$ageg==2)],na.rm=T)
+DateLim_H3  = range( datHa$Date[ which(datHa$ageg==3)],na.rm=T)
+DateLim_H4  = range( datHa$Date[ which(datHa$ageg==4)],na.rm=T)
+DateLim_H5  = range( datHa$Date[ which(datHa$ageg==5)],na.rm=T)
+DateLim_H6  = range( datHa$Date[ which(datHa$ageg==6)],na.rm=T)
+DateLim_H7  = range( datHa$Date[ which(datHa$ageg==7)],na.rm=T)
+DateLim_H8  = range( datHa$Date[ which(datHa$ageg==8)],na.rm=T)
+DateLim_H9  = range( datHa$Date[ which(datHa$ageg==9)],na.rm=T)
+DateLim_H10 = range(datHas$Date[which(datHas$ageg==1 & datHas$shield=="0")],na.rm=T)
+DateLim_H20 = range(datHas$Date[which(datHas$ageg==2 & datHas$shield=="0")],na.rm=T)
+DateLim_H30 = range(datHas$Date[which(datHas$ageg==3 & datHas$shield=="0")],na.rm=T)
+DateLim_H40 = range(datHas$Date[which(datHas$ageg==4 & datHas$shield=="0")],na.rm=T)
+DateLim_H50 = range(datHas$Date[which(datHas$ageg==5 & datHas$shield=="0")],na.rm=T)
+DateLim_H60 = range(datHas$Date[which(datHas$ageg==6 & datHas$shield=="0")],na.rm=T)
+DateLim_H70 = range(datHas$Date[which(datHas$ageg==7 & datHas$shield=="0")],na.rm=T)
+DateLim_H80 = range(datHas$Date[which(datHas$ageg==8 & datHas$shield=="0")],na.rm=T)
+DateLim_H90 = range(datHas$Date[which(datHas$ageg==9 & datHas$shield=="0")],na.rm=T)
+DateLim_H11 = range(datHas$Date[which(datHas$ageg==1 & datHas$shield=="1")],na.rm=T)
+DateLim_H21 = range(datHas$Date[which(datHas$ageg==2 & datHas$shield=="1")],na.rm=T)
+DateLim_H31 = range(datHas$Date[which(datHas$ageg==3 & datHas$shield=="1")],na.rm=T)
+DateLim_H41 = range(datHas$Date[which(datHas$ageg==4 & datHas$shield=="1")],na.rm=T)
+DateLim_H51 = range(datHas$Date[which(datHas$ageg==5 & datHas$shield=="1")],na.rm=T)
+DateLim_H61 = range(datHas$Date[which(datHas$ageg==6 & datHas$shield=="1")],na.rm=T)
+DateLim_H71 = range(datHas$Date[which(datHas$ageg==7 & datHas$shield=="1")],na.rm=T)
+DateLim_H81 = range(datHas$Date[which(datHas$ageg==8 & datHas$shield=="1")],na.rm=T)
+DateLim_H91 = range(datHas$Date[which(datHas$ageg==9 & datHas$shield=="1")],na.rm=T)
 #
-WeekLim_H   = range(  datH$WeeksH)
-WeekLim_H1  = range( datHa$WeeksH[which( datHa$ageg==1)],na.rm=T)
-WeekLim_H2  = range( datHa$WeeksH[which( datHa$ageg==2)],na.rm=T)
-WeekLim_H3  = range( datHa$WeeksH[which( datHa$ageg==3)],na.rm=T)
-WeekLim_H4  = range( datHa$WeeksH[which( datHa$ageg==4)],na.rm=T)
-WeekLim_H5  = range( datHa$WeeksH[which( datHa$ageg==5)],na.rm=T)
-WeekLim_H6  = range( datHa$WeeksH[which( datHa$ageg==6)],na.rm=T)
-WeekLim_H7  = range( datHa$WeeksH[which( datHa$ageg==7)],na.rm=T)
-WeekLim_H8  = range( datHa$WeeksH[which( datHa$ageg==8)],na.rm=T)
-WeekLim_H9  = range( datHa$WeeksH[which( datHa$ageg==9)],na.rm=T)
-WeekLim_H10 = range(datHas$WeeksH[which(datHas$ageg==1 & datHas$shield=="0")],na.rm=T)
-WeekLim_H20 = range(datHas$WeeksH[which(datHas$ageg==2 & datHas$shield=="0")],na.rm=T)
-WeekLim_H30 = range(datHas$WeeksH[which(datHas$ageg==3 & datHas$shield=="0")],na.rm=T)
-WeekLim_H40 = range(datHas$WeeksH[which(datHas$ageg==4 & datHas$shield=="0")],na.rm=T)
-WeekLim_H50 = range(datHas$WeeksH[which(datHas$ageg==5 & datHas$shield=="0")],na.rm=T)
-WeekLim_H60 = range(datHas$WeeksH[which(datHas$ageg==6 & datHas$shield=="0")],na.rm=T)
-WeekLim_H70 = range(datHas$WeeksH[which(datHas$ageg==7 & datHas$shield=="0")],na.rm=T)
-WeekLim_H80 = range(datHas$WeeksH[which(datHas$ageg==8 & datHas$shield=="0")],na.rm=T)
-WeekLim_H90 = range(datHas$WeeksH[which(datHas$ageg==9 & datHas$shield=="0")],na.rm=T)
-WeekLim_H11 = range(datHas$WeeksH[which(datHas$ageg==1 & datHas$shield=="1")],na.rm=T)
-WeekLim_H21 = range(datHas$WeeksH[which(datHas$ageg==2 & datHas$shield=="1")],na.rm=T)
-WeekLim_H31 = range(datHas$WeeksH[which(datHas$ageg==3 & datHas$shield=="1")],na.rm=T)
-WeekLim_H41 = range(datHas$WeeksH[which(datHas$ageg==4 & datHas$shield=="1")],na.rm=T)
-WeekLim_H51 = range(datHas$WeeksH[which(datHas$ageg==5 & datHas$shield=="1")],na.rm=T)
-WeekLim_H61 = range(datHas$WeeksH[which(datHas$ageg==6 & datHas$shield=="1")],na.rm=T)
-WeekLim_H71 = range(datHas$WeeksH[which(datHas$ageg==7 & datHas$shield=="1")],na.rm=T)
-WeekLim_H81 = range(datHas$WeeksH[which(datHas$ageg==8 & datHas$shield=="1")],na.rm=T)
-WeekLim_H91 = range(datHas$WeeksH[which(datHas$ageg==9 & datHas$shield=="1")],na.rm=T)
+WeekLim_H   = range(  datH$Week)
+WeekLim_H1  = range( datHa$Week[which( datHa$ageg==1)],na.rm=T)
+WeekLim_H2  = range( datHa$Week[which( datHa$ageg==2)],na.rm=T)
+WeekLim_H3  = range( datHa$Week[which( datHa$ageg==3)],na.rm=T)
+WeekLim_H4  = range( datHa$Week[which( datHa$ageg==4)],na.rm=T)
+WeekLim_H5  = range( datHa$Week[which( datHa$ageg==5)],na.rm=T)
+WeekLim_H6  = range( datHa$Week[which( datHa$ageg==6)],na.rm=T)
+WeekLim_H7  = range( datHa$Week[which( datHa$ageg==7)],na.rm=T)
+WeekLim_H8  = range( datHa$Week[which( datHa$ageg==8)],na.rm=T)
+WeekLim_H9  = range( datHa$Week[which( datHa$ageg==9)],na.rm=T)
+WeekLim_H10 = range(datHas$Week[which(datHas$ageg==1 & datHas$shield=="0")],na.rm=T)
+WeekLim_H20 = range(datHas$Week[which(datHas$ageg==2 & datHas$shield=="0")],na.rm=T)
+WeekLim_H30 = range(datHas$Week[which(datHas$ageg==3 & datHas$shield=="0")],na.rm=T)
+WeekLim_H40 = range(datHas$Week[which(datHas$ageg==4 & datHas$shield=="0")],na.rm=T)
+WeekLim_H50 = range(datHas$Week[which(datHas$ageg==5 & datHas$shield=="0")],na.rm=T)
+WeekLim_H60 = range(datHas$Week[which(datHas$ageg==6 & datHas$shield=="0")],na.rm=T)
+WeekLim_H70 = range(datHas$Week[which(datHas$ageg==7 & datHas$shield=="0")],na.rm=T)
+WeekLim_H80 = range(datHas$Week[which(datHas$ageg==8 & datHas$shield=="0")],na.rm=T)
+WeekLim_H90 = range(datHas$Week[which(datHas$ageg==9 & datHas$shield=="0")],na.rm=T)
+WeekLim_H11 = range(datHas$Week[which(datHas$ageg==1 & datHas$shield=="1")],na.rm=T)
+WeekLim_H21 = range(datHas$Week[which(datHas$ageg==2 & datHas$shield=="1")],na.rm=T)
+WeekLim_H31 = range(datHas$Week[which(datHas$ageg==3 & datHas$shield=="1")],na.rm=T)
+WeekLim_H41 = range(datHas$Week[which(datHas$ageg==4 & datHas$shield=="1")],na.rm=T)
+WeekLim_H51 = range(datHas$Week[which(datHas$ageg==5 & datHas$shield=="1")],na.rm=T)
+WeekLim_H61 = range(datHas$Week[which(datHas$ageg==6 & datHas$shield=="1")],na.rm=T)
+WeekLim_H71 = range(datHas$Week[which(datHas$ageg==7 & datHas$shield=="1")],na.rm=T)
+WeekLim_H81 = range(datHas$Week[which(datHas$ageg==8 & datHas$shield=="1")],na.rm=T)
+WeekLim_H91 = range(datHas$Week[which(datHas$ageg==9 & datHas$shield=="1")],na.rm=T)
 
 ##DH
-DateLim_DH   = range(  datDH$DatesD)
-DateLim_DH1  = range( datDHa$DatesD[which(datDHa$ageg==1)],na.rm=T)
-DateLim_DH2  = range( datDHa$DatesD[which(datDHa$ageg==2)],na.rm=T)
-DateLim_DH3  = range( datDHa$DatesD[which(datDHa$ageg==3)],na.rm=T)
-DateLim_DH4  = range( datDHa$DatesD[which(datDHa$ageg==4)],na.rm=T)
-DateLim_DH5  = range( datDHa$DatesD[which(datDHa$ageg==5)],na.rm=T)
-DateLim_DH6  = range( datDHa$DatesD[which(datDHa$ageg==6)],na.rm=T)
-DateLim_DH7  = range( datDHa$DatesD[which(datDHa$ageg==7)],na.rm=T)
-DateLim_DH8  = range( datDHa$DatesD[which(datDHa$ageg==8)],na.rm=T)
-DateLim_DH9  = range( datDHa$DatesD[which(datDHa$ageg==9)],na.rm=T)
-DateLim_DH10 = range(datDHas$DatesD[which(datDHas$ageg==1 & datDHas$shield=="0")],na.rm=T)
-DateLim_DH20 = range(datDHas$DatesD[which(datDHas$ageg==2 & datDHas$shield=="0")],na.rm=T)
-DateLim_DH30 = range(datDHas$DatesD[which(datDHas$ageg==3 & datDHas$shield=="0")],na.rm=T)
-DateLim_DH40 = range(datDHas$DatesD[which(datDHas$ageg==4 & datDHas$shield=="0")],na.rm=T)
-DateLim_DH50 = range(datDHas$DatesD[which(datDHas$ageg==5 & datDHas$shield=="0")],na.rm=T)
-DateLim_DH60 = range(datDHas$DatesD[which(datDHas$ageg==6 & datDHas$shield=="0")],na.rm=T)
-DateLim_DH70 = range(datDHas$DatesD[which(datDHas$ageg==7 & datDHas$shield=="0")],na.rm=T)
-DateLim_DH80 = range(datDHas$DatesD[which(datDHas$ageg==8 & datDHas$shield=="0")],na.rm=T)
-DateLim_DH90 = range(datDHas$DatesD[which(datDHas$ageg==9 & datDHas$shield=="0")],na.rm=T)
-DateLim_DH11 = range(datDHas$DatesD[which(datDHas$ageg==1 & datDHas$shield=="1")],na.rm=T)
-DateLim_DH21 = range(datDHas$DatesD[which(datDHas$ageg==2 & datDHas$shield=="1")],na.rm=T)
-DateLim_DH31 = range(datDHas$DatesD[which(datDHas$ageg==3 & datDHas$shield=="1")],na.rm=T)
-DateLim_DH41 = range(datDHas$DatesD[which(datDHas$ageg==4 & datDHas$shield=="1")],na.rm=T)
-DateLim_DH51 = range(datDHas$DatesD[which(datDHas$ageg==5 & datDHas$shield=="1")],na.rm=T)
-DateLim_DH61 = range(datDHas$DatesD[which(datDHas$ageg==6 & datDHas$shield=="1")],na.rm=T)
-DateLim_DH71 = range(datDHas$DatesD[which(datDHas$ageg==7 & datDHas$shield=="1")],na.rm=T)
-DateLim_DH81 = range(datDHas$DatesD[which(datDHas$ageg==8 & datDHas$shield=="1")],na.rm=T)
-DateLim_DH91 = range(datDHas$DatesD[which(datDHas$ageg==9 & datDHas$shield=="1")],na.rm=T)
+DateLim_DH   = range(  datDH$Date)
+DateLim_DH1  = range( datDHa$Date[which(datDHa$ageg==1)],na.rm=T)
+DateLim_DH2  = range( datDHa$Date[which(datDHa$ageg==2)],na.rm=T)
+DateLim_DH3  = range( datDHa$Date[which(datDHa$ageg==3)],na.rm=T)
+DateLim_DH4  = range( datDHa$Date[which(datDHa$ageg==4)],na.rm=T)
+DateLim_DH5  = range( datDHa$Date[which(datDHa$ageg==5)],na.rm=T)
+DateLim_DH6  = range( datDHa$Date[which(datDHa$ageg==6)],na.rm=T)
+DateLim_DH7  = range( datDHa$Date[which(datDHa$ageg==7)],na.rm=T)
+DateLim_DH8  = range( datDHa$Date[which(datDHa$ageg==8)],na.rm=T)
+DateLim_DH9  = range( datDHa$Date[which(datDHa$ageg==9)],na.rm=T)
+DateLim_DH10 = range(datDHas$Date[which(datDHas$ageg==1 & datDHas$shield=="0")],na.rm=T)
+DateLim_DH20 = range(datDHas$Date[which(datDHas$ageg==2 & datDHas$shield=="0")],na.rm=T)
+DateLim_DH30 = range(datDHas$Date[which(datDHas$ageg==3 & datDHas$shield=="0")],na.rm=T)
+DateLim_DH40 = range(datDHas$Date[which(datDHas$ageg==4 & datDHas$shield=="0")],na.rm=T)
+DateLim_DH50 = range(datDHas$Date[which(datDHas$ageg==5 & datDHas$shield=="0")],na.rm=T)
+DateLim_DH60 = range(datDHas$Date[which(datDHas$ageg==6 & datDHas$shield=="0")],na.rm=T)
+DateLim_DH70 = range(datDHas$Date[which(datDHas$ageg==7 & datDHas$shield=="0")],na.rm=T)
+DateLim_DH80 = range(datDHas$Date[which(datDHas$ageg==8 & datDHas$shield=="0")],na.rm=T)
+DateLim_DH90 = range(datDHas$Date[which(datDHas$ageg==9 & datDHas$shield=="0")],na.rm=T)
+DateLim_DH11 = range(datDHas$Date[which(datDHas$ageg==1 & datDHas$shield=="1")],na.rm=T)
+DateLim_DH21 = range(datDHas$Date[which(datDHas$ageg==2 & datDHas$shield=="1")],na.rm=T)
+DateLim_DH31 = range(datDHas$Date[which(datDHas$ageg==3 & datDHas$shield=="1")],na.rm=T)
+DateLim_DH41 = range(datDHas$Date[which(datDHas$ageg==4 & datDHas$shield=="1")],na.rm=T)
+DateLim_DH51 = range(datDHas$Date[which(datDHas$ageg==5 & datDHas$shield=="1")],na.rm=T)
+DateLim_DH61 = range(datDHas$Date[which(datDHas$ageg==6 & datDHas$shield=="1")],na.rm=T)
+DateLim_DH71 = range(datDHas$Date[which(datDHas$ageg==7 & datDHas$shield=="1")],na.rm=T)
+DateLim_DH81 = range(datDHas$Date[which(datDHas$ageg==8 & datDHas$shield=="1")],na.rm=T)
+DateLim_DH91 = range(datDHas$Date[which(datDHas$ageg==9 & datDHas$shield=="1")],na.rm=T)
 #
-WeekLim_DH   = range(  datDH$WeeksD)
-WeekLim_DH1  = range( datDHa$WeeksD[ which(datDHa$ageg==1)],na.rm=T)
-WeekLim_DH2  = range( datDHa$WeeksD[ which(datDHa$ageg==2)],na.rm=T)
-WeekLim_DH3  = range( datDHa$WeeksD[ which(datDHa$ageg==3)],na.rm=T)
-WeekLim_DH4  = range( datDHa$WeeksD[ which(datDHa$ageg==4)],na.rm=T)
-WeekLim_DH5  = range( datDHa$WeeksD[ which(datDHa$ageg==5)],na.rm=T)
-WeekLim_DH6  = range( datDHa$WeeksD[ which(datDHa$ageg==6)],na.rm=T)
-WeekLim_DH7  = range( datDHa$WeeksD[ which(datDHa$ageg==7)],na.rm=T)
-WeekLim_DH8  = range( datDHa$WeeksD[ which(datDHa$ageg==8)],na.rm=T)
-WeekLim_DH9  = range( datDHa$WeeksD[ which(datDHa$ageg==9)],na.rm=T)
-WeekLim_DH10 = range(datDHas$WeeksD[which(datDHas$ageg==1 & datDHas$shield=="0")],na.rm=T)
-WeekLim_DH20 = range(datDHas$WeeksD[which(datDHas$ageg==2 & datDHas$shield=="0")],na.rm=T)
-WeekLim_DH30 = range(datDHas$WeeksD[which(datDHas$ageg==3 & datDHas$shield=="0")],na.rm=T)
-WeekLim_DH40 = range(datDHas$WeeksD[which(datDHas$ageg==4 & datDHas$shield=="0")],na.rm=T)
-WeekLim_DH50 = range(datDHas$WeeksD[which(datDHas$ageg==5 & datDHas$shield=="0")],na.rm=T)
-WeekLim_DH60 = range(datDHas$WeeksD[which(datDHas$ageg==6 & datDHas$shield=="0")],na.rm=T)
-WeekLim_DH70 = range(datDHas$WeeksD[which(datDHas$ageg==7 & datDHas$shield=="0")],na.rm=T)
-WeekLim_DH80 = range(datDHas$WeeksD[which(datDHas$ageg==8 & datDHas$shield=="0")],na.rm=T)
-WeekLim_DH90 = range(datDHas$WeeksD[which(datDHas$ageg==9 & datDHas$shield=="0")],na.rm=T)
-WeekLim_DH11 = range(datDHas$WeeksD[which(datDHas$ageg==1 & datDHas$shield=="1")],na.rm=T)
-WeekLim_DH21 = range(datDHas$WeeksD[which(datDHas$ageg==2 & datDHas$shield=="1")],na.rm=T)
-WeekLim_DH31 = range(datDHas$WeeksD[which(datDHas$ageg==3 & datDHas$shield=="1")],na.rm=T)
-WeekLim_DH41 = range(datDHas$WeeksD[which(datDHas$ageg==4 & datDHas$shield=="1")],na.rm=T)
-WeekLim_DH51 = range(datDHas$WeeksD[which(datDHas$ageg==5 & datDHas$shield=="1")],na.rm=T)
-WeekLim_DH61 = range(datDHas$WeeksD[which(datDHas$ageg==6 & datDHas$shield=="1")],na.rm=T)
-WeekLim_DH71 = range(datDHas$WeeksD[which(datDHas$ageg==7 & datDHas$shield=="1")],na.rm=T)
-WeekLim_DH81 = range(datDHas$WeeksD[which(datDHas$ageg==8 & datDHas$shield=="1")],na.rm=T)
-WeekLim_DH91 = range(datDHas$WeeksD[which(datDHas$ageg==9 & datDHas$shield=="1")],na.rm=T)
+WeekLim_DH   = range(  datDH$Week)
+WeekLim_DH1  = range( datDHa$Week[ which(datDHa$ageg==1)],na.rm=T)
+WeekLim_DH2  = range( datDHa$Week[ which(datDHa$ageg==2)],na.rm=T)
+WeekLim_DH3  = range( datDHa$Week[ which(datDHa$ageg==3)],na.rm=T)
+WeekLim_DH4  = range( datDHa$Week[ which(datDHa$ageg==4)],na.rm=T)
+WeekLim_DH5  = range( datDHa$Week[ which(datDHa$ageg==5)],na.rm=T)
+WeekLim_DH6  = range( datDHa$Week[ which(datDHa$ageg==6)],na.rm=T)
+WeekLim_DH7  = range( datDHa$Week[ which(datDHa$ageg==7)],na.rm=T)
+WeekLim_DH8  = range( datDHa$Week[ which(datDHa$ageg==8)],na.rm=T)
+WeekLim_DH9  = range( datDHa$Week[ which(datDHa$ageg==9)],na.rm=T)
+WeekLim_DH10 = range(datDHas$Week[which(datDHas$ageg==1 & datDHas$shield=="0")],na.rm=T)
+WeekLim_DH20 = range(datDHas$Week[which(datDHas$ageg==2 & datDHas$shield=="0")],na.rm=T)
+WeekLim_DH30 = range(datDHas$Week[which(datDHas$ageg==3 & datDHas$shield=="0")],na.rm=T)
+WeekLim_DH40 = range(datDHas$Week[which(datDHas$ageg==4 & datDHas$shield=="0")],na.rm=T)
+WeekLim_DH50 = range(datDHas$Week[which(datDHas$ageg==5 & datDHas$shield=="0")],na.rm=T)
+WeekLim_DH60 = range(datDHas$Week[which(datDHas$ageg==6 & datDHas$shield=="0")],na.rm=T)
+WeekLim_DH70 = range(datDHas$Week[which(datDHas$ageg==7 & datDHas$shield=="0")],na.rm=T)
+WeekLim_DH80 = range(datDHas$Week[which(datDHas$ageg==8 & datDHas$shield=="0")],na.rm=T)
+WeekLim_DH90 = range(datDHas$Week[which(datDHas$ageg==9 & datDHas$shield=="0")],na.rm=T)
+WeekLim_DH11 = range(datDHas$Week[which(datDHas$ageg==1 & datDHas$shield=="1")],na.rm=T)
+WeekLim_DH21 = range(datDHas$Week[which(datDHas$ageg==2 & datDHas$shield=="1")],na.rm=T)
+WeekLim_DH31 = range(datDHas$Week[which(datDHas$ageg==3 & datDHas$shield=="1")],na.rm=T)
+WeekLim_DH41 = range(datDHas$Week[which(datDHas$ageg==4 & datDHas$shield=="1")],na.rm=T)
+WeekLim_DH51 = range(datDHas$Week[which(datDHas$ageg==5 & datDHas$shield=="1")],na.rm=T)
+WeekLim_DH61 = range(datDHas$Week[which(datDHas$ageg==6 & datDHas$shield=="1")],na.rm=T)
+WeekLim_DH71 = range(datDHas$Week[which(datDHas$ageg==7 & datDHas$shield=="1")],na.rm=T)
+WeekLim_DH81 = range(datDHas$Week[which(datDHas$ageg==8 & datDHas$shield=="1")],na.rm=T)
+WeekLim_DH91 = range(datDHas$Week[which(datDHas$ageg==9 & datDHas$shield=="1")],na.rm=T)
 
 ##DO
-DateLim_DO   = range(  datDO$DatesD)
-DateLim_DO1  = range( datDOa$DatesD[ which(datDOa$ageg==1)],na.rm=T)
-DateLim_DO2  = range( datDOa$DatesD[ which(datDOa$ageg==2)],na.rm=T)
-DateLim_DO3  = range( datDOa$DatesD[ which(datDOa$ageg==3)],na.rm=T)
-DateLim_DO4  = range( datDOa$DatesD[ which(datDOa$ageg==4)],na.rm=T)
-DateLim_DO5  = range( datDOa$DatesD[ which(datDOa$ageg==5)],na.rm=T)
-DateLim_DO6  = range( datDOa$DatesD[ which(datDOa$ageg==6)],na.rm=T)
-DateLim_DO7  = range( datDOa$DatesD[ which(datDOa$ageg==7)],na.rm=T)
-DateLim_DO8  = range( datDOa$DatesD[ which(datDOa$ageg==8)],na.rm=T)
-DateLim_DO9  = range( datDOa$DatesD[ which(datDOa$ageg==9)],na.rm=T)
-DateLim_DO10 = range(datDOas$DatesD[which(datDOas$ageg==1 & datDOas$shield=="0")],na.rm=T)
-DateLim_DO20 = range(datDOas$DatesD[which(datDOas$ageg==2 & datDOas$shield=="0")],na.rm=T)
-DateLim_DO30 = range(datDOas$DatesD[which(datDOas$ageg==3 & datDOas$shield=="0")],na.rm=T)
-DateLim_DO40 = range(datDOas$DatesD[which(datDOas$ageg==4 & datDOas$shield=="0")],na.rm=T)
-DateLim_DO50 = range(datDOas$DatesD[which(datDOas$ageg==5 & datDOas$shield=="0")],na.rm=T)
-DateLim_DO60 = range(datDOas$DatesD[which(datDOas$ageg==6 & datDOas$shield=="0")],na.rm=T)
-DateLim_DO70 = range(datDOas$DatesD[which(datDOas$ageg==7 & datDOas$shield=="0")],na.rm=T)
-DateLim_DO80 = range(datDOas$DatesD[which(datDOas$ageg==8 & datDOas$shield=="0")],na.rm=T)
-DateLim_DO90 = range(datDOas$DatesD[which(datDOas$ageg==9 & datDOas$shield=="0")],na.rm=T)
-DateLim_DO11 = range(datDOas$DatesD[which(datDOas$ageg==1 & datDOas$shield=="1")],na.rm=T)
-DateLim_DO21 = range(datDOas$DatesD[which(datDOas$ageg==2 & datDOas$shield=="1")],na.rm=T)
-DateLim_DO31 = range(datDOas$DatesD[which(datDOas$ageg==3 & datDOas$shield=="1")],na.rm=T)
-DateLim_DO41 = range(datDOas$DatesD[which(datDOas$ageg==4 & datDOas$shield=="1")],na.rm=T)
-DateLim_DO51 = range(datDOas$DatesD[which(datDOas$ageg==5 & datDOas$shield=="1")],na.rm=T)
-DateLim_DO61 = range(datDOas$DatesD[which(datDOas$ageg==6 & datDOas$shield=="1")],na.rm=T)
-DateLim_DO71 = range(datDOas$DatesD[which(datDOas$ageg==7 & datDOas$shield=="1")],na.rm=T)
-DateLim_DO81 = range(datDOas$DatesD[which(datDOas$ageg==8 & datDOas$shield=="1")],na.rm=T)
-DateLim_DO91 = range(datDOas$DatesD[which(datDOas$ageg==9 & datDOas$shield=="1")],na.rm=T)
+DateLim_DO   = range(  datDO$Date)
+DateLim_DO1  = range( datDOa$Date[ which(datDOa$ageg==1)],na.rm=T)
+DateLim_DO2  = range( datDOa$Date[ which(datDOa$ageg==2)],na.rm=T)
+DateLim_DO3  = range( datDOa$Date[ which(datDOa$ageg==3)],na.rm=T)
+DateLim_DO4  = range( datDOa$Date[ which(datDOa$ageg==4)],na.rm=T)
+DateLim_DO5  = range( datDOa$Date[ which(datDOa$ageg==5)],na.rm=T)
+DateLim_DO6  = range( datDOa$Date[ which(datDOa$ageg==6)],na.rm=T)
+DateLim_DO7  = range( datDOa$Date[ which(datDOa$ageg==7)],na.rm=T)
+DateLim_DO8  = range( datDOa$Date[ which(datDOa$ageg==8)],na.rm=T)
+DateLim_DO9  = range( datDOa$Date[ which(datDOa$ageg==9)],na.rm=T)
+DateLim_DO10 = range(datDOas$Date[which(datDOas$ageg==1 & datDOas$shield=="0")],na.rm=T)
+DateLim_DO20 = range(datDOas$Date[which(datDOas$ageg==2 & datDOas$shield=="0")],na.rm=T)
+DateLim_DO30 = range(datDOas$Date[which(datDOas$ageg==3 & datDOas$shield=="0")],na.rm=T)
+DateLim_DO40 = range(datDOas$Date[which(datDOas$ageg==4 & datDOas$shield=="0")],na.rm=T)
+DateLim_DO50 = range(datDOas$Date[which(datDOas$ageg==5 & datDOas$shield=="0")],na.rm=T)
+DateLim_DO60 = range(datDOas$Date[which(datDOas$ageg==6 & datDOas$shield=="0")],na.rm=T)
+DateLim_DO70 = range(datDOas$Date[which(datDOas$ageg==7 & datDOas$shield=="0")],na.rm=T)
+DateLim_DO80 = range(datDOas$Date[which(datDOas$ageg==8 & datDOas$shield=="0")],na.rm=T)
+DateLim_DO90 = range(datDOas$Date[which(datDOas$ageg==9 & datDOas$shield=="0")],na.rm=T)
+DateLim_DO11 = range(datDOas$Date[which(datDOas$ageg==1 & datDOas$shield=="1")],na.rm=T)
+DateLim_DO21 = range(datDOas$Date[which(datDOas$ageg==2 & datDOas$shield=="1")],na.rm=T)
+DateLim_DO31 = range(datDOas$Date[which(datDOas$ageg==3 & datDOas$shield=="1")],na.rm=T)
+DateLim_DO41 = range(datDOas$Date[which(datDOas$ageg==4 & datDOas$shield=="1")],na.rm=T)
+DateLim_DO51 = range(datDOas$Date[which(datDOas$ageg==5 & datDOas$shield=="1")],na.rm=T)
+DateLim_DO61 = range(datDOas$Date[which(datDOas$ageg==6 & datDOas$shield=="1")],na.rm=T)
+DateLim_DO71 = range(datDOas$Date[which(datDOas$ageg==7 & datDOas$shield=="1")],na.rm=T)
+DateLim_DO81 = range(datDOas$Date[which(datDOas$ageg==8 & datDOas$shield=="1")],na.rm=T)
+DateLim_DO91 = range(datDOas$Date[which(datDOas$ageg==9 & datDOas$shield=="1")],na.rm=T)
 #
-WeekLim_DO   = range(  datDO$WeeksD)
-WeekLim_DO1  = range( datDOa$WeeksD[ which(datDOa$ageg==1)],na.rm=T)
-WeekLim_DO2  = range( datDOa$WeeksD[ which(datDOa$ageg==2)],na.rm=T)
-WeekLim_DO3  = range( datDOa$WeeksD[ which(datDOa$ageg==3)],na.rm=T)
-WeekLim_DO4  = range( datDOa$WeeksD[ which(datDOa$ageg==4)],na.rm=T)
-WeekLim_DO5  = range( datDOa$WeeksD[ which(datDOa$ageg==5)],na.rm=T)
-WeekLim_DO6  = range( datDOa$WeeksD[ which(datDOa$ageg==6)],na.rm=T)
-WeekLim_DO7  = range( datDOa$WeeksD[ which(datDOa$ageg==7)],na.rm=T)
-WeekLim_DO8  = range( datDOa$WeeksD[ which(datDOa$ageg==8)],na.rm=T)
-WeekLim_DO9  = range( datDOa$WeeksD[ which(datDOa$ageg==9)],na.rm=T)
-WeekLim_DO10 = range(datDOas$WeeksD[which(datDOas$ageg==1 & datDOas$shield=="0")],na.rm=T)
-WeekLim_DO20 = range(datDOas$WeeksD[which(datDOas$ageg==2 & datDOas$shield=="0")],na.rm=T)
-WeekLim_DO30 = range(datDOas$WeeksD[which(datDOas$ageg==3 & datDOas$shield=="0")],na.rm=T)
-WeekLim_DO40 = range(datDOas$WeeksD[which(datDOas$ageg==4 & datDOas$shield=="0")],na.rm=T)
-WeekLim_DO50 = range(datDOas$WeeksD[which(datDOas$ageg==5 & datDOas$shield=="0")],na.rm=T)
-WeekLim_DO60 = range(datDOas$WeeksD[which(datDOas$ageg==6 & datDOas$shield=="0")],na.rm=T)
-WeekLim_DO70 = range(datDOas$WeeksD[which(datDOas$ageg==7 & datDOas$shield=="0")],na.rm=T)
-WeekLim_DO80 = range(datDOas$WeeksD[which(datDOas$ageg==8 & datDOas$shield=="0")],na.rm=T)
-WeekLim_DO90 = range(datDOas$WeeksD[which(datDOas$ageg==9 & datDOas$shield=="0")],na.rm=T)
-WeekLim_DO11 = range(datDOas$WeeksD[which(datDOas$ageg==1 & datDOas$shield=="1")],na.rm=T)
-WeekLim_DO21 = range(datDOas$WeeksD[which(datDOas$ageg==2 & datDOas$shield=="1")],na.rm=T)
-WeekLim_DO31 = range(datDOas$WeeksD[which(datDOas$ageg==3 & datDOas$shield=="1")],na.rm=T)
-WeekLim_DO41 = range(datDOas$WeeksD[which(datDOas$ageg==4 & datDOas$shield=="1")],na.rm=T)
-WeekLim_DO51 = range(datDOas$WeeksD[which(datDOas$ageg==5 & datDOas$shield=="1")],na.rm=T)
-WeekLim_DO61 = range(datDOas$WeeksD[which(datDOas$ageg==6 & datDOas$shield=="1")],na.rm=T)
-WeekLim_DO71 = range(datDOas$WeeksD[which(datDOas$ageg==7 & datDOas$shield=="1")],na.rm=T)
-WeekLim_DO81 = range(datDOas$WeeksD[which(datDOas$ageg==8 & datDOas$shield=="1")],na.rm=T)
-WeekLim_DO91 = range(datDOas$WeeksD[which(datDOas$ageg==9 & datDOas$shield=="1")],na.rm=T)
+WeekLim_DO   = range(  datDO$Week)
+WeekLim_DO1  = range( datDOa$Week[ which(datDOa$ageg==1)],na.rm=T)
+WeekLim_DO2  = range( datDOa$Week[ which(datDOa$ageg==2)],na.rm=T)
+WeekLim_DO3  = range( datDOa$Week[ which(datDOa$ageg==3)],na.rm=T)
+WeekLim_DO4  = range( datDOa$Week[ which(datDOa$ageg==4)],na.rm=T)
+WeekLim_DO5  = range( datDOa$Week[ which(datDOa$ageg==5)],na.rm=T)
+WeekLim_DO6  = range( datDOa$Week[ which(datDOa$ageg==6)],na.rm=T)
+WeekLim_DO7  = range( datDOa$Week[ which(datDOa$ageg==7)],na.rm=T)
+WeekLim_DO8  = range( datDOa$Week[ which(datDOa$ageg==8)],na.rm=T)
+WeekLim_DO9  = range( datDOa$Week[ which(datDOa$ageg==9)],na.rm=T)
+WeekLim_DO10 = range(datDOas$Week[which(datDOas$ageg==1 & datDOas$shield=="0")],na.rm=T)
+WeekLim_DO20 = range(datDOas$Week[which(datDOas$ageg==2 & datDOas$shield=="0")],na.rm=T)
+WeekLim_DO30 = range(datDOas$Week[which(datDOas$ageg==3 & datDOas$shield=="0")],na.rm=T)
+WeekLim_DO40 = range(datDOas$Week[which(datDOas$ageg==4 & datDOas$shield=="0")],na.rm=T)
+WeekLim_DO50 = range(datDOas$Week[which(datDOas$ageg==5 & datDOas$shield=="0")],na.rm=T)
+WeekLim_DO60 = range(datDOas$Week[which(datDOas$ageg==6 & datDOas$shield=="0")],na.rm=T)
+WeekLim_DO70 = range(datDOas$Week[which(datDOas$ageg==7 & datDOas$shield=="0")],na.rm=T)
+WeekLim_DO80 = range(datDOas$Week[which(datDOas$ageg==8 & datDOas$shield=="0")],na.rm=T)
+WeekLim_DO90 = range(datDOas$Week[which(datDOas$ageg==9 & datDOas$shield=="0")],na.rm=T)
+WeekLim_DO11 = range(datDOas$Week[which(datDOas$ageg==1 & datDOas$shield=="1")],na.rm=T)
+WeekLim_DO21 = range(datDOas$Week[which(datDOas$ageg==2 & datDOas$shield=="1")],na.rm=T)
+WeekLim_DO31 = range(datDOas$Week[which(datDOas$ageg==3 & datDOas$shield=="1")],na.rm=T)
+WeekLim_DO41 = range(datDOas$Week[which(datDOas$ageg==4 & datDOas$shield=="1")],na.rm=T)
+WeekLim_DO51 = range(datDOas$Week[which(datDOas$ageg==5 & datDOas$shield=="1")],na.rm=T)
+WeekLim_DO61 = range(datDOas$Week[which(datDOas$ageg==6 & datDOas$shield=="1")],na.rm=T)
+WeekLim_DO71 = range(datDOas$Week[which(datDOas$ageg==7 & datDOas$shield=="1")],na.rm=T)
+WeekLim_DO81 = range(datDOas$Week[which(datDOas$ageg==8 & datDOas$shield=="1")],na.rm=T)
+WeekLim_DO91 = range(datDOas$Week[which(datDOas$ageg==9 & datDOas$shield=="1")],na.rm=T)
 
 cat("\n")
 print(paste0("H data"))
@@ -949,92 +984,92 @@ print(paste0("Week range deaths outside Hosp ageg 9 shielding: ", WeekLim_DO91[1
 cat("\n")
 cat("Data points \n")
 ##H
-np_H    = length(  datH$DatesH)
-np_H1   = length( datHa$DatesH[which(datHa$ageg==1)])
-np_H2   = length( datHa$DatesH[which(datHa$ageg==2)])
-np_H3   = length( datHa$DatesH[which(datHa$ageg==3)])
-np_H4   = length( datHa$DatesH[which(datHa$ageg==4)])
-np_H5   = length( datHa$DatesH[which(datHa$ageg==5)])
-np_H6   = length( datHa$DatesH[which(datHa$ageg==6)])
-np_H7   = length( datHa$DatesH[which(datHa$ageg==7)])
-np_H8   = length( datHa$DatesH[which(datHa$ageg==8)])
-np_H9   = length( datHa$DatesH[which(datHa$ageg==9)])
-np_H10  = length(datHas$DatesH[which(datHas$ageg==1 & datHas$shield=="0")])
-np_H20  = length(datHas$DatesH[which(datHas$ageg==2 & datHas$shield=="0")])
-np_H30  = length(datHas$DatesH[which(datHas$ageg==3 & datHas$shield=="0")])
-np_H40  = length(datHas$DatesH[which(datHas$ageg==4 & datHas$shield=="0")])
-np_H50  = length(datHas$DatesH[which(datHas$ageg==5 & datHas$shield=="0")])
-np_H60  = length(datHas$DatesH[which(datHas$ageg==6 & datHas$shield=="0")])
-np_H70  = length(datHas$DatesH[which(datHas$ageg==7 & datHas$shield=="0")])
-np_H80  = length(datHas$DatesH[which(datHas$ageg==8 & datHas$shield=="0")])
-np_H90  = length(datHas$DatesH[which(datHas$ageg==9 & datHas$shield=="0")])
-np_H11  = length(datHas$DatesH[which(datHas$ageg==1 & datHas$shield=="1")])
-np_H21  = length(datHas$DatesH[which(datHas$ageg==2 & datHas$shield=="1")])
-np_H31  = length(datHas$DatesH[which(datHas$ageg==3 & datHas$shield=="1")])
-np_H41  = length(datHas$DatesH[which(datHas$ageg==4 & datHas$shield=="1")])
-np_H51  = length(datHas$DatesH[which(datHas$ageg==5 & datHas$shield=="1")])
-np_H61  = length(datHas$DatesH[which(datHas$ageg==6 & datHas$shield=="1")])
-np_H71  = length(datHas$DatesH[which(datHas$ageg==7 & datHas$shield=="1")])
-np_H81  = length(datHas$DatesH[which(datHas$ageg==8 & datHas$shield=="1")])
-np_H91  = length(datHas$DatesH[which(datHas$ageg==9 & datHas$shield=="1")])
+np_H    = length(  datH$Date)
+np_H1   = length( datHa$Date[which(datHa$ageg==1)])
+np_H2   = length( datHa$Date[which(datHa$ageg==2)])
+np_H3   = length( datHa$Date[which(datHa$ageg==3)])
+np_H4   = length( datHa$Date[which(datHa$ageg==4)])
+np_H5   = length( datHa$Date[which(datHa$ageg==5)])
+np_H6   = length( datHa$Date[which(datHa$ageg==6)])
+np_H7   = length( datHa$Date[which(datHa$ageg==7)])
+np_H8   = length( datHa$Date[which(datHa$ageg==8)])
+np_H9   = length( datHa$Date[which(datHa$ageg==9)])
+np_H10  = length(datHas$Date[which(datHas$ageg==1 & datHas$shield=="0")])
+np_H20  = length(datHas$Date[which(datHas$ageg==2 & datHas$shield=="0")])
+np_H30  = length(datHas$Date[which(datHas$ageg==3 & datHas$shield=="0")])
+np_H40  = length(datHas$Date[which(datHas$ageg==4 & datHas$shield=="0")])
+np_H50  = length(datHas$Date[which(datHas$ageg==5 & datHas$shield=="0")])
+np_H60  = length(datHas$Date[which(datHas$ageg==6 & datHas$shield=="0")])
+np_H70  = length(datHas$Date[which(datHas$ageg==7 & datHas$shield=="0")])
+np_H80  = length(datHas$Date[which(datHas$ageg==8 & datHas$shield=="0")])
+np_H90  = length(datHas$Date[which(datHas$ageg==9 & datHas$shield=="0")])
+np_H11  = length(datHas$Date[which(datHas$ageg==1 & datHas$shield=="1")])
+np_H21  = length(datHas$Date[which(datHas$ageg==2 & datHas$shield=="1")])
+np_H31  = length(datHas$Date[which(datHas$ageg==3 & datHas$shield=="1")])
+np_H41  = length(datHas$Date[which(datHas$ageg==4 & datHas$shield=="1")])
+np_H51  = length(datHas$Date[which(datHas$ageg==5 & datHas$shield=="1")])
+np_H61  = length(datHas$Date[which(datHas$ageg==6 & datHas$shield=="1")])
+np_H71  = length(datHas$Date[which(datHas$ageg==7 & datHas$shield=="1")])
+np_H81  = length(datHas$Date[which(datHas$ageg==8 & datHas$shield=="1")])
+np_H91  = length(datHas$Date[which(datHas$ageg==9 & datHas$shield=="1")])
 ##DH
-np_DH    = length(  datDH$DatesD)
-np_DH1   = length( datDHa$DatesD[which(datDHa$ageg==1)])
-np_DH2   = length( datDHa$DatesD[which(datDHa$ageg==2)])
-np_DH3   = length( datDHa$DatesD[which(datDHa$ageg==3)])
-np_DH4   = length( datDHa$DatesD[which(datDHa$ageg==4)])
-np_DH5   = length( datDHa$DatesD[which(datDHa$ageg==5)])
-np_DH6   = length( datDHa$DatesD[which(datDHa$ageg==6)])
-np_DH7   = length( datDHa$DatesD[which(datDHa$ageg==7)])
-np_DH8   = length( datDHa$DatesD[which(datDHa$ageg==8)])
-np_DH9   = length( datDHa$DatesD[which(datDHa$ageg==9)])
-np_DH10  = length(datDHas$DatesD[which(datDHas$ageg==1 & datDHas$shield=="0")])
-np_DH20  = length(datDHas$DatesD[which(datDHas$ageg==2 & datDHas$shield=="0")])
-np_DH30  = length(datDHas$DatesD[which(datDHas$ageg==3 & datDHas$shield=="0")])
-np_DH40  = length(datDHas$DatesD[which(datDHas$ageg==4 & datDHas$shield=="0")])
-np_DH50  = length(datDHas$DatesD[which(datDHas$ageg==5 & datDHas$shield=="0")])
-np_DH60  = length(datDHas$DatesD[which(datDHas$ageg==6 & datDHas$shield=="0")])
-np_DH70  = length(datDHas$DatesD[which(datDHas$ageg==7 & datDHas$shield=="0")])
-np_DH80  = length(datDHas$DatesD[which(datDHas$ageg==8 & datDHas$shield=="0")])
-np_DH90  = length(datDHas$DatesD[which(datDHas$ageg==9 & datDHas$shield=="0")])
-np_DH11  = length(datDHas$DatesD[which(datDHas$ageg==1 & datDHas$shield=="1")])
-np_DH21  = length(datDHas$DatesD[which(datDHas$ageg==2 & datDHas$shield=="1")])
-np_DH31  = length(datDHas$DatesD[which(datDHas$ageg==3 & datDHas$shield=="1")])
-np_DH41  = length(datDHas$DatesD[which(datDHas$ageg==4 & datDHas$shield=="1")])
-np_DH51  = length(datDHas$DatesD[which(datDHas$ageg==5 & datDHas$shield=="1")])
-np_DH61  = length(datDHas$DatesD[which(datDHas$ageg==6 & datDHas$shield=="1")])
-np_DH71  = length(datDHas$DatesD[which(datDHas$ageg==7 & datDHas$shield=="1")])
-np_DH81  = length(datDHas$DatesD[which(datDHas$ageg==8 & datDHas$shield=="1")])
-np_DH91  = length(datDHas$DatesD[which(datDHas$ageg==9 & datDHas$shield=="1")])
+np_DH    = length(  datDH$Date)
+np_DH1   = length( datDHa$Date[which(datDHa$ageg==1)])
+np_DH2   = length( datDHa$Date[which(datDHa$ageg==2)])
+np_DH3   = length( datDHa$Date[which(datDHa$ageg==3)])
+np_DH4   = length( datDHa$Date[which(datDHa$ageg==4)])
+np_DH5   = length( datDHa$Date[which(datDHa$ageg==5)])
+np_DH6   = length( datDHa$Date[which(datDHa$ageg==6)])
+np_DH7   = length( datDHa$Date[which(datDHa$ageg==7)])
+np_DH8   = length( datDHa$Date[which(datDHa$ageg==8)])
+np_DH9   = length( datDHa$Date[which(datDHa$ageg==9)])
+np_DH10  = length(datDHas$Date[which(datDHas$ageg==1 & datDHas$shield=="0")])
+np_DH20  = length(datDHas$Date[which(datDHas$ageg==2 & datDHas$shield=="0")])
+np_DH30  = length(datDHas$Date[which(datDHas$ageg==3 & datDHas$shield=="0")])
+np_DH40  = length(datDHas$Date[which(datDHas$ageg==4 & datDHas$shield=="0")])
+np_DH50  = length(datDHas$Date[which(datDHas$ageg==5 & datDHas$shield=="0")])
+np_DH60  = length(datDHas$Date[which(datDHas$ageg==6 & datDHas$shield=="0")])
+np_DH70  = length(datDHas$Date[which(datDHas$ageg==7 & datDHas$shield=="0")])
+np_DH80  = length(datDHas$Date[which(datDHas$ageg==8 & datDHas$shield=="0")])
+np_DH90  = length(datDHas$Date[which(datDHas$ageg==9 & datDHas$shield=="0")])
+np_DH11  = length(datDHas$Date[which(datDHas$ageg==1 & datDHas$shield=="1")])
+np_DH21  = length(datDHas$Date[which(datDHas$ageg==2 & datDHas$shield=="1")])
+np_DH31  = length(datDHas$Date[which(datDHas$ageg==3 & datDHas$shield=="1")])
+np_DH41  = length(datDHas$Date[which(datDHas$ageg==4 & datDHas$shield=="1")])
+np_DH51  = length(datDHas$Date[which(datDHas$ageg==5 & datDHas$shield=="1")])
+np_DH61  = length(datDHas$Date[which(datDHas$ageg==6 & datDHas$shield=="1")])
+np_DH71  = length(datDHas$Date[which(datDHas$ageg==7 & datDHas$shield=="1")])
+np_DH81  = length(datDHas$Date[which(datDHas$ageg==8 & datDHas$shield=="1")])
+np_DH91  = length(datDHas$Date[which(datDHas$ageg==9 & datDHas$shield=="1")])
 ##DO
-np_DO    = length(  datDO$DatesD)
-np_DO1   = length( datDOa$DatesD[which(datDOa$ageg==1)])
-np_DO2   = length( datDOa$DatesD[which(datDOa$ageg==2)])
-np_DO3   = length( datDOa$DatesD[which(datDOa$ageg==3)])
-np_DO4   = length( datDOa$DatesD[which(datDOa$ageg==4)])
-np_DO5   = length( datDOa$DatesD[which(datDOa$ageg==5)])
-np_DO6   = length( datDOa$DatesD[which(datDOa$ageg==6)])
-np_DO7   = length( datDOa$DatesD[which(datDOa$ageg==7)])
-np_DO8   = length( datDOa$DatesD[which(datDOa$ageg==8)])
-np_DO9   = length( datDOa$DatesD[which(datDOa$ageg==9)])
-np_DO10  = length(datDOas$DatesD[which(datDOas$ageg==1 & datDOas$shield=="0")])
-np_DO20  = length(datDOas$DatesD[which(datDOas$ageg==2 & datDOas$shield=="0")])
-np_DO30  = length(datDOas$DatesD[which(datDOas$ageg==3 & datDOas$shield=="0")])
-np_DO40  = length(datDOas$DatesD[which(datDOas$ageg==4 & datDOas$shield=="0")])
-np_DO50  = length(datDOas$DatesD[which(datDOas$ageg==5 & datDOas$shield=="0")])
-np_DO60  = length(datDOas$DatesD[which(datDOas$ageg==6 & datDOas$shield=="0")])
-np_DO70  = length(datDOas$DatesD[which(datDOas$ageg==7 & datDOas$shield=="0")])
-np_DO80  = length(datDOas$DatesD[which(datDOas$ageg==8 & datDOas$shield=="0")])
-np_DO90  = length(datDOas$DatesD[which(datDOas$ageg==9 & datDOas$shield=="0")])
-np_DO11  = length(datDOas$DatesD[which(datDOas$ageg==1 & datDOas$shield=="1")])
-np_DO21  = length(datDOas$DatesD[which(datDOas$ageg==2 & datDOas$shield=="1")])
-np_DO31  = length(datDOas$DatesD[which(datDOas$ageg==3 & datDOas$shield=="1")])
-np_DO41  = length(datDOas$DatesD[which(datDOas$ageg==4 & datDOas$shield=="1")])
-np_DO51  = length(datDOas$DatesD[which(datDOas$ageg==5 & datDOas$shield=="1")])
-np_DO61  = length(datDOas$DatesD[which(datDOas$ageg==6 & datDOas$shield=="1")])
-np_DO71  = length(datDOas$DatesD[which(datDOas$ageg==7 & datDOas$shield=="1")])
-np_DO81  = length(datDOas$DatesD[which(datDOas$ageg==8 & datDOas$shield=="1")])
-np_DO91  = length(datDOas$DatesD[which(datDOas$ageg==9 & datDOas$shield=="1")])
+np_DO    = length(  datDO$Date)
+np_DO1   = length( datDOa$Date[which(datDOa$ageg==1)])
+np_DO2   = length( datDOa$Date[which(datDOa$ageg==2)])
+np_DO3   = length( datDOa$Date[which(datDOa$ageg==3)])
+np_DO4   = length( datDOa$Date[which(datDOa$ageg==4)])
+np_DO5   = length( datDOa$Date[which(datDOa$ageg==5)])
+np_DO6   = length( datDOa$Date[which(datDOa$ageg==6)])
+np_DO7   = length( datDOa$Date[which(datDOa$ageg==7)])
+np_DO8   = length( datDOa$Date[which(datDOa$ageg==8)])
+np_DO9   = length( datDOa$Date[which(datDOa$ageg==9)])
+np_DO10  = length(datDOas$Date[which(datDOas$ageg==1 & datDOas$shield=="0")])
+np_DO20  = length(datDOas$Date[which(datDOas$ageg==2 & datDOas$shield=="0")])
+np_DO30  = length(datDOas$Date[which(datDOas$ageg==3 & datDOas$shield=="0")])
+np_DO40  = length(datDOas$Date[which(datDOas$ageg==4 & datDOas$shield=="0")])
+np_DO50  = length(datDOas$Date[which(datDOas$ageg==5 & datDOas$shield=="0")])
+np_DO60  = length(datDOas$Date[which(datDOas$ageg==6 & datDOas$shield=="0")])
+np_DO70  = length(datDOas$Date[which(datDOas$ageg==7 & datDOas$shield=="0")])
+np_DO80  = length(datDOas$Date[which(datDOas$ageg==8 & datDOas$shield=="0")])
+np_DO90  = length(datDOas$Date[which(datDOas$ageg==9 & datDOas$shield=="0")])
+np_DO11  = length(datDOas$Date[which(datDOas$ageg==1 & datDOas$shield=="1")])
+np_DO21  = length(datDOas$Date[which(datDOas$ageg==2 & datDOas$shield=="1")])
+np_DO31  = length(datDOas$Date[which(datDOas$ageg==3 & datDOas$shield=="1")])
+np_DO41  = length(datDOas$Date[which(datDOas$ageg==4 & datDOas$shield=="1")])
+np_DO51  = length(datDOas$Date[which(datDOas$ageg==5 & datDOas$shield=="1")])
+np_DO61  = length(datDOas$Date[which(datDOas$ageg==6 & datDOas$shield=="1")])
+np_DO71  = length(datDOas$Date[which(datDOas$ageg==7 & datDOas$shield=="1")])
+np_DO81  = length(datDOas$Date[which(datDOas$ageg==8 & datDOas$shield=="1")])
+np_DO91  = length(datDOas$Date[which(datDOas$ageg==9 & datDOas$shield=="1")])
 
 cat("\n")
 ##H

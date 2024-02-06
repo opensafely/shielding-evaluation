@@ -39,83 +39,135 @@ actions:
         table2_shielding_v1: output/tables/shielding_v1_table2.html
         table2_shielding_v2: output/tables/shielding_v2_table2.html
   
-  HD_data_questions:
-    run: > 
-      r:latest
-        analysis/HDdata_questions.r
-    needs: [clean_the_data]
-    outputs:
-      moderately_sensitive:
-        txt01: output/HDsynthesis/JDat11_HDdata_questions_answered_Hospital_wCH.txt
-        txt02: output/HDsynthesis/JDat11_HDdata_questions_answered_Deaths_wCH.txt
-        txt03: output/HDsynthesis/JDat11_HDdata_questions_answered_Shielding_wCH.txt
-        txt04: output/HDsynthesis/JDat11_HDdata_questions_answered_Hospital.txt
-        txt05: output/HDsynthesis/JDat11_HDdata_questions_answered_Deaths.txt
-        txt06: output/HDsynthesis/JDat11_HDdata_questions_answered_Shielding.txt
 
-  HD_data:
+  fit_HDdata:
     run: > 
       r:latest
-        analysis/runmkd.R
+        modelling/runmkd_main.R
     needs: [clean_the_data]
     outputs:
       moderately_sensitive:
-        csv01b: output/HDsynthesis/JDat11_Carehomes_included_H.csv
-        svg01b: output/HDsynthesis/JDat11_Carehomes_included_H.svg
-        csv02b: output/HDsynthesis/JDat11_Carehomes_included_D.csv
-        svg02b: output/HDsynthesis/JDat11_Carehomes_included_D.svg
-        csv03b: output/HDsynthesis/JDat11_Carehomes_included_DH.csv
-        svg03b: output/HDsynthesis/JDat11_Carehomes_included_DH.svg
-        csv04b: output/HDsynthesis/JDat11_Carehomes_included_DO.csv
-        svg04b: output/HDsynthesis/JDat11_Carehomes_included_DO.svg
-        csv051: output/HDsynthesis/JDat11_Hdata_all.csv
-        svg051: output/HDsynthesis/JDat11_Hdata_all.svg
-        csv052: output/HDsynthesis/JDat11_Hdata_by_age.csv
-        svg052: output/HDsynthesis/JDat11_Hdata_by_age.svg
-        csv05m: output/HDsynthesis/JDat11_Hdata_by_age_merged.csv
-        csv05l: output/HDsynthesis/JDat11_Hdata_by_age_merged_long.csv
-        svg05m: output/HDsynthesis/JDat11_Hdata_by_age_merged.svg
-        csv053: output/HDsynthesis/JDat11_Hdata_by_shi.csv
-        svg053: output/HDsynthesis/JDat11_Hdata_by_shi.svg
-        csv054: output/HDsynthesis/JDat11_Hdata_s_by_age.csv
-        svg054: output/HDsynthesis/JDat11_Hdata_s0_by_age.svg
-        svg055: output/HDsynthesis/JDat11_Hdata_s1_by_age.svg
-        csv061: output/HDsynthesis/JDat11_HRdata_all.csv
-        svg061: output/HDsynthesis/JDat11_HRdata_all.svg
-        csv062: output/HDsynthesis/JDat11_HRdata_by_age.csv
-        svg062: output/HDsynthesis/JDat11_HRdata_by_age.svg
-        csv063: output/HDsynthesis/JDat11_HRdata_by_shi.csv
-        svg063: output/HDsynthesis/JDat11_HRdata_by_shi.svg
-        csv064: output/HDsynthesis/JDat11_HRdata_s_by_age.csv
-        svg064: output/HDsynthesis/JDat11_HRdata_s0_by_age.svg
-        svg065: output/HDsynthesis/JDat11_HRdata_s1_by_age.svg
-        csv071: output/HDsynthesis/JDat11_DHdata_all.csv
-        svg071: output/HDsynthesis/JDat11_DHdata_all.svg
-        csv072: output/HDsynthesis/JDat11_DHdata_by_age.csv
-        svg072: output/HDsynthesis/JDat11_DHdata_by_age.svg
-        csv07m: output/HDsynthesis/JDat11_DHdata_by_age_merged.csv
-        csv07l: output/HDsynthesis/JDat11_DHdata_by_age_merged_long.csv
-        svg07m: output/HDsynthesis/JDat11_DHdata_by_age_merged.svg
-        csv073: output/HDsynthesis/JDat11_DHdata_by_shi.csv
-        svg073: output/HDsynthesis/JDat11_DHdata_by_shi.svg
-        csv074: output/HDsynthesis/JDat11_DHdata_s_by_age.csv
-        svg074: output/HDsynthesis/JDat11_DHdata_s0_by_age.svg
-        svg075: output/HDsynthesis/JDat11_DHdata_s1_by_age.svg
-        csv081: output/HDsynthesis/JDat11_DOdata_all.csv
-        svg081: output/HDsynthesis/JDat11_DOdata_all.svg
-        csv082: output/HDsynthesis/JDat11_DOdata_by_age.csv
-        svg082: output/HDsynthesis/JDat11_DOdata_by_age.svg
-        csv08m: output/HDsynthesis/JDat11_DOdata_by_age_merged.csv
-        csv08l: output/HDsynthesis/JDat11_DOdata_by_age_merged_long.csv
-        svg08m: output/HDsynthesis/JDat11_DOdata_by_age_merged.svg
-        csv083: output/HDsynthesis/JDat11_DOdata_by_shi.csv
-        svg083: output/HDsynthesis/JDat11_DOdata_by_shi.svg
-        csv084: output/HDsynthesis/JDat11_DOdata_s_by_age.csv
-        svg084: output/HDsynthesis/JDat11_DOdata_s0_by_age.svg
-        svg085: output/HDsynthesis/JDat11_DOdata_s1_by_age.svg       
-        csv091: output/HDsynthesis/JDat11_H,HR,DH,DOdata_H.csv
-        csv092: output/HDsynthesis/JDat11_H,HR,DH,DOdata_HR.csv
-        csv093: output/HDsynthesis/JDat11_H,HR,DH,DOdata_DH.csv
-        csv094: output/HDsynthesis/JDat11_H,HR,DH,DOdata_DO.csv
-        svg09b: output/HDsynthesis/JDat11_H,HR,DH,DOdata.svg
-        html01: output/HDsynthesis/JDat11_Report_HDdata.html
+        #HDdata.R - only run if iplatform>0
+        csv011: output/HDsynthesis/J5_Hdata_by_age.csv
+        csv012: output/HDsynthesis/J5_Hdata_by_age_long.csv
+        csv013: output/HDsynthesis/J5_Hdata_by_age_merged_long.csv
+        csv014: output/HDsynthesis/J5_Hdata_by_shi.csv
+        csv015: output/HDsynthesis/J5_Hdata_s_by_age.csv
+        csv021: output/HDsynthesis/J5_DHdata_by_age.csv
+        csv022: output/HDsynthesis/J5_DHdata_by_age_long.csv        
+        csv023: output/HDsynthesis/J5_DHdata_by_age_merged_long.csv
+        csv024: output/HDsynthesis/J5_DHdata_by_shi.csv
+        csv025: output/HDsynthesis/J5_DHdata_s_by_age.csv
+        csv031: output/HDsynthesis/J5_DOdata_by_age.csv
+        csv032: output/HDsynthesis/J5_DOdata_by_age_long.csv
+        csv033: output/HDsynthesis/J5_DOdata_by_age_merged_long.csv
+        csv034: output/HDsynthesis/J5_DOdata_by_shi.csv
+        csv035: output/HDsynthesis/J5_DOdata_s_by_age.csv
+        #contacts
+        txt010: output/modelling/J5_Contact_matrix_year-start-24Feb20_stats.txt
+        #R0
+        csv040: output/modelling/J5_Simul_R0_by_week.csv
+        #simulation - only run if iplatform==0
+        #svg011: output/modelling/J5_Simul_Infected_and_R0.pdf_1-3.svg
+        #svg012: output/modelling/J5_Simul_Infected_and_R0.pdf_4-6.svg
+        #txt020: output/modelling/J5_Simul_run.txt
+        #fit
+        html01: output/modelling/J5_Main_Fit_Report.html
+        txt021: output/modelling/J5_Fit_summary_1.txt
+        txt022: output/modelling/J5_Fit_summary_2.txt  
+        svg021: output/modelling/J5_Fit_summary_1.svg
+        svg022: output/modelling/J5_Fit_summary_2.svg
+        svg031: output/modelling/J5_Fit_MCMC_marginalPlot.svg
+        svg032: output/modelling/J5_Fit_MCMC_plotout_lastPage.svg
+        svg033: output/modelling/J5_Fit_MCMC_correlationPlot.svg
+        svg034: output/modelling/J5_Fit_MCMC_Overall.svg
+        svg035: output/modelling/J5_Fit_MCMC_PosteriorSample.svg
+        svg036: output/modelling/J5_Fit_MCMC_AgeProfile_H.svg
+        svg037: output/modelling/J5_Fit_MCMC_AgeProfile_DH.svg
+        svg038: output/modelling/J5_Fit_MCMC_AgeProfile_DO.svg
+        svg039: output/modelling/J5_Fit_MCMC_variables.svg
+
+  
+  # HD_data_questions:
+    # run: > 
+      # r:latest
+        # analysis/HDdata_questions.r
+    # needs: [clean_the_data]
+    # outputs:
+      # moderately_sensitive:
+        # txt01: output/HDsynthesis/JDat12_HDdata_questions_answered_Hospital_wCH.txt
+        # txt02: output/HDsynthesis/JDat12_HDdata_questions_answered_Deaths_wCH.txt
+        # txt03: output/HDsynthesis/JDat12_HDdata_questions_answered_Shielding_wCH.txt
+        # txt04: output/HDsynthesis/JDat12_HDdata_questions_answered_Hospital.txt
+        # txt05: output/HDsynthesis/JDat12_HDdata_questions_answered_Deaths.txt
+        # txt06: output/HDsynthesis/JDat12_HDdata_questions_answered_Shielding.txt
+
+  # HD_data:
+    # run: > 
+      # r:latest
+        # analysis/runmkd.R
+    # needs: [clean_the_data]
+    # outputs:
+      # moderately_sensitive:
+        # csv01b: output/HDsynthesis/JDat12_Carehomes_included_H.csv
+        # svg01b: output/HDsynthesis/JDat12_Carehomes_included_H.svg
+        # csv02b: output/HDsynthesis/JDat12_Carehomes_included_D.csv
+        # svg02b: output/HDsynthesis/JDat12_Carehomes_included_D.svg
+        # csv03b: output/HDsynthesis/JDat12_Carehomes_included_DH.csv
+        # svg03b: output/HDsynthesis/JDat12_Carehomes_included_DH.svg
+        # csv04b: output/HDsynthesis/JDat12_Carehomes_included_DO.csv
+        # svg04b: output/HDsynthesis/JDat12_Carehomes_included_DO.svg
+        # csv051: output/HDsynthesis/JDat12_Hdata_all.csv
+        # svg051: output/HDsynthesis/JDat12_Hdata_all.svg
+        # csv052: output/HDsynthesis/JDat12_Hdata_by_age.csv
+        # csv055: output/HDsynthesis/JDat12_Hdata_by_age_long.csv
+        # svg052: output/HDsynthesis/JDat12_Hdata_by_age.svg
+        # csv05m: output/HDsynthesis/JDat12_Hdata_by_age_merged.csv
+        # csv05l: output/HDsynthesis/JDat12_Hdata_by_age_merged_long.csv
+        # svg05m: output/HDsynthesis/JDat12_Hdata_by_age_merged.svg
+        # csv053: output/HDsynthesis/JDat12_Hdata_by_shi.csv
+        # svg053: output/HDsynthesis/JDat12_Hdata_by_shi.svg
+        # csv054: output/HDsynthesis/JDat12_Hdata_s_by_age.csv
+        # svg054: output/HDsynthesis/JDat12_Hdata_s0_by_age.svg
+        # svg055: output/HDsynthesis/JDat12_Hdata_s1_by_age.svg
+        # csv061: output/HDsynthesis/JDat12_HRdata_all.csv
+        # svg061: output/HDsynthesis/JDat12_HRdata_all.svg
+        # csv062: output/HDsynthesis/JDat12_HRdata_by_age.csv
+        # svg062: output/HDsynthesis/JDat12_HRdata_by_age.svg
+        # csv063: output/HDsynthesis/JDat12_HRdata_by_shi.csv
+        # svg063: output/HDsynthesis/JDat12_HRdata_by_shi.svg
+        # csv064: output/HDsynthesis/JDat12_HRdata_s_by_age.csv
+        # svg064: output/HDsynthesis/JDat12_HRdata_s0_by_age.svg
+        # svg065: output/HDsynthesis/JDat12_HRdata_s1_by_age.svg
+        # csv071: output/HDsynthesis/JDat12_DHdata_all.csv
+        # svg071: output/HDsynthesis/JDat12_DHdata_all.svg
+        # csv072: output/HDsynthesis/JDat12_DHdata_by_age.csv
+        # csv075: output/HDsynthesis/JDat12_DHdata_by_age_long.csv        
+        # svg072: output/HDsynthesis/JDat12_DHdata_by_age.svg
+        # csv07m: output/HDsynthesis/JDat12_DHdata_by_age_merged.csv
+        # csv07l: output/HDsynthesis/JDat12_DHdata_by_age_merged_long.csv
+        # svg07m: output/HDsynthesis/JDat12_DHdata_by_age_merged.svg
+        # csv073: output/HDsynthesis/JDat12_DHdata_by_shi.csv
+        # svg073: output/HDsynthesis/JDat12_DHdata_by_shi.svg
+        # csv074: output/HDsynthesis/JDat12_DHdata_s_by_age.csv
+        # svg074: output/HDsynthesis/JDat12_DHdata_s0_by_age.svg
+        # svg075: output/HDsynthesis/JDat12_DHdata_s1_by_age.svg
+        # csv081: output/HDsynthesis/JDat12_DOdata_all.csv
+        # svg081: output/HDsynthesis/JDat12_DOdata_all.svg
+        # csv082: output/HDsynthesis/JDat12_DOdata_by_age.csv
+        # csv085: output/HDsynthesis/JDat12_DOdata_by_age_long.csv
+        # svg082: output/HDsynthesis/JDat12_DOdata_by_age.svg
+        # csv08m: output/HDsynthesis/JDat12_DOdata_by_age_merged.csv
+        # csv08l: output/HDsynthesis/JDat12_DOdata_by_age_merged_long.csv
+        # svg08m: output/HDsynthesis/JDat12_DOdata_by_age_merged.svg
+        # csv083: output/HDsynthesis/JDat12_DOdata_by_shi.csv
+        # svg083: output/HDsynthesis/JDat12_DOdata_by_shi.svg
+        # csv084: output/HDsynthesis/JDat12_DOdata_s_by_age.csv
+        # svg084: output/HDsynthesis/JDat12_DOdata_s0_by_age.svg
+        # svg085: output/HDsynthesis/JDat12_DOdata_s1_by_age.svg       
+        # csv091: output/HDsynthesis/JDat12_H,HR,DH,DOdata_H.csv
+        # csv092: output/HDsynthesis/JDat12_H,HR,DH,DOdata_HR.csv
+        # csv093: output/HDsynthesis/JDat12_H,HR,DH,DOdata_DH.csv
+        # csv094: output/HDsynthesis/JDat12_H,HR,DH,DOdata_DO.csv
+        # svg09b: output/HDsynthesis/JDat12_H,HR,DH,DOdata.svg
+        # html01: output/HDsynthesis/JDat12_Report_HDdata.html
