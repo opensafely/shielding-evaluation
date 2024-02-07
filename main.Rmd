@@ -107,8 +107,8 @@ print("Main.Rmd: sourced parameters.r")
   cat("\n")
   print(paste0("Date range in contact-data:   ", Week1_Model, ", ", Week2_Model)); cat("\n")
   if(pset$iplatform>0) {
-  Week1_Data = week("2020-01-01") #HDdata.R, HDdata.Rmd
-  Week2_Data = week("2020-12-01")
+  Week1_Data = lubridate::week("2020-01-01") #HDdata.R, HDdata.Rmd
+  Week2_Data = lubridate::week("2020-12-01")
   print(paste0("Date range in H, D data:      ", "2020-01-01", " - ", "2020-12-01")); cat("\n")
   print(paste0("Week range in H, D data:      ", Week1_Data,   " - ", Week2_Data  )); cat("\n") }
   cat(" \n")

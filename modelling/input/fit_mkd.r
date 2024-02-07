@@ -13,7 +13,7 @@
 
 #TODO: mcmc - revise parameters used
 
-
+#TODO: plots final - x-axis dates not week - or data at start
 
 ###### Output settings and parameters
 sink(file = paste0(output_dir,"/",pset$File_run), append=TRUE, split=FALSE)
@@ -25,8 +25,8 @@ print(rev(pset))
 cat("\n")
 print(paste0("Date range in contact-data:   ", Week1_Model, ", ", Week2_Model)); cat("\n")
 if(pset$iplatform>0) {
-  Week1_Data = week("2020-01-01") #HDdata.r, HDdata.Rmd
-  Week2_Data = week("2020-12-01")
+  Week1_Data = lubridate::week("2020-01-01") #HDdata.r, HDdata.Rmd
+  Week2_Data = lubridate::week("2020-12-01")
   print(paste0("Date range in H, D data:      ", "2020-01-01", " - ", "2020-12-01")); cat("\n")
   print(paste0("Week range in H, D data:      ", Week1_Data,   " - ", Week2_Data  )); cat("\n") }
 cat(" \n")
@@ -54,7 +54,7 @@ if (pset$iplatform==0) {
   #wd = datM$Dataw[iweeksdata] 
   #vd = datM$Datav[iweeksdata] 
   
-  #Replicate merging of ageg in real data
+  #Replicate in simulated data the merging of ageg in the real data
   # zd4-zd9 - Hospitalisations
   # wd6-wd9 - Deaths in hospital
   # vd6-vd9 - Deaths outside hospital
@@ -77,9 +77,12 @@ if (pset$iplatform==0) {
   for (i in (9-ndDO+1+1):9){
     assign(paste0("vd",eval(i)), datM[paste0("Datav",i)][[1]] ) }#vd7-vd9
 
-  print(paste0("#H  data pts fitted: ", length(iweeksmodelH)))
-  print(paste0("#DH data pts fitted: ", length(iweeksmodelDH)))
-  print(paste0("#DO data pts fitted: ", length(iweeksmodelDO)))
+  print(paste0("#H  data pts fitted, #: ", length(iweeksdataH),   ", list: ", range(iweeksdataH)[1],  "...",range(iweeksdataH)[2]))    #41, 1...41
+  print(paste0("#DH data pts fitted, #: ", length(iweeksdataDH),  ", list: ", range(iweeksdataDH)[1], "...",range(iweeksdataDH)[2]))   #41, 1...41
+  print(paste0("#DO data pts fitted, #: ", length(iweeksdataDO),  ", list: ", range(iweeksdataDO)[1], "...",range(iweeksdataDO)[2]))   #41, 1...41
+  print(paste0("#H  model pts used,  #: ", length(iweeksmodelH),  ", list: ", range(iweeksmodelH)[1], "...",range(iweeksmodelH)[2]))   #41, 1...41
+  print(paste0("#DH model pts used,  #: ", length(iweeksmodelDH), ", list: ", range(iweeksmodelDH)[1],"...",range(iweeksmodelDH)[2]))  #41, 1...41
+  print(paste0("#DO model pts used,  #: ", length(iweeksmodelDO), ", list: ", range(iweeksmodelDO)[1],"...",range(iweeksmodelDO)[2]))  #41, 1...41
   
   
 } else { #if iplatform>0
@@ -96,9 +99,9 @@ if (pset$iplatform==0) {
 # Convert dates to WEEKS
 # week("2020-01-01") #[1] 1
 # week("2020-01-07") #[1] 1
-  Week1_Model  = week("2020-02-24") #[1]  8 #from SEIR_contacts
-  Week2_Study  = week("2020-12-01") #[1] 48 #Data: use start of vacc & alpha
-  Week2_Model  = week("2021-02-15")+53
+  Week1_Model  = lubridate::week("2020-02-24")    #[1]  8 #from SEIR_contacts
+  Week2_Study  = lubridate::week("2020-12-01")    #[1] 48 #Data: use start of vacc & alpha
+  Week2_Model  = lubridate::week("2021-02-15")+53 #no.weeks in 2020 = 53
   Week1_Fit_H  = max( c(min( datHa_m_l$Week), Week1_Model), na.rm=T)              #  8 #max(c(1,8))
   Week1_Fit_DH = max( c(min(datDHa_m_l$Week), Week1_Model), na.rm=T)              #  8 #max(c(1,8))
   Week1_Fit_DO = max( c(min(datDOa_m_l$Week), Week1_Model), na.rm=T)              #  8 #max(c(1,8))
@@ -106,56 +109,50 @@ if (pset$iplatform==0) {
   Week2_Fit_DH = min( c(max(datDHa_m_l$Week), Week2_Model, Week2_Study), na.rm=T) # 48 #min(c(48,60,48))
   Week2_Fit_DO = min( c(max(datDOa_m_l$Week), Week2_Model, Week2_Study), na.rm=T) # 48 #min(c(48,60,48))
 
-#For each ageg2 - 1) elements of long-pivot data vector - within the date-range for fit
-  #iweeskdataH4 ... iweeskdataH9 - Hospitalisations
+#For each ageg2 - 1) elements of long-pivot data vector - within the date range for fitting
+              # - 2) data vector with these elements
+  #weekly incidence of hospital admissions 
   ndH = 6  #data "4" merges 1:4 - e.g. unique(datHa_m_l$ageg2) #[1] 4 5 6 7 8 9
   for (i in (9-ndH+1):9){
-     values =  which(!is.na(datHa_m_l$Week) & datHa_m_l$ageg2==i
-                     & datHa_m_l$Week >= Week1_Fit_H & datHa_m_l$Week <= Week2_Fit_H) #dates relative to "2020-01-01
-     assign(paste0("iweeksdataH",eval(i)),values) } 
-  #iweeskdataDH6 ... iweeskdataDH9 - Deaths in hospital
+    values =  which(      !is.na(datHa_m_l$Week) &  datHa_m_l$ageg2==i
+               & Week1_Fit_H <=  datHa_m_l$Week  &  datHa_m_l$Week <= Week2_Fit_H) #dates relative to "2020-01-01
+    assign(paste0("iweeksdataH", eval(i)),values)                    #iweeskdataH4=8:48 ...  iweeskdataH9
+    assign(paste0("zd",eval(i)), datHa_m_l$Freq[values]) }            #zd4 ... zd9
+  #weekly incidence of deaths in hospital
   ndDH = 4 #data "6" merges 1:6
   for (i in (9-ndDH+1):9){
-    values =  which(!is.na(datDHa_m_l$Week) & datDHa_m_l$ageg2==i
-                    & datDHa_m_l$Week >= Week1_Fit_H & datDHa_m_l$Week <= Week2_Fit_H) #dates relative to "2020-01-01
-    assign(paste0("iweeksdataDH",eval(i)),values) }
-  #iweeskdataDO6 ... iweeskdataDO9 - Deaths outside hospital
-  ndDO = 4 #data "6" merges 1:6
-  for (i in (9-ndDO+1):9){
-    values =  which(!is.na(datDOa_m_l$Week) & datDOa_m_l$ageg2==i
-                    & datDOa_m_l$Week >= Week1_Fit_H & datDOa_m_l$Week <= Week2_Fit_H) #dates relative to "2020-01-01
-    assign(paste0("iweeksdataDO",eval(i)),values) }
+    values =  which(      !is.na(datDHa_m_l$Week) & datDHa_m_l$ageg2==i
+               & Week1_Fit_DH <= datDHa_m_l$Week  & datDHa_m_l$Week <= Week2_Fit_DH) #dates relative to "2020-01-01
+    assign(paste0("iweeksdataDH",eval(i)),values)                     #iweeskdataDH6=8:48 ... iweeskdataDH9
+    assign(paste0("wd",eval(i)),datDHa_m_l$Freq[values]) }            #wd6 ... wd9 
+  #weekly incidence of deaths outside hospital
+  ndDO = 4  #data "6" merges 1:6
+  for (i in (9-ndDO+1):9){ 
+    values =  which(      !is.na(datDOa_m_l$Week) & datDOa_m_l$ageg2==i                
+               & Week1_Fit_DO <= datDOa_m_l$Week  & datDOa_m_l$Week <= Week2_Fit_DO) #dates relative to "2020-01-01
+    assign(paste0("iweeksdataDO",eval(i)),values)                     #iweeksdataDO6=8:48 ... iweeskdataDO9
+    assign(paste0("vd",eval(i)), datDOa_m_l$Freq[values]) }           #vd6 ... vd9
 
-#For each ageg2 - 2) data vector - within date-range for fit
-  #zd4 ... zd9
-  for (i in (9-ndH+1):9){ #weekly incidence of hospital admissions 
-    values =  eval(parse(text = paste0(  "datHa_m_l$Freq[iweeksdataH",eval(i),"]")))
-    assign(paste0("zd",eval(i)),values) }
-  #wd6 ... wd9   
-  for (i in (9-ndDH+1):9){ #weekly incidence of deaths 
-    values =  eval(parse(text = paste0("datDHa_m_l$Freq[iweeksdataDH",eval(i),"]")))
-    assign(paste0("wd",eval(i)),values) }
-  #vd6 ... vd9
-  for (i in (9-ndDO+1):9){ #weekly incidence of deaths outside
-    values =  eval(parse(text = paste0("datDOa_m_l$Freq[iweeksdataDO",eval(i),"]")))
-    assign(paste0("vd",eval(i)),values) }
-  
-#Convert data-weeks to model-weeks (elements 1:52) counted from start week of model ("2020-02-24")
+#Convert selected-data-weeks (index 8:48 from Week1_Model=2020-02-24 to Week2_Study=2020-12-01) 
+#to model-weeks (index 1:52 from Week1_Model=2020-02-24 - want to stop at Week2_Study=2020-12-01)
 #=> used in likelihood
-   iweeksmodelH  = iweeksdataH4  - Week1_Model + 1 #indices iweeksdataH4  are 1st in long pivot
-   iweeksmodelDH = iweeksdataDH6 - Week1_Model + 1 #indices iweeksdataDH6 are 1st in long pivot
-   iweeksmodelDO = iweeksdataDO6 - Week1_Model + 1 #indices iweeksdataDO6 are 1st in long pivot
-   print(paste0("#H  data pts fitted, #: ", length(iweeksmodelH),  ", list: ", range(iweeksdataH4)[1], "...",range(iweeksdataH4)[2]))
-   print(paste0("#DH data pts fitted, #: ", length(iweeksmodelDH), ", list: ", range(iweeksdataDH6)[1],"...",range(iweeksdataDH6)[2]))
-   print(paste0("#DO data pts fitted, #: ", length(iweeksmodelDO), ", list: ", range(iweeksdataDO6)[1],"...",range(iweeksdataDO6)[2]))
-
+  iweeksmodelH  = iweeksdataH4  - (Week1_Model-1) #1:41=8:48-(8-1) #indices iweeksdataH4 are 1st in long pivot
+  iweeksmodelDH = iweeksdataDH6 - (Week1_Model-1) #1:41=8:48-(8-1) #indices iweeksdataDH6 are 1st in long pivot
+  iweeksmodelDO = iweeksdataDO6 - (Week1_Model-1) #1:41=8:48-(8-1) #indices iweeksdataDO6 are 1st in long pivot
+  print(paste0("#H  data pts fitted, #: ", length(iweeksdataH4),  ", list: ", range(iweeksdataH4)[1], "...",range(iweeksdataH4)[2]))   #41, 8...48
+  print(paste0("#DH data pts fitted, #: ", length(iweeksdataDH6), ", list: ", range(iweeksdataDH6)[1],"...",range(iweeksdataDH6)[2]))  #41, 8...48
+  print(paste0("#DO data pts fitted, #: ", length(iweeksdataDO6), ", list: ", range(iweeksdataDO6)[1],"...",range(iweeksdataDO6)[2]))  #41, 8...48
+  print(paste0("#H  model pts used,  #: ", length(iweeksmodelH),  ", list: ", range(iweeksmodelH)[1], "...",range(iweeksmodelH)[2]))   #41, 8...48
+  print(paste0("#DH model pts used,  #: ", length(iweeksmodelDH), ", list: ", range(iweeksmodelDH)[1],"...",range(iweeksmodelDH)[2]))  #41, 8...48
+  print(paste0("#DO model pts used,  #: ", length(iweeksmodelDO), ", list: ", range(iweeksmodelDO)[1],"...",range(iweeksmodelDO)[2]))  #41, 8...48
+   
 #Temporal data (weekly incidence)
-iweeksdataH=iweeksdataH4
-iweeksdataDH=iweeksdataDH6
-iweeksdataDO=iweeksdataDO6
-zd = datH$Freq[iweeksdataH]
-wd = datDH$Freq[iweeksdataDH]
-vd = datDO$Freq[iweeksdataDO]
+  iweeksdataH  = iweeksdataH4  #indices iweeksdataH4 are 1st in long pivot
+  iweeksdataDH = iweeksdataDH6 #indices iweeksdataH4 are 1st in long pivot
+  iweeksdataDO = iweeksdataDO6 #indices iweeksdataH4 are 1st in long pivot
+  zd =  datH$Freq[iweeksdataH]
+  wd = datDH$Freq[iweeksdataDH]
+  vd = datDO$Freq[iweeksdataDO]
 
 } #iplatform
 
@@ -183,15 +180,15 @@ if(pset$iplatform==2){
   ###Demograhy (ageons and agecoh) merged ageg
   # H (ndH=4) - DH or DO (ndDH=ndDO=6)
   # England, ONS
-  ageonsH = pars$ageons           #1:9
-  ageonsD = pars$ageons           #1:9
+  ageonsH = pars$ageons         #1:9
+  ageonsD = pars$ageons         #1:9
   ageonsH[1:(9-(ndH-1) -1)] = 0 #1:3
   ageonsD[1:(9-(ndDH-1)-1)] = 0 #1:5
   ageonsH[(9-(ndH -1))]     = sum(pars$ageons[1:(9-(ndH -1))]) #4 <= 1:4
   ageonsD[(9-(ndDH-1))]     = sum(pars$ageons[1:(9-(ndDH-1))]) #6 <= 1:6
   # Cohort, TPP
-  agecohH = pars$agecoh           #1:9
-  agecohD = pars$agecoh           #1:9
+  agecohH = pars$agecoh         #1:9
+  agecohD = pars$agecoh         #1:9
   agecohH[1:(9-(ndH -1)-1)] = 0 #1:3
   agecohD[1:(9-(ndDH-1)-1)] = 0 #1:5
   agecohH[(9-(ndH -1))]     = sum(pars$agecoh[1:(9-(ndH -1))]) #4 <= 1:4
@@ -200,10 +197,13 @@ if(pset$iplatform==2){
   #ageonsD [1] 0.0000000 0.0000000 0.0000000 0.0000000 0.0000000 0.6192527 0.1365515 0.1069367 0.1372591
   #agecohH [1] 0.000 0.000 0.000             0.347     0.143     0.131     0.137     0.107     0.135
   #agecohD [1] 0.000 0.000 0.000             0.000     0.000     0.621     0.137     0.107     0.135
-  weightz=c(ageonsH*pars$Npop/(agecohH*pars$Npopcoh))
-  weightw=c(ageonsD*pars$Npop/(agecohD*pars$Npopcoh))
-  weightv=c(ageonsD*pars$Npop/(agecohD*pars$Npopcoh))
-  
+  weightz_m=c(ageonsH*pars$Npop/(agecohH*pars$Npopcoh))
+  weightw_m=c(ageonsD*pars$Npop/(agecohD*pars$Npopcoh))
+  weightv_m=c(ageonsD*pars$Npop/(agecohD*pars$Npopcoh))
+  #non-merged
+  weightz  =c(pars$ageons*pars$Npop/(pars$agecoh*pars$Npopcoh))
+  weightw  =c(pars$ageons*pars$Npop/(pars$agecoh*pars$Npopcoh))
+  weightv  =c(pars$ageons*pars$Npop/(pars$agecoh*pars$Npopcoh))
   #### Alternative:
   #### (2) -if weighting means for each mean/parameter proposal
   #### -But, 1) would scale down the counts to cohort rather than country
@@ -213,21 +213,25 @@ if(pset$iplatform==2){
   # mweightv = 1/c(ageonsD*pars$Npop/(agecohD*pars$Npopcoh)) 
   
   } else{
-  weightz=rep(1,times=length(pars$ageons))
-  weightw=rep(1,times=length(pars$ageons))
-  weightv=rep(1,times=length(pars$ageons)) }
+  weightz_m=rep(1,times=length(pars$ageons))
+  weightw_m=rep(1,times=length(pars$ageons))
+  weightv_m=rep(1,times=length(pars$ageons)) 
+  weightz  = weightz_m
+  weightw  = weightw_m
+  weightv  = weightv_m
+  }
 
 ####### -Counts into NB need be integer
 #######  => round()
 ## zdiw, wdiw, vdiw i=4:9 or 6:9
 for (i in (9-ndH+1):9){ #weekly incidence of hospitalisations
-  values =  round( eval(parse(text = paste0("zd",eval(i))))*weightz[i], 0)
+  values =  round( eval(parse(text = paste0("zd",eval(i))))*weightz_m[i], 0)
   assign(paste0("zd",eval(i),"w"),values) }
 for (i in (9-ndDH+1):9){ #weekly incidence of deaths in hospital
-  values =  round( eval(parse(text = paste0("wd",eval(i))))*weightw[i], 0)
+  values =  round( eval(parse(text = paste0("wd",eval(i))))*weightw_m[i], 0)
   assign(paste0("wd",eval(i),"w"),values) }
 for (i in (9-ndDO+1):9){ #weekly incidence of deaths in hospital
-  values =  round( eval(parse(text = paste0("vd",eval(i))))*weightv[i], 0)
+  values =  round( eval(parse(text = paste0("vd",eval(i))))*weightv_m[i], 0)
   assign(paste0("vd",eval(i),"w"),values) }
 
 
@@ -285,7 +289,9 @@ LogLikelihood2 <- function(theta){
   #MeanDO = m$byw$DOw[iweeksmodelDO];
     
   #Model merged ageg - #NB: no ageons weighting: Ha (Da) are proportional to ageg (via Na)
-  MeanH4 = 0;  MeanDH6 = 0;  MeanDO6 = 0;
+  MeanH4  = rep(0,times=length(iweeksmodelH))
+  MeanDH6 = rep(0,times=length(iweeksmodelDH))
+  MeanDO6 = rep(0,times=length(iweeksmodelDO))
   for (i in 1:(9-(ndH-1))) { #1:4,  ndH=6
   MeanH4  = MeanH4  + eval(parse(text = paste0("m$byw_age$H", eval(i),"w[iweeksmodelH]")));
   MeanH4[1]= max(MeanH4[1],1) } #avoid 0 mean and NAs in likelihood
@@ -420,7 +426,7 @@ parsE$rEI <- 1/(tMax*MAPE$parametersMAP[1])
 parsE$rIR <- 1/(tMax*MAPE$parametersMAP[2])
 parsE$R0  <- exp(    MAPE$parametersMAP[3])#*logR0Max)#*R0Max
 parsE$pE0 <- exp(   -MAPE$parametersMAP[4] + logpE0Max)
-pars$ad   <- exp(   -MAPE$parametersMAP[5] + logadMax)
+parsE$ad  <- exp(   -MAPE$parametersMAP[5] + logadMax)
 #pars$ad   <-         MAPE$parametersMAP[5
 #parsE$pdm <- exp(MAPE$parametersMAP[5])
 parsE$kH  <- 1/(      MAPE$parametersMAP[6]^2) #1/pk^2
@@ -438,7 +444,7 @@ mE        <- model(parsE)
 ## UNCERTAINTY  ################################################################
 ## Sample the chains
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
-Weeks     = seq_along(zd) #length(mE$byw$time)
+Weeks     = iweekmodelH #seq_along(zd) #length(mE$byw$time)
 iweeksz   = Weeks
 npar      = length(LOWER)
 nsample   = 3000#500#1000#;
@@ -538,10 +544,13 @@ sink()
 
 sink(file = paste0(output_dir,"/",pset$File_fit_summary_2),append=FALSE,split=FALSE) #append=TRUE,split=FALSE)
 #cat("\n")
-## Data
-print(paste0("#H  data pts fitted: ", length(iwH)))
-print(paste0("#DH data pts fitted: ", length(iwDH)))
-print(paste0("#DO data pts fitted: ", length(iwDO)))
+## Data and model
+print(paste0("#H  data pts fitted, #: ", length(iweeksdataH4),  ", list: ", range(iweeksdataH4)[1], "...",range(iweeksdataH4)[2]))   #41, 8...48
+print(paste0("#DH data pts fitted, #: ", length(iweeksdataDH6), ", list: ", range(iweeksdataDH6)[1],"...",range(iweeksdataDH6)[2]))  #41, 8...48
+print(paste0("#DO data pts fitted, #: ", length(iweeksdataDO6), ", list: ", range(iweeksdataDO6)[1],"...",range(iweeksdataDO6)[2]))  #41, 8...48
+print(paste0("#H  model pts used,  #: ", length(iweeksmodelH),  ", list: ", range(iweeksmodelH)[1], "...",range(iweeksmodelH)[2]))   #41, 8...48
+print(paste0("#DH model pts used,  #: ", length(iweeksmodelDH), ", list: ", range(iweeksmodelDH)[1],"...",range(iweeksmodelDH)[2]))  #41, 8...48
+print(paste0("#DO model pts used,  #: ", length(iweeksmodelDO), ", list: ", range(iweeksmodelDO)[1],"...",range(iweeksmodelDO)[2]))  #41, 8...48
 cat("\n")
 print(names(out[[1]]))
 cat("\n")
@@ -563,7 +572,7 @@ sink()
 ##### Plots - overall dataframes ###############################################
 N  = pars$Npop
 Nc = pars$Npopcoh
-if(pset$iplatform==0) {weight=1} else {weight=N/Nc}
+if(pset$iplatform<2) {weight=1} else {weight=N/Nc}
 rE = 1#parsE$pdm #
 
 iseqH  = iweeksmodelH
@@ -588,7 +597,7 @@ if (pset$iplatform==0) {
 
 
 
-###### Plots - Age-profile dataframes (not merged) #############################
+###### Plots - Age-profile dataframes (NOT MERGED) #############################
 ##OS:   datHa_l  or datHa   (l = long pivot, all 48*9 pts)
 ##OS:  datDHa_l  or datDHa
 ##OS:  datDOa_l  or datDOa
@@ -596,17 +605,17 @@ if (pset$iplatform==0) {
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
   if (pset$iplatform==2){
     for (i in 1:9){
-      #iweeskdataH1-9 
-      values =  which(!is.na(datHa_l$Week)  & datHa_l$ageg==i
-                      & datHa_l$Week >= Week1_Fit_H & datHa_l$Week <= Week2_Fit_H)
+      #iweekSdataH1-9 
+      values =  which(!is.na(datHa_l$Week)                 &  datHa_l$ageg==i
+                           & datHa_l$Week >= Week1_Fit_H   &  datHa_l$Week <= Week2_Fit_H)
       assign(paste0("iweeksdataH",eval(i)),values) 
-      #iweeskdataDH1-9 
-      values =  which(!is.na(datDHa_l$Week) & datDHa_l$ageg==i
-                      & datDHa_l$Week >= Week1_Fit_H & datDHa_l$Week <= Week2_Fit_H)
+      #iweeksdataDH1-9 
+      values =  which(!is.na(datDHa_l$Week)                & datDHa_l$ageg==i
+                           & datDHa_l$Week >= Week1_Fit_DH & datDHa_l$Week <= Week2_Fit_DH)
       assign(paste0("iweeksdataDH",eval(i)),values) 
-      #iweeskdataDO1-9 
-      values =  which(!is.na(datDOa_l$Week) & datDOa_l$ageg==i
-                      & datDOa_l$Week >= Week1_Fit_H & datDOa_l$Week <= Week2_Fit_H)
+      #iweeksdataDO1-9 
+      values =  which(!is.na(datDOa_l$Week)                & datDOa_l$ageg==i
+                           & datDOa_l$Week >= Week1_Fit_DO & datDOa_l$Week <= Week2_Fit_DO)
       assign(paste0("iweeksdataDO",eval(i)),values) 
     }}
 #H
@@ -630,17 +639,17 @@ if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
                     H6d   = datM$H_mod6[iseqH],
                     H7d   = datM$H_mod7[iseqH],
                     H8d   = datM$H_mod8[iseqH],
-                    H9d   = datM$H_mod9[iseqH]) } else {
+                    H9d   = datM$H_mod9[iseqH]) } else { #iplat=2
     datHa <- tibble(datHa, #os data: H data
-                    H1d   = datHa_l$Freq[iweeksdataH1],
-                    H2d   = datHa_l$Freq[iweeksdataH2],
-                    H3d   = datHa_l$Freq[iweeksdataH3],
-                    H4d   = datHa_l$Freq[iweeksdataH4],
-                    H5d   = datHa_l$Freq[iweeksdataH5],
-                    H6d   = datHa_l$Freq[iweeksdataH6],
-                    H7d   = datHa_l$Freq[iweeksdataH7],
-                    H8d   = datHa_l$Freq[iweeksdataH8],
-                    H9d   = datHa_l$Freq[iweeksdataH9]) }
+                    H1d   = datHa_l$Freq[iweeksdataH1]*weightz[1],
+                    H2d   = datHa_l$Freq[iweeksdataH2]*weightz[2],
+                    H3d   = datHa_l$Freq[iweeksdataH3]*weightz[3],
+                    H4d   = datHa_l$Freq[iweeksdataH4]*weightz[4],
+                    H5d   = datHa_l$Freq[iweeksdataH5]*weightz[5],
+                    H6d   = datHa_l$Freq[iweeksdataH6]*weightz[6],
+                    H7d   = datHa_l$Freq[iweeksdataH7]*weightz[7],
+                    H8d   = datHa_l$Freq[iweeksdataH8]*weightz[8],
+                    H9d   = datHa_l$Freq[iweeksdataH9]*weightz[9]) }
 #DH
     datDHa <- tibble(Weeks = mE$byw$time[iseqDH]/7,
                     DH1w   = mE$byw_aHO$DH1w[iseqDH], #estimated
@@ -662,17 +671,17 @@ if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
                     DH6d   = datM$DH_mod6[iseqDH],
                     DH7d   = datM$DH_mod7[iseqDH],
                     DH8d   = datM$DH_mod8[iseqDH],
-                    DH9d   = datM$DH_mod9[iseqDH]) } else{
+                    DH9d   = datM$DH_mod9[iseqDH]) } else{ #iplat=2
     datDHa <- tibble(datDHa, #os data: DH data
-                    DH1d   = datDHa_l$Freq[iweeksdataDH1],
-                    DH2d   = datDHa_l$Freq[iweeksdataDH2],
-                    DH3d   = datDHa_l$Freq[iweeksdataDH3],
-                    DH4d   = datDHa_l$Freq[iweeksdataDH4],
-                    DH5d   = datDHa_l$Freq[iweeksdataDH5],
-                    DH6d   = datDHa_l$Freq[iweeksdataDH6],
-                    DH7d   = datDHa_l$Freq[iweeksdataDH7],
-                    DH8d   = datDHa_l$Freq[iweeksdataDH8],
-                    DH9d   = datDHa_l$Freq[iweeksdataDH9]) }
+                    DH1d   = datDHa_l$Freq[iweeksdataDH1]*weightw[1],
+                    DH2d   = datDHa_l$Freq[iweeksdataDH2]*weightw[2],
+                    DH3d   = datDHa_l$Freq[iweeksdataDH3]*weightw[3],
+                    DH4d   = datDHa_l$Freq[iweeksdataDH4]*weightw[4],
+                    DH5d   = datDHa_l$Freq[iweeksdataDH5]*weightw[5],
+                    DH6d   = datDHa_l$Freq[iweeksdataDH6]*weightw[6],
+                    DH7d   = datDHa_l$Freq[iweeksdataDH7]*weightw[7],
+                    DH8d   = datDHa_l$Freq[iweeksdataDH8]*weightw[8],
+                    DH9d   = datDHa_l$Freq[iweeksdataDH9]*weightw[9],) }
 #DO
     datDOa <- tibble(Weeks = mE$byw$time[iseqDO]/7,
                     DO1w   = mE$byw_aHO$DO1w[iseqDO], #estimated
@@ -694,17 +703,17 @@ if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
                     DO6d   = datM$DO_mod6[iseqDO],
                     DO7d   = datM$DO_mod7[iseqDO],
                     DO8d   = datM$DO_mod8[iseqDO],
-                    DO9d   = datM$DO_mod9[iseqDO]) } else{
+                    DO9d   = datM$DO_mod9[iseqDO]) } else{ #iplat=2
     datDOa <- tibble(datDOa, #os data: DO data
-                    DO1d   = datDOa_l$Freq[iweeksdataDO1],
-                    DO2d   = datDOa_l$Freq[iweeksdataDO2],
-                    DO3d   = datDOa_l$Freq[iweeksdataDO3],
-                    DO4d   = datDOa_l$Freq[iweeksdataDO4],
-                    DO5d   = datDOa_l$Freq[iweeksdataDO5],
-                    DO6d   = datDOa_l$Freq[iweeksdataDO6],
-                    DO7d   = datDOa_l$Freq[iweeksdataDO7],
-                    DO8d   = datDOa_l$Freq[iweeksdataDO8],
-                    DO9d   = datDOa_l$Freq[iweeksdataDO9]) }
+                    DO1d   = datDOa_l$Freq[iweeksdataDO1]*weightv[1],
+                    DO2d   = datDOa_l$Freq[iweeksdataDO2]*weightv[2],
+                    DO3d   = datDOa_l$Freq[iweeksdataDO3]*weightv[3],
+                    DO4d   = datDOa_l$Freq[iweeksdataDO4]*weightv[4],
+                    DO5d   = datDOa_l$Freq[iweeksdataDO5]*weightv[5],
+                    DO6d   = datDOa_l$Freq[iweeksdataDO6]*weightv[6],
+                    DO7d   = datDOa_l$Freq[iweeksdataDO7]*weightv[7],
+                    DO8d   = datDOa_l$Freq[iweeksdataDO8]*weightv[8],
+                    DO9d   = datDOa_l$Freq[iweeksdataDO9]*weightv[9]) }
 } #Plots - Age profile dataframes (not merged)
                     
                     
@@ -768,21 +777,21 @@ svglite(paste0(filenamepath,".svg"));
 par(mfrow = c(3,1))
 par(mar = c(2, 4, 1, 1)) #bottom, left, top, right
 ##H
-p <- matplot(Weeks,      zsample,       col="grey", type='l', xlab="Weeks", ylab="Hospitalisations") # sample trajectories
+p <- matplot(Weeks,      zsample,       col="grey", type='l', xlab="Weeks", ylab="Hospitalisations (scaled)") # sample trajectories
 points (datH$Weeks, datH$Datazw,   col="black") # data
 lines  (Weeks,      mE$byw$Hw[iweeksz], col='red') # MAP estimate
 legend(max(Weeks)*0.7, max(zsample), legend=c("sample", "admissions", "MAP"),
        col=c("grey", "black", "red"), lty=1:2, cex=0.8)
 #DH
 p <- p + 
-matplot(Weeks,      wsample,       col="grey", type='l', xlab="Weeks", ylab="Deaths in hospital", ylim=range(zsample)) # sample trajectories
+matplot(Weeks,      wsample,       col="grey", type='l', xlab="Weeks", ylab="Deaths in hospital (scaled)", ylim=range(zsample)) # sample trajectories
 points (datD$Weeks, datD$Dataww,   col="black") # data
 lines  (Weeks,      mE$byw$DHw[iweeksz], col='red') # MAP estimate
 legend(max(Weeks)*0.7, max(zsample), legend=c("sample", "deaths", "MAP"),
        col=c("grey", "black", "red"), lty=1:2, cex=0.8)
 #DO
 p <- p + 
-matplot(Weeks,      vsample,       col="grey", type='l', xlab="Weeks", ylab="Deaths outside hospital", ylim=range(zsample)) # sample trajectories
+matplot(Weeks,      vsample,       col="grey", type='l', xlab="Weeks", ylab="Deaths outside hospital (scaled)", ylim=range(zsample)) # sample trajectories
 points (datD$Weeks, datD$Datavw,   col="black") # data
 lines  (Weeks,      mE$byw$DOw[iweeksz], col='red') # MAP estimate
 legend(max(Weeks)*0.7, max(zsample), legend=c("sample", "deaths", "MAP"),

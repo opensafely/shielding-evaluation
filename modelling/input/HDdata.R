@@ -20,7 +20,7 @@ library(tidyverse)
 
 
 Option_Main=1; #0, 1 #sourced from main...r
-if (Option_Main==0){ jobno = "J5_" } else { jobno = pset$Job }
+if (Option_Main==0){ jobno = "J5b_" } else { jobno = pset$Job }
 
 output_dir_HD <- paste0("./output/HDsynthesis") #paste0(getwd(),"/output/HDsynthesis") #here::here("output/HDsynthesis")
 fs::dir_create(output_dir_HD)
