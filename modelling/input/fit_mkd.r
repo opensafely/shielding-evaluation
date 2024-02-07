@@ -444,7 +444,7 @@ mE        <- model(parsE)
 ## UNCERTAINTY  ################################################################
 ## Sample the chains
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
-Weeks     = iweekmodelH #seq_along(zd) #length(mE$byw$time)
+Weeks     = iweeksmodelH #seq_along(zd) #length(mE$byw$time)
 iweeksz   = Weeks
 npar      = length(LOWER)
 nsample   = 3000#500#1000#;
