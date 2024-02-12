@@ -1,3 +1,4 @@
+# 10feb24 - add dataframes dataH_l, datHD_l, datDO_l
 # 05feb24 - folder path revision; Option_Writedfs=1; Options_ moved up
 # 02feb24 - cvs - if Options_
 # 30jan24 - R vrs
@@ -20,7 +21,7 @@ library(tidyverse)
 
 
 Option_Main=1; #0, 1 #sourced from main...r
-if (Option_Main==0){ jobno = "J5b_" } else { jobno = pset$Job }
+if (Option_Main==0){ jobno = "J5c_" } else { jobno = pset$Job }
 
 output_dir_HD <- paste0("./output/HDsynthesis") #paste0(getwd(),"/output/HDsynthesis") #here::here("output/HDsynthesis")
 fs::dir_create(output_dir_HD)
@@ -73,8 +74,8 @@ fig <- function(data, x , y, col, facets, xname='Date', yname='Weekly admissions
 ######## Get Source Data #######################################################
 source(here::here("analysis/functions/redaction.R"))
 
-
-DAT  <- arrow::read_parquet(file = here::here("output/data_edited.gz.parquet"),
+#DAT  <- arrow::read_parquet(file = here::here("output/data_edited.gz.parquet"),
+DAT  <- arrow::read_parquet(file = paste0(getwd(),"/output/data_edited.gz.parquet"),
                                    compression = "gzip", compression_level = 5)
 #### Study date range
 Date1="2020-01-01"
@@ -207,8 +208,28 @@ if (WHAT=="D") X <- X  %>% rename(weekD=week, freqDa=freq, dateD=date)
 return(X)
 } #data; print(X[which(X$freqHa>0),]) 
 
+Include_dat <- function(fX,fdat,WHAT){
+  if (WHAT=="H") {
+    X   <- fX    %>% rename(week=weekH, freq=freqH, date=dateH) 
+    dat <- fdat  %>% rename(week=weekH, freq=freqH, date=dateH) }
+  if (WHAT=="D") {
+    X   <- fX    %>% rename(week=weekD, freq=freqD, date=dateD)
+    dat <- fdat  %>% rename(week=weekD, freq=freqD, date=dateD) } 
+  uweeks = unique(dat$week)
+  for (jw in seq_along(uweeks)) { 
+    dweek = uweeks[jw]                            #row's id: week=> date, freq
+    ddate = dat$date[which(dat$week==dweek)]      #row's date
+    dfreq = dat$freq[which(dat$week==dweek)]      #row's freq
+    X$date[which( X$week==dweek)] = ddate         #pass date to x
+    X$freq[which( X$week==dweek)] = dfreq         #pass freq to x
+  };
+  if (WHAT=="H") X <- X  %>% rename(weekH=week, freqH=freq, dateH=date) 
+  if (WHAT=="D") X <- X  %>% rename(weekD=week, freqD=freq, dateD=date) 
+  return(X)
+} #data; print(X[which(X$freqHa>0),]) 
+
 ## Function for Long-pivot including the data and 0s (where data missing, no reporting)
-Longdf <- function(lageg,nageg,nweek,WHAT){
+Longdf_a <- function(lageg,nageg,nweek,WHAT){
   ageg  = rep(lageg:9,each=nweek)
   week  = rep(1:nweek,times=nageg)
   freq  = rep(0,times=nageg*nweek) #No reporting occurred
@@ -216,7 +237,13 @@ Longdf <- function(lageg,nageg,nweek,WHAT){
   if (WHAT=="H") X <- tibble(ageg2=ageg, weekH=week,dateH=date,freqHa=freq)
   if (WHAT=="D") X <- tibble(ageg2=ageg, weekD=week,dateD=date,freqDa=freq)
   return(X) }
-
+Longdf <- function(nweek,WHAT){
+  week  = rep(1:nweek,times=1)
+  freq  = rep(0,times=nweek) #No reporting occurred
+  date  = as.Date(rep(NA,times=nweek))
+  if (WHAT=="H") X <- tibble(weekH=week,dateH=date,freqH=freq)
+  if (WHAT=="D") X <- tibble(weekD=week,dateD=date,freqD=freq)
+  return(X) }
 
 ### DATA 1 Hospitalisations (first admission) by week, age, and shielding ######
 filename = "Hdata"; filepart = paste0(output_dir_HD,"/",jobno,filename)
@@ -232,9 +259,17 @@ if (Option_Printout==1){
   p1 <- fig0(dat, x=weekH, y=freqH, col=NULL, xname ='Week', yname = yname)
   svglite(paste0(filepart,"_all.svg")); print(p1); invisible(dev.off())       }
 datH <- dat %>% rename(Week=weekH, Date=dateH, Freq=freqH)                #(no longer) fit data
-if (Option_Writeout==1){
-dat  <- dat %>% mutate(freqH = ifelse(freqH<8,Freq_cutoff,freqH)) %>%
+if (Option_Writeout==1){ #TODO: make Option_Writedfs???
+datw <- dat %>% mutate(freqH = ifelse(freqH<8,Freq_cutoff,freqH)) %>%
                 write.csv(file=paste0(filepart,"_all.csv"))             } #show data
+#Long-pivot FULL including the data and 0s (where data missing, no reporting) - no ageg merging
+nweek = max(range(c(range(DAT$weekH,na.rm=T),range(DAT$weekD,na.rm=T))))
+X <- Longdf(nweek,"H") %>%
+     Include_dat(., dat, "H") #dat; print(X[which(X$freqH>0),]) 
+datH_l <- X  %>% rename(Week=weekH, Date=dateH, Freq=freqH)               #fit data
+if (Option_Writedfs==1){
+X      <- X  %>% rename(Week=weekH, Date=dateH, Freq=freqH) %>%
+                 write.csv(.,file=paste0(filepart,"_all_long.csv"))  }    #show data
 #by_age
 dat <- dat1 %>% frqs(c(weekH, age_cat), "freqHa") %>% 
                 select(ageg, weekH, dateH, freqHa, age_cat) %>% 
@@ -250,8 +285,7 @@ if (Option_Writedfs==1){
 datw <- dat %>% mutate(freqHa = ifelse(freqHa<8,Freq_cutoff,freqHa)) %>%
                 write.csv(file=paste0(filepart,"_by_age.csv"))           } #show data
 #Long-pivot FULL including the data and 0s (where data missing, no reporting) - no ageg merging
-nweek = max(range(c(range(DAT$weekH,na.rm=T),range(DAT$weekD,na.rm=T))))
-X <- Longdf(1,9,nweek,"H") %>%
+X <- Longdf_a(1,9,nweek,"H") %>%
      Include_dat_a(., dat, "H", "NOMERGE")  #dat; print(X[which(X$freqHa>0),]) 
 datHa_l <- X  %>% rename(Week=weekH, Date=dateH, Freq=freqHa, ageg=ageg2)  #fit data
 if (Option_Writedfs==1){
@@ -273,7 +307,7 @@ if (Option_Printout==1){
   p2 <- fig0(dat, x=weekH, y=freqHa, col=age_cat2, xname ='Week', yname = yname)
   svglite(paste0(filepart,"_by_age_merged.svg")); print(p2); invisible(dev.off()) }
 #Long-pivot MERGED including the data and 0s (where data missing, no reporting - merged agegs
-X <- Longdf(lageg,nageg,nweek,"H") %>%
+X <- Longdf_a(lageg,nageg,nweek,"H") %>%
      Include_dat_a(., dat, "H", "MERGE")    #dat; print(X[which(X$freqHa>0),]) 
 datHa_m_l<- X  %>% rename(Week=weekH, Date=dateH, Freq=freqHa)             #fit data
 if (Option_Writedfs==1){
@@ -411,6 +445,13 @@ datDH<- dat %>% rename(Week=weekD, Date=dateD, Freq=freqD)                 #(no 
 if (Option_Writeout==1){
 dat  <- dat %>% mutate(freqD = ifelse(freqD<8,Freq_cutoff,freqD)) %>%
                 write.csv(file=paste0(filepart,"_all.csv"))             } #show data
+#Long-pivot FULL including the data and 0s (where data missing, no reporting) - no ageg merging
+X <- Longdf(nweek,"D") %>%
+     Include_dat(., dat, "D") #dat; print(X[which(X$freqD>0),]) 
+datDH_l <- X  %>% rename(Week=weekD, Date=dateD, Freq=freqD)              #fit data
+if (Option_Writedfs==1){
+X      <- X  %>% rename(Week=weekD, Date=dateD, Freq=freqD) %>%
+                 write.csv(.,file=paste0(filepart,"_all_long.csv"))  }    #show data
 #by_age
 dat <- dat1 %>% frqs(c(weekD, age_cat), "freqDa") %>% 
                 select(ageg, weekD, dateD, freqDa, age_cat) %>% 
@@ -426,7 +467,7 @@ if (Option_Writedfs==1){
 datw  <-dat %>% mutate(freqDa = ifelse(freqDa<8,Freq_cutoff,freqDa)) %>%
                 write.csv(file=paste0(filepart,"_by_age.csv"))           } #show data
 #Long-pivot FULL including the data and 0s (where data missing, no reporting) - no ageg merging
-X <- Longdf(1,9,nweek,"D") %>%
+X <- Longdf_a(1,9,nweek,"D") %>%
      Include_dat_a(., dat, "D", "NOMERGE")  #dat; print(X[which(X$freqDa>0),]) 
 datDHa_l<- X  %>% rename(Week=weekD, Date=dateD, Freq=freqDa, ageg=ageg2)  #fit data
 if (Option_Writedfs==1){
@@ -448,7 +489,7 @@ if (Option_Printout==1){
   p2 <- fig0(dat, x=weekD, y=freqDa, col=age_cat2, xname ='Week', yname = yname)
   svglite(paste0(filepart,"_by_age_merged.svg")); print(p2); invisible(dev.off()) }
 #Long-pivot MERGED including the data and 0s (where data missing, no reporting - merged agegs
-X <- Longdf(lageg,nageg,nweek,"D") %>%
+X <- Longdf_a(lageg,nageg,nweek,"D") %>%
      Include_dat_a(., dat, "D", "MERGED")    #dat; print(X[which(X$freqHa>0),]) 
 datDHa_m_l<- X  %>% rename(Week=weekD, Date=dateD, Freq=freqDa)            #fit data
 if (Option_Writedfs==1){
@@ -513,6 +554,13 @@ datDO<- dat %>% rename(Week=weekD, Date=dateD, Freq=freqD)                 #(no 
 if (Option_Writeout==1){
 dat  <- dat %>% mutate(freqD = ifelse(freqD<8,Freq_cutoff,freqD)) %>%
                 write.csv(file=paste0(filepart,"_all.csv"))              } #show data
+#Long-pivot FULL including the data and 0s (where data missing, no reporting) - no ageg merging
+X <- Longdf(nweek,"D") %>%
+     Include_dat(., dat, "D") #dat; print(X[which(X$freqD>0),]) 
+datDO_l<- X  %>% rename(Week=weekD, Date=dateD, Freq=freqD)               #fit data
+if (Option_Writedfs==1){
+X      <- X  %>% rename(Week=weekD, Date=dateD, Freq=freqD) %>%
+                 write.csv(.,file=paste0(filepart,"_all_long.csv"))  }    #show data
 #by_age
 dat <- dat1 %>% frqs(c(weekD, age_cat), "freqDa") %>% 
                 select(ageg, weekD, dateD, freqDa, age_cat) %>% 
@@ -528,7 +576,7 @@ if (Option_Writedfs==1){
 datw  <-dat %>% mutate(freqDa = ifelse(freqDa<8,Freq_cutoff,freqDa)) %>%
                 write.csv(file=paste0(filepart,"_by_age.csv"))           } #show data
 #Long-pivot FULL including the data and 0s (where data missing, no reporting) - no ageg merging
-X <- Longdf(1,9,nweek,"D") %>%
+X <- Longdf_a(1,9,nweek,"D") %>%
      Include_dat_a(., dat, "D", "NOMERGE")  #dat; print(X[which(X$freqDa>0),]) 
 datDOa_l<- X %>% rename(Week=weekD, Date=dateD, Freq=freqDa, ageg=ageg2)   #fit data
 if (Option_Writedfs==1){
@@ -550,7 +598,7 @@ if (Option_Printout==1){
   p2 <- fig0(dat, x=weekD, y=freqDa, col=age_cat2, xname ='Week', yname = yname)
   svglite(paste0(filepart,"_by_age_merged.svg")); print(p2); invisible(dev.off())  }
 #Long-pivot MERGED including the data and 0s (where data missing, no reporting - merged agegs
-X <- Longdf(lageg,nageg,nweek,"D") %>%
+X <- Longdf_a(lageg,nageg,nweek,"D") %>%
      Include_dat_a(., dat, "D", "MERGED")    #dat; print(X[which(X$freqHa>0),]) 
 datDOa_m_l<- X  %>% rename(Week=weekD, Date=dateD, Freq=freqDa)                   #fit data
 if (Option_Writedfs==1){
