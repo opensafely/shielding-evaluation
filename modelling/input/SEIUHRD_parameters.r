@@ -37,7 +37,6 @@ pars <- within(pars, {
     ad     <- 0.1 #0 #small, aim 0.5 #propotionality faction in d - assumed and estimated
     d      <- 2*h*m #use=d*ad #fraction of direct deaths among critically infected - assumed
     phm    <- 1               #correction in proportion of H that become D
-    pdm    <- 1               #peak hosp/Iw=(6000/Npop)/0.02 #proportion of data in relation to model
     dt     <- 0.1 #0.01#      #time step (days)
     ndays  <- 364             #no. days
     nt     <- ndays/dt        #no. time points
