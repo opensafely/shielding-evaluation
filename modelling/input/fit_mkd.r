@@ -570,12 +570,14 @@ datD <- tibble(Weeks  = 1 + mE$byw$time[imodelDH]/7 + Week_shift_model,
 if (pset$iplatform>0) {
 datH <- tibble(datH,
                Weeksz = datH_l$Weeks[idataH],
-               Datesz = datH_l$Dates[idataH])
+               Datesz = Dates)            #datH_l$Dates[idataH]) 
+               #Justification:datX_l$Dates (X=DH, DO) has NA (dummy & OS) 
+               #while datX_l$Weeks datX_l$Freq (zd, wd, vd) has no NA (by _l construction)
 datD <- tibble(datD,
                Weeksw = datDH_l$Weeks[idataDH],
                Weeksv = datDO_l$Weeks[idataDO],
-               Datesw = datDH_l$Dates[idataDH],
-               Datesv = datDO_l$Dates[idataDO])  } else {
+               Datesw = Dates,           #datDH_l$Dates[idataDH],
+               Datesv = Dates)  } else { #datDO_l$Dates[idataDO])  } else {
 datH <- tibble(datH,
                H_mod  = datM$H_mod[imodelH],
                Weeksz = Weeks,
@@ -584,7 +586,7 @@ datD <- tibble(datD,
                DH_mod = datM$DH_mod[imodelDH],
                DO_mod = datM$DO_mod[imodelDO],
                Weeksw = Weeks,
-               Weeksv = Dates,
+               Weeksv = Weeks,
                Datesw = Dates,
                Datesv = Dates)  }
 
@@ -650,7 +652,7 @@ if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
     assign(paste0("DO",eval(i),"d"),values) } } else {
 #DO data os         - DOid <= datDOa_l$Freq[idataDOi]
   for (i in 1:9){
-    values = eval(parse(text = paste0("datDOa_l$Freq[idataDO",eval(i),"]*weightV[",eval(i),"]")))
+    values = eval(parse(text = paste0("datDOa_l$Freq[idataDO",eval(i),"]*weightv[",eval(i),"]")))
     assign(paste0("DO",eval(i),"d"),values) } }
 
 #H
@@ -713,12 +715,9 @@ p1 <- ggplot() +
           labs(x = 'Weeks', y = 'Hospitalisations & deaths in & outside hospital', color = "Legend") + 
           #xlim(c(0, NA)) +  ylim(c(0, NA)) + #Dont use with Dates, only with Weeks
           scale_color_manual(values = colors) +
-          #geom_point(data=datH, aes(x=Datesz,y=zdw,    color =  "H_datw"), size = 1.4,   pch = 19) +
-          #geom_point(data=datD, aes(x=Datesw,y=wdw,    color = "DH_datw"), size =   1,   pch = 16) +
-          #geom_point(data=datD, aes(x=Datesv,y=vdw,    color = "DO_datw"), size =   1,   pch = 1) +
-          geom_point(data=datH, aes(x=Dates, y=zdw,    color =  "H_datw"), size = 1.4,   pch = 19) +
-          geom_point(data=datD, aes(x=Dates, y=wdw,    color = "DH_datw"), size =   1,   pch = 16) +
-          geom_point(data=datD, aes(x=Dates, y=vdw,    color = "DO_datw"), size =   1,   pch = 1) +
+          geom_point(data=datH, aes(x=Datesz,y=zdw,    color =  "H_datw"), size = 1.4,   pch = 19) +
+          geom_point(data=datD, aes(x=Datesw,y=wdw,    color = "DH_datw"), size =   1,   pch = 16) +
+          geom_point(data=datD, aes(x=Datesv,y=vdw,    color = "DO_datw"), size =   1,   pch = 1) +
           geom_line (data=datH, aes(x=Dates, y=H_est,  color =  "H_est")) +
           geom_line (data=datD, aes(x=Dates, y=DH_est, color = "DH_est")) +
           geom_line (data=datD, aes(x=Dates, y=DO_est, color = "DO_est"))
