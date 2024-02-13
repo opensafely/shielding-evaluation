@@ -254,22 +254,25 @@ logpH0Max= log(pH0Max)
 ### LIKELIHOOD FUNCTION
 source(file = paste0(input_dir,"/BETA.r")) #Used within Likelihood2
 LogLikelihood2 <- function(theta){
+  ### UPDATE: @@
+  ###         proposal pars$
+  ###         MAP      parsE$, 
+  ###         sample   parsES$
   ### Proposed parameters
   pars$rEI = 1/(  theta[1]*tMax)
   pars$rIR = 1/(  theta[2]*tMax)
   pars$R0  = exp( theta[3])             #*logR0Max)#*R0Max 
   pars$pE0 = exp(-theta[4] + logpE0Max) #
   pars$ad  = exp(-theta[5] + logadMax)
-  #pars$ad  =      theta[5]
   ### NB likelihood
   kH       = 1/(  theta[6]*theta[6])    # pk = theta = 1/sqrt(k) => k = 1/pk^2
   kDH      = 1/(  theta[7]*theta[7])
   kDO      = kDH
   #kDO      = 1/(  theta[8]*theta[8])
   pars$pH0 = exp(-theta[8] + logpH0Max) #
-  
   #Dependent parameters
   pars$Ea0 = pars$Na0*pars$pE0
+  pars$Ha0 = pars$Na0*pars$pH0
   pars$Sa0 = pars$Na0 - pars$Ea0 - pars$Ia0 - pars$Ua0 - pars$Ha0 - pars$Ra0 - pars$Da0   
   pars$beta= BETA(pars) 
 
@@ -336,8 +339,6 @@ LogLikelihood2 <- function(theta){
 
 ## Likelihood definition, parameter ranges  ####################################
 niter = 120000 #3000 #30000#9000 #200000
-#LOWER = c(c(1, 1)/tMax,          0,                 0,                  0, pkLower, pkLower2)#, 
-#UPPER = c(  1, 1,       log(R0Max),log(pE0Max/pE0Min), log(pE0Max/pE0Min), pkUpper, pkUpper2)#,  
 LOWER = c(c(1, 1)/tMax,          0,                 0,                  0, pkLower, pkLower2, 0); #kDO
 UPPER = c(  1, 1,       log(R0Max),log(pE0Max/pE0Min), log(adMax/adMin),   pkUpper, pkUpper2, log(pH0Max/pH0Min)); #kDO
 LogLikelihood = LogLikelihood2; #rEI, rIR, R0, pE0, al, kH, kDH, kDO
@@ -390,21 +391,24 @@ tout3 <- system.time(out3 <- runMCMC(bayesianSetup=setup, settings=settings) )
 ## MAP Estimates  ##############################################################
 parsE     <- pars
 MAPE      <- MAP(out)
-parsE$rEI <- 1/(tMax*MAPE$parametersMAP[1])
-parsE$rIR <- 1/(tMax*MAPE$parametersMAP[2])
-parsE$R0  <- exp(    MAPE$parametersMAP[3])#*logR0Max)#*R0Max
-parsE$pE0 <- exp(   -MAPE$parametersMAP[4] + logpE0Max)
-parsE$ad  <- exp(   -MAPE$parametersMAP[5] + logadMax)
-#pars$ad   <-         MAPE$parametersMAP[5
-parsE$kH  <- 1/(      MAPE$parametersMAP[6]^2) #1/pk^2
-parsE$kDH <- 1/(      MAPE$parametersMAP[7]^2)
+### UPDATE: @@
+###         proposal pars$
+###         MAP      parsE$, 
+###         sample   parsES$
+parsE$rEI <- 1/(  MAPE$parametersMAP[1]*tMax)
+parsE$rIR <- 1/(  MAPE$parametersMAP[2]*tMax)
+parsE$R0  <- exp( MAPE$parametersMAP[3])#*logR0Max)#*R0Max
+parsE$pE0 <- exp(-MAPE$parametersMAP[4] + logpE0Max)
+parsE$ad  <- exp(-MAPE$parametersMAP[5] + logadMax)
+parsE$kH  <- 1/(  MAPE$parametersMAP[6]^2) #1/pk^2
+parsE$kDH <- 1/(  MAPE$parametersMAP[7]^2)
 parsE$kDO <- parsE$kDH
 #parsE$kDO <- 1/(      MAPE$parametersMAP[8]^2)
-parsE$pH0 <- exp(   -MAPE$parametersMAP[8] + logpH0Max)
+parsE$pH0 <- exp(-MAPE$parametersMAP[8] + logpH0Max)
 #dependent
 parsE$Ea0 = parsE$Na0*parsE$pE0
+parsE$Ha0 = parsE$Na0*parsE$pH0
 parsE$Sa0 = parsE$Na0 - parsE$Ea0 - parsE$Ia0 - parsE$Ua0 - parsE$Ha0 - parsE$Ra0 - parsE$Da0   
-
 parsE$beta= BETA(parsE)
 #predictions
 mE        <- model(parsE)
@@ -421,17 +425,21 @@ zsample = matrix(0,length(imodelH),nsample)
 wsample = matrix(0,length(imodelH),nsample)
 vsample = matrix(0,length(imodelH),nsample)
 parsES  = pars
-
+### UPDATE: @@
+###         proposal pars$
+###         MAP      parsE$, 
+###         sample   parsES$
 for(i in 1:nsample){
-  parsES$rEI <- 1/(tMax*as.vector(psample[i,1]))
-  parsES$rIR <- 1/(tMax*as.vector(psample[i,2]))
-  parsES$R0  <- exp(    as.vector(psample[i,3])) #*logR0Max)#*R0Max
-  parsES$pE0 <- exp(   -as.vector(psample[i,4]) + logpE0Max)
-  parsES$ad  <- exp(   -as.vector(psample[i,5]) + logadMax)
-  #parsES$ad  <-         as.vector(psample[i,5])
+  parsES$rEI <- 1/(  as.vector(psample[i,1])*tMax)
+  parsES$rIR <- 1/(  as.vector(psample[i,2])*tMax)
+  parsES$R0  <- exp( as.vector(psample[i,3])) #*logR0Max)#*R0Max
+  parsES$pE0 <- exp(-as.vector(psample[i,4]) + logpE0Max)
+  parsES$ad  <- exp(-as.vector(psample[i,5]) + logadMax)
+  parsES$pH0 <- exp(-as.vector(psample[i,8]) + logpH0Max)
   #Dependent
   parsES$Ea0 = parsES$Na0*parsES$pE0
-  parsES$Sa0 = parsES$Na0-parsES$Ra0-parsES$Ea0-parsES$Ia0
+  parsES$Ha0 = parsES$Na0*parsES$pH0
+  parsES$Sa0 = parsES$Na0 - parsES$Ea0 - parsES$Ia0 - parsES$Ua0 - parsES$Ha0 - parsES$Ra0 - parsES$Da0 
   parsES$beta= BETA(parsES)
   outs        = model(as.vector(parsES))
   zsample[,i] = outs$byw$Hw[imodelH]
@@ -712,7 +720,7 @@ colors <- c(  "I_dat"  = "black",   "I_est" = "red",     "I_model" = "green",
             "DH_datw"  = "grey",   "DH_est" = "blue",   "DH_model" = "cyan",
             "DO_datw"  = "black",  "DO_est" = "green4", "DO_model" = "green")
 p1 <- ggplot() +
-          labs(x = 'Weeks', y = 'Hospitalisations & deaths in & outside hospital', color = "Legend") + 
+          labs(x = 'Date', y = 'Hospitalisations & deaths in & outside hospital', color = "Legend") + 
           #xlim(c(0, NA)) +  ylim(c(0, NA)) + #Dont use with Dates, only with Weeks
           scale_color_manual(values = colors) +
           geom_point(data=datH, aes(x=Datesz,y=zdw,    color =  "H_datw"), size = 1.4,   pch = 19) +
