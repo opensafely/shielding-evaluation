@@ -3,13 +3,13 @@ pset <- within(pset, {
     TODAY <- format(Sys.Date(), "%d-%m-%Y")
     TIME  <- format(Sys.time(),'%H.%M.%S_%d-%m-%Y')
     ## Job no.
-    Job="J5c_" #J1=lm, J2=fit-simul, J3=SEIR_fit, J4...=SEIUHRD fits
+    Job="J5d_" #J1=lm, J2=fit-simul, J3=SEIR_fit, J4...=SEIUHRD fits
     ## Model choice
     MODEL    <- c("SEIR", "SEIUHRD");
     imodel   <- 2#1; #2
     ### OpenSafely
     PLATFORM <- c("Simulate", "Fit dummy data", "OpenSafely"); #0, 1, 2
-    iplatform<- 2#1#0#
+    iplatform<- 2#0#1#
     
     ### model fitting
     DOfit    <- 1; #(0=Dont fit, 1=simulated or OS data)
@@ -25,7 +25,7 @@ pset <- within(pset, {
     File_model_choice    <- paste0(MODEL[imodel],"aout_model.cpp")
     #File_model_choice    <- paste0(MODEL[imodel],"_model.cpp")
     File_parameters      <- paste0(MODEL[imodel],"_parameters.r")
-    File_contact_data    <- "Contact_matrix_year-from-24Feb20_vector-lenght-9x9x52_norm=maxEV1.csv"
+    File_contact_data    <- "Contact_matrix_year-from-27Jan20_vector-lenght-9x9x52_norm=maxEV1.csv"
 
     ### output file names
     File_run             <- paste0(Job,"Simul_run.txt")
