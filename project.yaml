@@ -67,7 +67,7 @@ actions:
         csv035: output/HDsynthesis/J5e_DOdata_s_by_age.csv
         csv036: output/HDsynthesis/J5e_DOdata_all_long.csv
         #contacts
-        txt010: output/modelling/J5e_Contact_matrix_year-start-24Feb20_stats.txt
+        txt010: output/modelling/J5e_Contact_matrix_year-start-27Jan20_stats.txt
         #R0
         csv040: output/modelling/J5e_Simul_R0_by_week.csv
         #simulation - only run if iplatform==0
