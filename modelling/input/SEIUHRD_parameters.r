@@ -51,8 +51,9 @@ pars <- within(pars, {
     rHR    <- 1/12.00 #1/8.6  #recovery rate in hospital - updated 30jan from full reporting in cohort
     rHD    <- 1/13.91 #rHR    #death rate in hospital    - updated 30jan from full reporting in cohort	
     #rHD    <- rHR            #death rate in hospital, Roz - varied during pandemic; 7d in Davies Lancet PH
-    rID    <- 1/(1/rIH+1/rHD) ##death outside hospital - assumed here
+    rID    <- 1/(1/rIH+1/rHD) #death outside hospital - assumed here
     #rID    <- 1/(1/rIH+0.5/rHD) #death outside hospital - assumed here
+    rOD    <- rHD             #delay in death outside hospital vs death since infection via hospital
     rRS    <- 0
     rC     <- 1/8.5           #rate of loss of positivity, Davies Lancet ID
     R0     <- 2.23 #3         #2020-wild-type basic reproduction rate, Knock et al 2021
@@ -67,6 +68,7 @@ pars <- within(pars, {
     Ia0    <- Na0*pI0
     Ua0    <- Na0*0.00
     Ha0    <- Na0*0.00
+    Oa0    <- Na0*0.00
     Ra0    <- Na0*0.00
     Da0    <- Na0*0.00
     Sa0    <- Na0-Ea0-Ia0-Ua0-Ha0-Ra0-Da0

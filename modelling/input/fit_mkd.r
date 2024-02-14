@@ -80,8 +80,8 @@ if (pset$iplatform==0) {
   print(paste0("#DH model pts used,  #: ", length(imodelDH), ", list: ", range(imodelDH)[1],"...",range(imodelDH)[2]))  #41, 1...41
   print(paste0("#DO model pts used,  #: ", length(imodelDO), ", list: ", range(imodelDO)[1],"...",range(imodelDO)[2]))  #41, 1...41
   
-  Week1_Model  = lubridate::week("2020-02-24")    #[1]  8 #from SEIR_contacts
-  Week2_Model  = lubridate::week("2021-02-15")+53 #no.weeks in 2020 = 53
+  Week1_Model  = lubridate::week("2020-01-27") #"2020-02-24")   #[1]  8 #from SEIR_contacts
+  Week2_Model  = lubridate::week("2021-01-17")+53 #no.weeks in 2020 = 53
   Week_shift_model = 0
   
 } else { #if iplatform>0
@@ -273,7 +273,7 @@ LogLikelihood2 <- function(theta){
   #Dependent parameters
   pars$Ea0 = pars$Na0*pars$pE0
   pars$Ha0 = pars$Na0*pars$pH0
-  pars$Sa0 = pars$Na0 - pars$Ea0 - pars$Ia0 - pars$Ua0 - pars$Ha0 - pars$Ra0 - pars$Da0   
+  pars$Sa0 = pars$Na0 - pars$Ea0 - pars$Ia0 - pars$Ua0 - pars$Ha0 - pars$Oa0 - pars$Ra0 - pars$Da0   
   pars$beta= BETA(pars) 
 
   ### Model outputs (from Rcpp, given the proposed parameters)
@@ -408,7 +408,7 @@ parsE$pH0 <- exp(-MAPE$parametersMAP[8] + logpH0Max)
 #dependent
 parsE$Ea0 = parsE$Na0*parsE$pE0
 parsE$Ha0 = parsE$Na0*parsE$pH0
-parsE$Sa0 = parsE$Na0 - parsE$Ea0 - parsE$Ia0 - parsE$Ua0 - parsE$Ha0 - parsE$Ra0 - parsE$Da0   
+parsE$Sa0 = parsE$Na0 - parsE$Ea0 - parsE$Ia0 - parsE$Ua0 - parsE$Ha0 - parsE$Oa0 - parsE$Ra0 - parsE$Da0   
 parsE$beta= BETA(parsE)
 #predictions
 mE        <- model(parsE)
@@ -439,7 +439,7 @@ for(i in 1:nsample){
   #Dependent
   parsES$Ea0 = parsES$Na0*parsES$pE0
   parsES$Ha0 = parsES$Na0*parsES$pH0
-  parsES$Sa0 = parsES$Na0 - parsES$Ea0 - parsES$Ia0 - parsES$Ua0 - parsES$Ha0 - parsES$Ra0 - parsES$Da0 
+  parsES$Sa0 = parsES$Na0 - parsES$Ea0 - parsES$Ia0 - parsES$Ua0 - parsES$Ha0 - parsSE$Oa0 - parsES$Ra0 - parsES$Da0 
   parsES$beta= BETA(parsES)
   outs        = model(as.vector(parsES))
   zsample[,i] = outs$byw$Hw[imodelH]
@@ -521,8 +521,8 @@ print(paste0("kDH,kDO MAP: ", round(parsE$kDH,   3), ". Expected/start: ", round
 #print(paste0("kDO   dep: ", round(parsE$kDO,   3), ". Expected/start: ", round(  thetaTrue[7], 3))) #kD
 #print(paste0("kDO   dep: ", round(parsE$kDO,   3), ". Expected/start: ", round(  thetaTrue[8], 3))) #kD
 print(paste0("beta  dep: ", round(parsE$beta,  5)))
-print(paste0("Ea0   dep: ", round(sum(parsE$Ea0),   0))) #or sum(parsE$Na0*parsE$pE0)
-print(paste0("Ha0   dep: ", round(sum(parsE$Ha0),   0))) #or sum(parsE$Na0*parsE$HE0)
+print(paste0("E0    dep: ", round(sum(parsE$Ea0),   0))) #or sum(parsE$Na0*parsE$pE0)
+print(paste0("H0    dep: ", round(sum(parsE$Ha0),   0))) #or sum(parsE$Na0*parsE$HE0)
 print(paste0("Estimated proportion deaths outside hospital = ", round(parsE$ad/(1+parsE$ad),3)))
 cat("\n");
 print(summary(out)); 

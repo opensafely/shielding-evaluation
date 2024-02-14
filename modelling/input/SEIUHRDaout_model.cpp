@@ -35,6 +35,11 @@ List SEIUHRD(List pars){
     NumericMatrix H3(na,nt);
     NumericMatrix H4(na,nt);
     NumericMatrix H5(na,nt);
+    NumericMatrix O1(na,nt);
+    NumericMatrix O2(na,nt);
+    NumericMatrix O3(na,nt);
+    NumericMatrix O4(na,nt);
+    NumericMatrix O5(na,nt);
     NumericMatrix R(na,nt);
     NumericMatrix D(na,nt);	
     NumericMatrix N(na,nt);
@@ -45,6 +50,7 @@ List SEIUHRD(List pars){
     NumericVector Ia0 = as<NumericVector>(pars["Ia0"]);
     NumericVector Ua0 = as<NumericVector>(pars["Ua0"]);
     NumericVector Ha0 = as<NumericVector>(pars["Ha0"]);
+    NumericVector Oa0 = as<NumericVector>(pars["Oa0"]);
     NumericVector Ra0 = as<NumericVector>(pars["Ra0"]);
     NumericVector Da0 = as<NumericVector>(pars["Da0"]);
     NumericVector Na0 = as<NumericVector>(pars["Na0"]);
@@ -56,6 +62,7 @@ List SEIUHRD(List pars){
     NumericVector Ut(nt);
     NumericVector Ct(nt);
     NumericVector Ht(nt);
+    NumericVector Ot(nt);
     NumericVector Rt(nt);
     NumericVector Dt(nt); //DHt(nt), DO(nt) not yet
     NumericVector Nt(nt);
@@ -66,7 +73,7 @@ List SEIUHRD(List pars){
     NumericVector time(nt);
     NumericVector cmdtmean(nt);
     
-    //weekly H and D by age
+    //weekly H and D, DH, DO by age
     NumericVector Hapw(na);
     NumericVector Dapw(na);
     NumericVector DHapw(na);
@@ -122,6 +129,7 @@ List SEIUHRD(List pars){
     const double rEU  = pars["rEU"];
     const double rIR  = pars["rIR"];
     const double rID  = pars["rID"];
+    const double rOD  = pars["rOD"];
     const double rUR  = pars["rUR"];
     const double rIH  = pars["rIH"];
     const double rHR  = pars["rHR"];
@@ -130,6 +138,7 @@ List SEIUHRD(List pars){
     const double rC   = pars["rC"];
     const double rCi  = 5*rC;
     const double rHi  = 5*rHD;
+    const double rOi  = 5*rOD;
     const double dt   = pars["dt"];
     
     // age group and population states initialised
@@ -148,6 +157,11 @@ List SEIUHRD(List pars){
         H3(ia,0) = 0;
         H4(ia,0) = 0;
         H5(ia,0) = 0;         Ht[0] += Ha0[ia];   Hw[0] += 0;
+        O1(ia,0) = Oa0[ia];
+        O2(ia,0) = 0;
+        O3(ia,0) = 0;
+        O4(ia,0) = 0;
+        O5(ia,0) = 0;         Ot[0] += Oa0[ia];
         R(ia,0)  = Ra0[ia];   Rt[0] += R(ia,0);
         D(ia,0)  = Da0[ia];   Dt[0] += D(ia,0);   Dw[0] += 0; DHw[0] += 0; DOw[0] += 0;
         N(ia,0)  = Na0[ia];   Nt[0] += N(ia,0);
@@ -184,9 +198,15 @@ List SEIUHRD(List pars){
         double H3at = H3(ia,it);
         double H4at = H4(ia,it);
         double H5at = H5(ia,it);
+        double O1at = O1(ia,it);
+        double O2at = O2(ia,it);
+        double O3at = O3(ia,it);
+        double O4at = O4(ia,it);
+        double O5at = O5(ia,it);
         double Rat = R(ia,it);
         double Dat = D(ia,it);
         double Nat = N(ia,it);
+
         // force of infection on group ia
         double lambda  = 0;
         double ua = u[ia];
@@ -198,13 +218,15 @@ List SEIUHRD(List pars){
         for (int ib = 0; ib < na; ib++) {
             int    icm = (week-1)*cmdim1*cmdim2 + ib*cmdim1 + ia;
             double cmi = cm[icm];
-            lambda        += beta_infectivity*ua*cmi*( I(ib,it) + fu*U(ib,it) )/N(ib,it);
+            double O_sum   = O1(ib,it) + O2(ib,it) + O3(ib,it) + O4(ib,it) + O5(ib,it);
+            lambda        += beta_infectivity*ua*cmi*( I(ib,it) + fu*O_sum + fu*U(ib,it) )/N(ib,it);
+            //Outside hospital delay to death (assume as infectious as U, i.e. partial isolation)
             cmdtmean[it]  += cmi*ocmdim;
         } //ib
 
         // state update for next timestep
         double dS  = dt*(-lambda*Sat       + rRS*Rat);
-        double dE  = dt*( lambda*Sat       - (rEU*(1-ya)+rEI*ya)*Eat);
+        double dE  = dt*( lambda*Sat       - (rEU*(1-ya)+rEI*ya)*Eat  +  2); //early seeding, no effect later
         double dI  = dt*( rEI*ya*Eat       - (rIR*(1-ha-da)+rIH*ha+rID*da)*Iat);
         double dU  = dt*( rEU*(1-ya)*Eat   - rUR*Uat);
 
@@ -213,7 +235,15 @@ List SEIUHRD(List pars){
         double dC3 = dt*( rCi*C2at   - rCi*C3at);
         double dC4 = dt*( rCi*C3at   - rCi*C4at);
         double dC5 = dt*( rCi*C4at   - rCi*C5at);
-
+//DO
+//Outside hospital delay to death
+        double dOin= dt*rID*da*Iat;
+        double dO1 = dOin       - dt*( rOi*O1at);
+        double dO2 = dt*( rOi*O1at   - rOi*O2at);
+        double dO3 = dt*( rOi*O2at   - rOi*O3at);
+        double dO4 = dt*( rOi*O3at   - rOi*O4at);
+        double dO5 = dt*( rOi*O4at   - rOi*O5at); 
+//H, DH        
         double dHin= dt*rIH*ha*Iat;
         double dH1 = dHin       - dt*( rHi*H1at);
         double dH2 = dt*( rHi*H1at   - rHi*H2at);
@@ -222,11 +252,11 @@ List SEIUHRD(List pars){
         double dH5 = dt*( rHi*H4at   - ((rHR*5)*(1-ma)+rHi*ma)*H5at); //Recovery time def could be different
 
         double dR  = dt*( rUR*Uat + rIR*(1-ha-da)*Iat + (rHR*5)*(1-ma)*H5at - rRS*Rat);
-        double dDin= dt*( rHi*ma*H5at + rID*da*Iat);
+        double dDin= dt*( rHi*ma*H5at + rOi*O5at); //rID*da*Iat);
         double dDH = dt*( rHi*ma*H5at );//death incidence inside hospital
-        double dDO = dt*( rID*da*Iat ); //death incidence outside hospital
+        double dDO = dt*( rOi*O5at    ); //rID*da*Iat ); //death incidence outside hospital
         double dD  = dDH + dDO;
-        double dN  = dS + dE + dU + dI + dH1 + dH2 + dH3 + dH4 + dH5 + dR + dD;
+        double dN  = dS + dE + dU + dI + (dH1 + dH2 + dH3 + dH4 + dH5) + (dO1 + dO2 + dO3 + dO4 + dO5) + dR + dD;
 
         S(ia,it+1)  = Sat  + dS;
         E(ia,it+1)  = Eat  + dE;
@@ -242,6 +272,11 @@ List SEIUHRD(List pars){
         H3(ia,it+1) = H3at + dH3;
         H4(ia,it+1) = H4at + dH4;
         H5(ia,it+1) = H5at + dH5;
+        O1(ia,it+1) = O1at + dO1;
+        O2(ia,it+1) = O2at + dO2;
+        O3(ia,it+1) = O3at + dO3;
+        O4(ia,it+1) = O4at + dO4;
+        O5(ia,it+1) = O5at + dO5;
         R(ia,it+1)  = Rat  + dR;
         D(ia,it+1)  = Dat  + dD; //DH(ia,it+1) = DHat + dDH; //DO(ia,it+1) = DOat + dDO; //not yet
         N(ia,it+1)  = Nat  + dN;
@@ -254,6 +289,7 @@ List SEIUHRD(List pars){
         Ut[it+1]  += Uat + dU;
         Ct[it+1]  += C1at + C2at + C3at + C4at + C5at + dC1 + dC2 + dC3 + dC4 + dC5;
         Ht[it+1]  += H1at + H2at + H3at + H4at + H5at + dH1 + dH2 + dH3 + dH4 + dH5;
+        Ot[it+1]  += O1at + O2at + O3at + O4at + O5at + dO1 + dO2 + dO3 + dO4 + dO5;
         Rt[it+1]  += Rat + dR;
         Dt[it+1]  += Dat + dD;
    	    Nt[it+1]  += Nat + dN;
@@ -323,6 +359,7 @@ List SEIUHRD(List pars){
         Named("Ut")   = Ut[iw],
         Named("Ct")   = Ct[iw],
         Named("Ht")   = Ht[iw],
+        Named("Ot")   = Ot[iw],
         Named("Rt")   = Rt[iw],
         Named("Dt")   = Dt[iw],
         Named("Nt")   = Nt[iw],

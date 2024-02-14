@@ -3,7 +3,7 @@ pset <- within(pset, {
     TODAY <- format(Sys.Date(), "%d-%m-%Y")
     TIME  <- format(Sys.time(),'%H.%M.%S_%d-%m-%Y')
     ## Job no.
-    Job="J5d_" #J1=lm, J2=fit-simul, J3=SEIR_fit, J4...=SEIUHRD fits
+    Job="J5e_" #J1=lm, J2=fit-simul, J3=SEIR_fit, J4...=SEIUHRD fits
     ## Model choice
     MODEL    <- c("SEIR", "SEIUHRD");
     imodel   <- 2#1; #2
@@ -29,7 +29,7 @@ pset <- within(pset, {
 
     ### output file names
     File_run             <- paste0(Job,"Simul_run.txt")
-    File_contact_summary <- paste0(Job,"Contact_matrix_year-start-24Feb20_stats.txt")
+    File_contact_summary <- paste0(Job,"Contact_matrix_year-start-27Jan20_stats.txt")
     File_R0_week         <- paste0(Job,"Simul_R0_by_week.csv")
     File_data_plots      <- paste0(Job,"Data_Incidence.pdf")
     File_model_sim_plots <- paste0(Job,"Simul_Infected_and_R0.pdf")
