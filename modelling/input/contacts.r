@@ -1,7 +1,7 @@
 ## Contact matrix
 ### Start of contact data and model
-Week1_Model = "2020-02-24"
-Week2_Model = "2021-02-15"
+Week1_Model = "2020-01-27" #"2020-02-24"
+Week2_Model = "2021-01-18" #"2021-02-15"
 print(paste0("Date range of contact data, ", Week1_Model, ", ", Week2_Model))
 
 ### max length (weeks) of contacts (pars$cmdim3) and model run (pset$nw)
@@ -16,8 +16,8 @@ cm_weekmaxev <- vector() #max eigenvalue each week
 if (pset$DOcmREAD==1 & pset$iplatform==0) {
   #### file names with relevant weeks
   files <- list.files(path = "./m_9x9matrices", pattern="Eng")
-  cdate <- sort(substring(files,8,17))
-  cdate <- cdate[(1+3):(nd+3)] #### Select 52 weeks from 1st week showing change (4th week, 2020-02-24, to 2021-02-15") 
+  cdate <- sort(substring(files,8,17)) #8th to 17th character
+  cdate <- cdate[1:nd] #### Select 52 weeks from 1st week (2020-01-27) to 2021-01-18") 
   cl = list()
   for (i in seq_along(cdate)) {
     cl[[i]]=read.csv(paste0("./m_9x9matrices/England",cdate[i],"all.csv"),header=T) }
@@ -55,6 +55,6 @@ sink(file = paste0(output_dir,"/",pset$File_contact_summary), append=FALSE, spli
   cm_colsumw1
   print("max eigenvalue of cm, weeks 1 to 52")
   cm_weekmaxev
-  print("mean of all pair contacts, week 1 yo 52")
+  print("mean of all pair contacts, week 1 to 52")
   cm_weekmean
 sink()

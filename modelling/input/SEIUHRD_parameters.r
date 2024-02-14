@@ -60,7 +60,7 @@ pars <- within(pars, {
     beta   <- 1 #R0/(mean(u*y)/(rIR*(1-mean(h))+rHR*(mean(h)) + fu*mean(u*(1-y))/rUR ))# 1# 
     Npopcoh<- 24.02*1e6       #cohort size - updated 30jan
     Npop   <- 56.55*1e6       #ONS-England population size mid 2020 - updated 30jan - ukpopestimatesmid2020on2021geography_JF_ENGdemography.xls
-    pE0    <- 0.015           #Initial proportion of population in E state (sum of age groups)
+    pE0    <- 0.0030  #0.015 #Initial proportion of population in E state (sum of age groups)
     pI0    <- 0.000           #Initial proportion of population in I state (sum of age groups)    
     Na0    <- ageons*Npop     #Initial population size by age group - updated 30jan from agecoh*Npop 
     Ea0    <- Na0*pE0         #ODE-accrued 29/01/20-24/02/20 based Davies Lancet PH, Nat Med
