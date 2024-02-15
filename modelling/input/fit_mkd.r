@@ -439,7 +439,7 @@ for(i in 1:nsample){
   #Dependent
   parsES$Ea0 = parsES$Na0*parsES$pE0
   parsES$Ha0 = parsES$Na0*parsES$pH0
-  parsES$Sa0 = parsES$Na0 - parsES$Ea0 - parsES$Ia0 - parsES$Ua0 - parsES$Ha0 - parsSE$Oa0 - parsES$Ra0 - parsES$Da0 
+  parsES$Sa0 = parsES$Na0 - parsES$Ea0 - parsES$Ia0 - parsES$Ua0 - parsES$Ha0 - parsES$Oa0 - parsES$Ra0 - parsES$Da0 
   parsES$beta= BETA(parsES)
   outs        = model(as.vector(parsES))
   zsample[,i] = outs$byw$Hw[imodelH]
