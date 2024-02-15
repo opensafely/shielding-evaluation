@@ -119,8 +119,9 @@ List SEIUHRD(List pars){
     const NumericVector y = as<NumericVector>(pars["y"]); 
     const NumericVector h = as<NumericVector>(pars["h"]); 
     const NumericVector m = as<NumericVector>(pars["m"]); 
-    const NumericVector d = as<NumericVector>(pars["d"]); 
-    
+    const NumericVector d = as<NumericVector>(pars["d"]);
+    const NumericVector rseed = as<NumericVector>(pars["rseed"]); //per age group
+
     const double beta_infectivity = pars["beta"];
     const double phm  = pars["phm"];
     const double fu   = pars["fu"];
@@ -225,8 +226,8 @@ List SEIUHRD(List pars){
         } //ib
 
         // state update for next timestep
-        double dS  = dt*(-lambda*Sat       + rRS*Rat);
-        double dE  = dt*( lambda*Sat       - (rEU*(1-ya)+rEI*ya)*Eat  +  2); //early seeding, no effect later
+        double dS  = dt*(-lambda*Sat       + rRS*Rat - rseed[ia]);
+        double dE  = dt*( lambda*Sat       - (rEU*(1-ya)+rEI*ya)*Eat  +  rseed[ia]); //early seeding, no effect later
         double dI  = dt*( rEI*ya*Eat       - (rIR*(1-ha-da)+rIH*ha+rID*da)*Iat);
         double dU  = dt*( rEU*(1-ya)*Eat   - rUR*Uat);
 
