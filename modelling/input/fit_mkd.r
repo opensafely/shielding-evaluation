@@ -544,7 +544,7 @@ print(paste0("kH    MAP: ", round(parsE$kH,    3), ". Expected/start: ", round( 
 print(paste0("kDH,kDO MAP: ", round(parsE$kDH,   3), ". Expected/start: ", round(  thetaTrue[7], 3))) #kD
 #print(paste0("kDO   dep: ", round(parsE$kDO,   3), ". Expected/start: ", round(  thetaTrue[7], 3))) #kD
 #print(paste0("kDO   dep: ", round(parsE$kDO,   3), ". Expected/start: ", round(  thetaTrue[8], 3))) #kD
-print(paste0("rseed dep: ", round(sun(parsE$rseed)),0))
+print(paste0("rseed dep: ", round(sum(parsE$rseed)),0))
 print(paste0("beta  dep: ", round(parsE$beta,  5)))
 print(paste0("E0    dep: ", round(sum(parsE$Ea0),   0))) #or sum(parsE$Na0*parsE$pE0)
 #print(paste0("H0    dep: ", round(sum(parsE$Ha0),   0))) #or sum(parsE$Na0*parsE$HE0)
