@@ -98,15 +98,15 @@ if (pset$iplatform==0) {
 # Convert dates to WEEKS
 # week("2020-01-01") #[1] 1
 # week("2020-01-07") #[1] 1
-  Week1_Model  = lubridate::week("2020-02-24")    #[1]  8 #from SEIR_contacts
-  Week2_Study  = lubridate::week("2020-12-01")    #[1] 48 #Data: use start of vacc & alpha
-  Week2_Model  = lubridate::week("2021-02-15")+53 #no.weeks in 2020 = 53
-  Week1_Fit_H  = max( c(min( datHa_m_l$Week), Week1_Model), na.rm=T)              #  8 #max(c(1,8))
-  Week1_Fit_DH = max( c(min(datDHa_m_l$Week), Week1_Model), na.rm=T)              #  8 #max(c(1,8))
-  Week1_Fit_DO = max( c(min(datDOa_m_l$Week), Week1_Model), na.rm=T)              #  8 #max(c(1,8))
-  Week2_Fit_H  = min( c(max( datHa_m_l$Week), Week2_Model, Week2_Study), na.rm=T) # 48 #min(c(48,60,48))
-  Week2_Fit_DH = min( c(max(datDHa_m_l$Week), Week2_Model, Week2_Study), na.rm=T) # 48 #min(c(48,60,48))
-  Week2_Fit_DO = min( c(max(datDOa_m_l$Week), Week2_Model, Week2_Study), na.rm=T) # 48 #min(c(48,60,48))
+  Week1_Model  = lubridate::week("2020-01-27")    #  4 #start of "contact" data
+  Week2_Study  = lubridate::week("2020-12-01")    # 48 #start of vacc & alpha
+  Week2_Model  = Week1_Model + (pars$nw-1)        # 55 # model set to run pars$nw=52 weeks 
+  Week1_Fit_H  = max( c(min( datHa_m_l$Week), Week1_Model), na.rm=T)              #  4 #max(c(min(1:48),4))
+  Week1_Fit_DH = max( c(min(datDHa_m_l$Week), Week1_Model), na.rm=T)              #  4 #max(c(min(1:48),4))
+  Week1_Fit_DO = max( c(min(datDOa_m_l$Week), Week1_Model), na.rm=T)              #  4 #max(c(min(1:48),4))
+  Week2_Fit_H  = min( c(max( datHa_m_l$Week), Week2_Model, Week2_Study), na.rm=T) # 48 #min(c(max(1:48),55,48))
+  Week2_Fit_DH = min( c(max(datDHa_m_l$Week), Week2_Model, Week2_Study), na.rm=T) # 48 #min(c(max(1:48),55,48))
+  Week2_Fit_DO = min( c(max(datDOa_m_l$Week), Week2_Model, Week2_Study), na.rm=T) # 48 #min(c(max(1:48),55,48))
 
 #For each ageg2 - 1) elements of long-pivot data vector - within the date range for fitting
               # - 2) data vector with these elements
@@ -141,17 +141,28 @@ if (pset$iplatform==0) {
 #to model-weeks (index 1:52 from Week1_Model=2020-02-24 - want to stop at Week2_Study=2020-12-01)
 #=> used in likelihood
   Week_shift_model = (Week1_Model-1)
-  imodelH  = idataH  - Week_shift_model #1:41=8:48-(8-1)
-  imodelDH = idataDH - Week_shift_model #1:41=8:48-(8-1)
-  imodelDO = idataDO - Week_shift_model #1:41=8:48-(8-1)
+  imodelH  = idataH  - Week_shift_model #1:45 = 4:48-(4-1)
+  imodelDH = idataDH - Week_shift_model #1:45 = 4:48-(4-1)
+  imodelDO = idataDO - Week_shift_model #1:45 = 4:48-(4-1)
   
-  print(paste0("#H  data pts fitted, #: ", length(idataH),   ", list: ", range(idataH)[1],  "...",range(idataH)[2]))    #41, 8...48
-  print(paste0("#DH data pts fitted, #: ", length(idataDH),  ", list: ", range(idataDH)[1], "...",range(idataDH)[2]))   #41, 8...48
-  print(paste0("#DO data pts fitted, #: ", length(idataDO),  ", list: ", range(idataDO)[1], "...",range(idataDO)[2]))   #41, 8...48
-  print(paste0("#H  model pts used,  #: ", length(imodelH),  ", list: ", range(imodelH)[1], "...",range(imodelH)[2]))   #41, 8...48
-  print(paste0("#DH model pts used,  #: ", length(imodelDH), ", list: ", range(imodelDH)[1],"...",range(imodelDH)[2]))  #41, 8...48
-  print(paste0("#DO model pts used,  #: ", length(imodelDO), ", list: ", range(imodelDO)[1],"...",range(imodelDO)[2]))  #41, 8...48
+  print(paste0("#H  data pts fitted, #: ", length(idataH),   ", list: ", range(idataH)[1],  "...",range(idataH)[2]))    #45, 4...48
+  print(paste0("#DH data pts fitted, #: ", length(idataDH),  ", list: ", range(idataDH)[1], "...",range(idataDH)[2]))   #45, 4...48
+  print(paste0("#DO data pts fitted, #: ", length(idataDO),  ", list: ", range(idataDO)[1], "...",range(idataDO)[2]))   #45, 4...48
+  print(paste0("#H  model pts used,  #: ", length(imodelH),  ", list: ", range(imodelH)[1], "...",range(imodelH)[2]))   #45, 1...45
+  print(paste0("#DH model pts used,  #: ", length(imodelDH), ", list: ", range(imodelDH)[1],"...",range(imodelDH)[2]))  #45, 1...45
+  print(paste0("#DO model pts used,  #: ", length(imodelDO), ", list: ", range(imodelDO)[1],"...",range(imodelDO)[2]))  #45, 1...45
+  # => Dont need specific idataH, imodelH, etc - idata and imodel suffice
   
+#Initial conditions for model.cpp, each age group 1:9 - for variables with full reporting
+  #for (i in 1:9){ 
+  #  value = which( !is.na(datHa_l$Week)  & datHa_l$ageg==i  & datHa_l$Week==Week1_Fit_H )
+  #  pars$Ha0[i] = datHa_l$Freq[value] 
+  #  value = which( !is.na(datDHa_l$Week) & datDHa_l$ageg==i & datDHa_l$Week==Week1_Fit_H )
+  #  pars$DHa0[i] = datDHa_l$Freq[values]
+  #  value = which( !is.na(datDHa_l$Week) & datDHa_l$ageg==i & datDHa_l$Week==Week1_Fit_H )
+  #  pars$DOa0[i] = datDHa_l$Freq[values] 
+  #}
+
 } #iplatform
 
 
@@ -235,6 +246,9 @@ for (i in (9-ndDO+1):9){ #weekly incidence of deaths in hospital
 
 
 ### Parameter bounds
+ArseedMin = 1 
+ArseedMax = (2*84/9)*5
+logArseedMax = log(ArseedMax)
 tMax     = 10
 R0Max    = 10
 adMax    = 0.99
@@ -247,9 +261,9 @@ pkLower  = 0.1       #1/k^2, NB likelihood and data
 pkLower2 = 0.1       #Assume: same kD for DH and DO
 pkUpper  = 5
 pkUpper2 = 5
-pH0Max   = 0.05
-pH0Min   = 0.000001   #0.005  #pop = 56.55
-logpH0Max= log(pH0Max)
+#pH0Max   = 0.05
+#pH0Min   = 0.000001   #0.005  #pop = 56.55
+#logpH0Max= log(pH0Max)
 
 ### LIKELIHOOD FUNCTION
 source(file = paste0(input_dir,"/BETA.r")) #Used within Likelihood2
@@ -269,10 +283,13 @@ LogLikelihood2 <- function(theta){
   kDH      = 1/(  theta[7]*theta[7])
   kDO      = kDH
   #kDO      = 1/(  theta[8]*theta[8])
-  pars$pH0 = exp(-theta[8] + logpH0Max) #
+  #pars$pH0 = exp(-theta[8] + logpH0Max) #
+  Arseed   = exp(-theta[8] + logArseedMax)
+
   #Dependent parameters
+  pars$rseed = Arseed*pars$ageons
   pars$Ea0 = pars$Na0*pars$pE0
-  pars$Ha0 = pars$Na0*pars$pH0
+  #pars$Ha0 = pars$Na0*pars$pH0
   pars$Sa0 = pars$Na0 - pars$Ea0 - pars$Ia0 - pars$Ua0 - pars$Ha0 - pars$Oa0 - pars$Ra0 - pars$Da0   
   pars$beta= BETA(pars) 
 
@@ -295,7 +312,7 @@ LogLikelihood2 <- function(theta){
 
   #MeanH5-9
   for (i in (9-(ndH-1)+1):9) { #5:9, ndH=6
-  values = eval(parse(text = paste0("m$byw_age$H",eval(i),"w[imodelH]"))) #Consistent: 1 + mE$byw$time[imodelH]/7 + (Week1_Model-1)
+  values = eval(parse(text = paste0("m$byw_age$H",eval(i),"w[imodelH]"))) #Consistent: (1 + mE$byw$time[imodelH]/7) + (Week1_Model-1)
   values[1]= max(values[1],1); #avoid avoid 0 mean and NAs in likelihood
   assign(paste0("MeanH",eval(i)),values) } 
   #MeanDH7-9
@@ -340,7 +357,7 @@ LogLikelihood2 <- function(theta){
 ## Likelihood definition, parameter ranges  ####################################
 niter = 120000 #3000 #30000#9000 #200000
 LOWER = c(c(1, 1)/tMax,          0,                 0,                  0, pkLower, pkLower2, 0); #kDO
-UPPER = c(  1, 1,       log(R0Max),log(pE0Max/pE0Min), log(adMax/adMin),   pkUpper, pkUpper2, log(pH0Max/pH0Min)); #kDO
+UPPER = c(  1, 1,       log(R0Max),log(pE0Max/pE0Min), log(adMax/adMin),   pkUpper, pkUpper2, log(ArseedMax/ArseedMin)); #kDO
 LogLikelihood = LogLikelihood2; #rEI, rIR, R0, pE0, al, kH, kDH, kDO
 
 
@@ -404,10 +421,13 @@ parsE$kH  <- 1/(  MAPE$parametersMAP[6]^2) #1/pk^2
 parsE$kDH <- 1/(  MAPE$parametersMAP[7]^2)
 parsE$kDO <- parsE$kDH
 #parsE$kDO <- 1/(      MAPE$parametersMAP[8]^2)
-parsE$pH0 <- exp(-MAPE$parametersMAP[8] + logpH0Max)
-#dependent
+#parsE$pH0 <- exp(-MAPE$parametersMAP[8] + logpH0Max)
+ArseedE   <- exp(-MAPE$parametersMAP[8] + logArseedMax)
+
+#Dependent parameters
+parsE$rseed = ArseedE*parsE$ageons
 parsE$Ea0 = parsE$Na0*parsE$pE0
-parsE$Ha0 = parsE$Na0*parsE$pH0
+#parsE$Ha0 = parsE$Na0*parsE$pH0
 parsE$Sa0 = parsE$Na0 - parsE$Ea0 - parsE$Ia0 - parsE$Ua0 - parsE$Ha0 - parsE$Oa0 - parsE$Ra0 - parsE$Da0   
 parsE$beta= BETA(parsE)
 #predictions
@@ -435,10 +455,14 @@ for(i in 1:nsample){
   parsES$R0  <- exp( as.vector(psample[i,3])) #*logR0Max)#*R0Max
   parsES$pE0 <- exp(-as.vector(psample[i,4]) + logpE0Max)
   parsES$ad  <- exp(-as.vector(psample[i,5]) + logadMax)
-  parsES$pH0 <- exp(-as.vector(psample[i,8]) + logpH0Max)
+  #parsES$pH0 <- exp(-as.vector(psample[i,8]) + logpH0Max)
+  ArseedES   <- exp(-as.vector(psample[i,8]) + logArseedMax)
+  
+  #Dependent parameters
+  parsES$rseed = ArseedES*parsES$ageons  
   #Dependent
   parsES$Ea0 = parsES$Na0*parsES$pE0
-  parsES$Ha0 = parsES$Na0*parsES$pH0
+  #parsES$Ha0 = parsES$Na0*parsES$pH0
   parsES$Sa0 = parsES$Na0 - parsES$Ea0 - parsES$Ia0 - parsES$Ua0 - parsES$Ha0 - parsES$Oa0 - parsES$Ra0 - parsES$Da0 
   parsES$beta= BETA(parsES)
   outs        = model(as.vector(parsES))
@@ -447,7 +471,7 @@ for(i in 1:nsample){
   vsample[,i] = outs$byw$DOw[imodelH]  
 } 
 Weekssample = 1 + outs$byw$time[imodelH]/7 + Week_shift_model
-Datessample = as.Date(paste(Weekssample, "2020", 'Mon'), '%U %Y %a') 
+Datessample = as.Date(paste(Weekssample, "2020", 'Mon'), '%U %Y %a') #Checked: "Mon" consistent with weeks/dates def throughout 
 ##95% CrI
 zsample95 = matrix(0,length(imodelH),2)
 wsample95 = matrix(0,length(imodelH),2)
@@ -520,9 +544,10 @@ print(paste0("kH    MAP: ", round(parsE$kH,    3), ". Expected/start: ", round( 
 print(paste0("kDH,kDO MAP: ", round(parsE$kDH,   3), ". Expected/start: ", round(  thetaTrue[7], 3))) #kD
 #print(paste0("kDO   dep: ", round(parsE$kDO,   3), ". Expected/start: ", round(  thetaTrue[7], 3))) #kD
 #print(paste0("kDO   dep: ", round(parsE$kDO,   3), ". Expected/start: ", round(  thetaTrue[8], 3))) #kD
+print(paste0("rseed dep: ", round(sum(parsE$rseed)),0))
 print(paste0("beta  dep: ", round(parsE$beta,  5)))
 print(paste0("E0    dep: ", round(sum(parsE$Ea0),   0))) #or sum(parsE$Na0*parsE$pE0)
-print(paste0("H0    dep: ", round(sum(parsE$Ha0),   0))) #or sum(parsE$Na0*parsE$HE0)
+#print(paste0("H0    dep: ", round(sum(parsE$Ha0),   0))) #or sum(parsE$Na0*parsE$HE0)
 print(paste0("Estimated proportion deaths outside hospital = ", round(parsE$ad/(1+parsE$ad),3)))
 cat("\n");
 print(summary(out)); 
@@ -564,12 +589,12 @@ N  = pars$Npop
 Nc = pars$Npopcoh
 if(pset$iplatform<2) {weight=1} else {weight=N/Nc}
 
-datH <- tibble(Weeks  = 1 + mE$byw$time[imodelH]/7 + Week_shift_model, #model time 0 <> week 1 + (Week1_Model-1) =week 8
-               Dates  = as.Date(paste(Weeks, "2020", 'Mon'), '%U %Y %a'),
+datH <- tibble(Weeks  = 1 + mE$byw$time[imodelH]/7 + Week_shift_model,    #model time 0 <> week1 + (Week1_Model-1) = 1 + (4-1) = week4
+               Dates  = as.Date(paste(Weeks, "2020", 'Mon'), '%U %Y %a'), #Checked: "Mon" consistent with weeks/dates def throughout 
                H_est  = mE$byw$Hw[imodelH],
                zdw    = zd*weight)
 datD <- tibble(Weeks  = 1 + mE$byw$time[imodelDH]/7 + Week_shift_model,
-               Dates  = as.Date(paste(Weeks, "2020", 'Mon'), '%U %Y %a'),
+               Dates  = as.Date(paste(Weeks, "2020", 'Mon'), '%U %Y %a'), #Checked: "Mon" consistent with weeks/dates def throughout 
                DH_est = mE$byw$DHw[imodelDH],
                DO_est = mE$byw$DOw[imodelDO],  
                wdw    = wd*weight,
@@ -665,24 +690,24 @@ if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
 
 #H
 datHa  <- tibble(Weeks = 1 + mE$byw$time[imodelH]/7 + Week_shift_model,
-                 Dates  = as.Date(paste(Weeks, "2020", 'Mon'), '%U %Y %a'),
+                 Dates  = as.Date(paste(Weeks, "2020", 'Mon'), '%U %Y %a'), #Checked: "Mon" consistent with weeks/dates def throughout 
                  H1w=H1w, H2w=H2w, H3w=H3w, H4w=H4w, H5w=H5w, #estimated
                  H6w=H6w, H7w=H7w, H8w=H8w, H9w=H9w,
                  H1d=H1d, H2d=H2d, H3d=H3d, H4d=H4d, H5d=H5d, #data
                  H6d=H6d, H7d=H7d, H8d=H8d, H9d=H9d)
 #DH
 datDHa <- tibble(Weeks = 1 + mE$byw$time[imodelDH]/7 + Week_shift_model,
-                 Dates = as.Date(paste(Weeks, "2020", 'Mon'), '%U %Y %a'),
-                 DH1w=DH1w, DH2w=DH2w, DH3w=DH3w, DH4w=DH4w, DH5w=DH5w, #estimated
+                 Dates = as.Date(paste(Weeks, "2020", 'Mon'), '%U %Y %a'), #Checked: "Mon" consistent with weeks/dates def throughout 
+                 DH1w=DH1w, DH2w=DH2w, DH3w=DH3w, DH4w=DH4w, DH5w=DH5w,    #estimated
                  DH6w=DH6w, DH7w=DH7w, DH8w=DH8w, DH9w=DH9w,
-                 DH1d=DH1d, DH2d=DH2d, DH3d=DH3d, DH4d=DH4d, DH5d=DH5d, #data
+                 DH1d=DH1d, DH2d=DH2d, DH3d=DH3d, DH4d=DH4d, DH5d=DH5d,    #data
                  DH6d=DH6d, DH7d=DH7d, DH8d=DH8d, DH9d=DH9d)
 #DO
-    datDOa <- tibble(Weeks = 1 + mE$byw$time[imodelDO]/7 + Week_shift_model,
-                 Dates = as.Date(paste(Weeks, "2020", 'Mon'), '%U %Y %a'),
-                 DO1w=DO1w, DO2w=DO2w, DO3w=DO3w, DO4w=DO4w, DO5w=DO5w, #estimated
+datDOa <- tibble(Weeks = 1 + mE$byw$time[imodelDO]/7 + Week_shift_model,   
+                 Dates = as.Date(paste(Weeks, "2020", 'Mon'), '%U %Y %a'), #Checked: "Mon" consistent with weeks/dates def throughout 
+                 DO1w=DO1w, DO2w=DO2w, DO3w=DO3w, DO4w=DO4w, DO5w=DO5w,    #estimated
                  DO6w=DO6w, DO7w=DO7w, DO8w=DO8w, DO9w=DO9w,
-                 DO1d=DO1d, DO2d=DO2d, DO3d=DO3d, DO4d=DO4d, DO5d=DO5d, #data
+                 DO1d=DO1d, DO2d=DO2d, DO3d=DO3d, DO4d=DO4d, DO5d=DO5d,    #data
                  DO6d=DO6d, DO7d=DO7d, DO8d=DO8d, DO9d=DO9d)
 
 } #Plots - Age profile dataframes (not merged)
