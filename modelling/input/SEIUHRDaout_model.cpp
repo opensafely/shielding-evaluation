@@ -129,7 +129,7 @@ List SEIUHRD(List pars){
     const double rEI  = pars["rEI"];
     const double rEU  = pars["rEU"];
     const double rIR  = pars["rIR"];
-    const double rID  = pars["rID"];
+    const double rIO  = pars["rIO"];
     const double rOD  = pars["rOD"];
     const double rUR  = pars["rUR"];
     const double rIH  = pars["rIH"];
@@ -173,6 +173,7 @@ List SEIUHRD(List pars){
     time[0] = 0;
     int  week  = 1;
     int  week0 = 1;
+    double seedon = 0;
     double Hpw = 0;
     double Dpw = 0;
     double DHpw = 0;
@@ -180,6 +181,7 @@ List SEIUHRD(List pars){
     for (int it = 0; it < (nt-1); it++) {	//Crucial: nt-1
         week0 = week;
         week  = 1 + (int) time[it]/7;
+        if (week <= 4) {seedon = 1;}; //floor(1/ceil(week/4));
         cmdtmean[it] = 0;
          
         for (int ia = 0; ia < na; ia++) {
@@ -215,7 +217,8 @@ List SEIUHRD(List pars){
         double ha = h[ia];
         double ma = m[ia]*phm;
         double da = d[ia]*ad;
-
+        double rseeda = seedon*rseed[ia];
+          
         for (int ib = 0; ib < na; ib++) {
             int    icm = (week-1)*cmdim1*cmdim2 + ib*cmdim1 + ia;
             double cmi = cm[icm];
@@ -226,9 +229,9 @@ List SEIUHRD(List pars){
         } //ib
 
         // state update for next timestep
-        double dS  = dt*(-lambda*Sat       + rRS*Rat - rseed[ia]);
-        double dE  = dt*( lambda*Sat       - (rEU*(1-ya)+rEI*ya)*Eat  +  rseed[ia]); //early seeding, no effect later
-        double dI  = dt*( rEI*ya*Eat       - (rIR*(1-ha-da)+rIH*ha+rID*da)*Iat);
+        double dS  = dt*(-lambda*Sat       + rRS*Rat - rseeda);
+        double dE  = dt*( lambda*Sat       - (rEU*(1-ya)+rEI*ya)*Eat  +  rseeda); //early seeding, no effect later
+        double dI  = dt*( rEI*ya*Eat       - (rIR*(1-ha-da)+rIH*ha+rIO*da)*Iat);
         double dU  = dt*( rEU*(1-ya)*Eat   - rUR*Uat);
 
         double dC1 = dt*( lambda*Sat - rCi*C1at);
@@ -238,7 +241,7 @@ List SEIUHRD(List pars){
         double dC5 = dt*( rCi*C4at   - rCi*C5at);
 //DO
 //Outside hospital delay to death
-        double dOin= dt*rID*da*Iat;
+        double dOin= dt*rIO*da*Iat;
         double dO1 = dOin       - dt*( rOi*O1at);
         double dO2 = dt*( rOi*O1at   - rOi*O2at);
         double dO3 = dt*( rOi*O2at   - rOi*O3at);
