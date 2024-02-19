@@ -206,9 +206,9 @@ if(pset$iplatform==2){
   #ageonsD [1] 0.0000000 0.0000000 0.0000000 0.0000000 0.0000000 0.6192527 0.1365515 0.1069367 0.1372591
   #agecohH [1] 0.000 0.000 0.000             0.347     0.143     0.131     0.137     0.107     0.135
   #agecohD [1] 0.000 0.000 0.000             0.000     0.000     0.621     0.137     0.107     0.135
-  weightz_m=c(ageonsH*pars$Npop/(agecohH*pars$Npopcoh))
-  weightw_m=c(ageonsD*pars$Npop/(agecohD*pars$Npopcoh))
-  weightv_m=c(ageonsD*pars$Npop/(agecohD*pars$Npopcoh))
+  weightz_m=c(    ageonsH*pars$Npop/(    agecohH*pars$Npopcoh))
+  weightw_m=c(    ageonsD*pars$Npop/(    agecohD*pars$Npopcoh))
+  weightv_m=c(    ageonsD*pars$Npop/(    agecohD*pars$Npopcoh))
   #non-merged
   weightz  =c(pars$ageons*pars$Npop/(pars$agecoh*pars$Npopcoh))
   weightw  =c(pars$ageons*pars$Npop/(pars$agecoh*pars$Npopcoh))
@@ -246,7 +246,7 @@ for (i in (9-ndDO+1):9){ #weekly incidence of deaths in hospital
 
 
 ### Parameter bounds
-ArseedMin = 1 
+ArseedMin = 0.1
 ArseedMax = (2*84/9)*5
 logArseedMax = log(ArseedMax)
 tMax     = 10
@@ -255,12 +255,16 @@ adMax    = 0.99
 adMin    = 0.0099
 logadMax = log(adMax)
 pE0Max   = 0.10
-pE0Min   = 0.0001   #0.005  #pop = 5655
+pE0Min   = 0.00001   #pop = 565.5
 logpE0Max= log(pE0Max)
 pkLower  = 0.1       #1/k^2, NB likelihood and data
 pkLower2 = 0.1       #Assume: same kD for DH and DO
 pkUpper  = 5
 pkUpper2 = 5
+hAMax    = 1
+hAMin    = 0.01
+loghAMax = log(hAMax)
+
 #pH0Max   = 0.05
 #pH0Min   = 0.000001   #0.005  #pop = 56.55
 #logpH0Max= log(pH0Max)
@@ -285,8 +289,9 @@ LogLikelihood2 <- function(theta){
   #kDO      = 1/(  theta[8]*theta[8])
   #pars$pH0 = exp(-theta[8] + logpH0Max) #
   Arseed   = exp(-theta[8] + logArseedMax)
-
+  hA       = exp(-theta[9] + loghAMax)
   #Dependent parameters
+  pars$h   = hA*pars$h
   pars$rseed = Arseed*pars$ageons
   pars$Ea0 = pars$Na0*pars$pE0
   #pars$Ha0 = pars$Na0*pars$pH0
@@ -356,9 +361,9 @@ LogLikelihood2 <- function(theta){
 
 ## Likelihood definition, parameter ranges  ####################################
 niter = 120000 #3000 #30000#9000 #200000
-LOWER = c(c(1, 1)/tMax,          0,                 0,                  0, pkLower, pkLower2, 0); #kDO
-UPPER = c(  1, 1,       log(R0Max),log(pE0Max/pE0Min), log(adMax/adMin),   pkUpper, pkUpper2, log(ArseedMax/ArseedMin)); #kDO
-LogLikelihood = LogLikelihood2; #rEI, rIR, R0, pE0, al, kH, kDH, kDO
+LOWER = c(c(1, 1)/tMax,          0,                 0,                  0, pkLower, pkLower2, 0, 0); #kDO
+UPPER = c(  1, 1,       log(R0Max),log(pE0Max/pE0Min), log(adMax/adMin),   pkUpper, pkUpper2, log(ArseedMax/ArseedMin), log(hAMax/hAMin)); #kDO
+LogLikelihood = LogLikelihood2; #rEI, rIR, R0, pE0, al, kH, kDH, (kDO), rseed
 
 
 #Uniform priors
@@ -406,8 +411,8 @@ tout3 <- system.time(out3 <- runMCMC(bayesianSetup=setup, settings=settings) )
 
 
 ## MAP Estimates  ##############################################################
-parsE     <- pars
-MAPE      <- MAP(out)
+parsE     <- pars     #pars setup initially
+MAPE      <- MAP(out) #pasr estimated
 ### UPDATE: @@
 ###         proposal pars$
 ###         MAP      parsE$, 
@@ -423,8 +428,9 @@ parsE$kDO <- parsE$kDH
 #parsE$kDO <- 1/(      MAPE$parametersMAP[8]^2)
 #parsE$pH0 <- exp(-MAPE$parametersMAP[8] + logpH0Max)
 ArseedE   <- exp(-MAPE$parametersMAP[8] + logArseedMax)
-
+hAE       <- exp(-MAPE$parametersMAP[9] + loghAMax)
 #Dependent parameters
+parsE$h   = hAE*pars$h
 parsE$rseed = ArseedE*parsE$ageons
 parsE$Ea0 = parsE$Na0*parsE$pE0
 #parsE$Ha0 = parsE$Na0*parsE$pH0
@@ -432,6 +438,11 @@ parsE$Sa0 = parsE$Na0 - parsE$Ea0 - parsE$Ia0 - parsE$Ua0 - parsE$Ha0 - parsE$Oa
 parsE$beta= BETA(parsE)
 #predictions
 mE        <- model(parsE)
+#R0_week using MAP
+pars0 <- pars
+pars  <- parsE
+source(file = paste0(input_dir,"/R0.r")) #uses pars
+pars  <- pars0
 
 
 ## UNCERTAINTY  ################################################################
@@ -457,8 +468,9 @@ for(i in 1:nsample){
   parsES$ad  <- exp(-as.vector(psample[i,5]) + logadMax)
   #parsES$pH0 <- exp(-as.vector(psample[i,8]) + logpH0Max)
   ArseedES   <- exp(-as.vector(psample[i,8]) + logArseedMax)
-  
+  hAES       <- exp(-as.vector(psample[i,9])  + loghAMax)
   #Dependent parameters
+  parsES$h   = hAES*pars$h
   parsES$rseed = ArseedES*parsES$ageons  
   #Dependent
   parsES$Ea0 = parsES$Na0*parsES$pE0
@@ -491,7 +503,7 @@ for(it in 1:length(imodelH)){
 
 
 #True parameters (except last two)
-thetaTrue = c(pars$rEI, pars$rIR, pars$R0, pars$pE0, pars$ad, pars$kH, pars$kDH);
+thetaTrue = c(pars$rEI, pars$rIR, pars$R0, pars$pE0, pars$ad, pars$kH, pars$kDH, pars$rseed, 1);
 
 
 #Expected parameters
@@ -537,16 +549,17 @@ cat("\n")
 ## MAP Estimates
 print(paste0("1/rEI MAP: ", round(1/parsE$rEI, 3), ". Expected/start: ", round(1/thetaTrue[1], 3))) #rEI
 print(paste0("1/rIR MAP: ", round(1/parsE$rIR, 3), ". Expected/start: ", round(1/thetaTrue[2], 3))) #rIR
-print(paste0("R0    MAP: ", round(parsE$R0,    3), ". Expected/start: ", round(  thetaTrue[3], 3))) #R0
-print(paste0("pE0   MAP: ", round(parsE$pE0,   4), ". Expected/start: ", round(  thetaTrue[4], 3))) #pE0
-print(paste0("ad    MAP: ", round(parsE$ad,    4), ". Expected/start: ", round(  thetaTrue[5], 3))) #ad
-print(paste0("kH    MAP: ", round(parsE$kH,    3), ". Expected/start: ", round(  thetaTrue[6], 3))) #kH
-print(paste0("kDH,kDO MAP: ", round(parsE$kDH,   3), ". Expected/start: ", round(  thetaTrue[7], 3))) #kD
+print(paste0("R0    MAP: ", round(parsE$R0,    3), ". Expected/start: ", round(  pars$R0,      3))) #R0
+print(paste0("pE0   MAP: ", round(parsE$pE0,   4), ". Expected/start: ", round(  pars$pE0,     3))) #pE0
+print(paste0("ad    MAP: ", round(parsE$ad,    4), ". Expected/start: ", round(  pars$ad,      3))) #ad
+print(paste0("kH    MAP: ", round(parsE$kH,    3), ". Expected/start: ", round(  pars$kH,      3))) #kH
+print(paste0("kDH,kDO MAP: ", round(parsE$kDH, 3), ". Expected/start: ", round(  pars$kDH,     3))) #kD
 #print(paste0("kDO   dep: ", round(parsE$kDO,   3), ". Expected/start: ", round(  thetaTrue[7], 3))) #kD
 #print(paste0("kDO   dep: ", round(parsE$kDO,   3), ". Expected/start: ", round(  thetaTrue[8], 3))) #kD
-print(paste0("rseed dep: ", round(sum(parsE$rseed)),0))
-print(paste0("beta  dep: ", round(parsE$beta,  5)))
-print(paste0("E0    dep: ", round(sum(parsE$Ea0),   0))) #or sum(parsE$Na0*parsE$pE0)
+print(paste0("rseed MAP: ", round(sum(parsE$rseed), 0), ". Expected/start: ", round(sum(pars$rseed), 0) )) #rseed
+print(paste0("hA    MAP: ", round(sum(parsE$h)/sum(pars$h),2), ". Expected/start: ", round(1, 0) )) #hA
+print(paste0("beta  dep: ", round(parsE$beta,      5) ))
+print(paste0("E0    dep: ", round(sum(parsE$Ea0), 0)  )) #or sum(parsE$Na0*parsE$pE0)
 #print(paste0("H0    dep: ", round(sum(parsE$Ha0),   0))) #or sum(parsE$Na0*parsE$HE0)
 print(paste0("Estimated proportion deaths outside hospital = ", round(parsE$ad/(1+parsE$ad),3)))
 cat("\n");
@@ -592,7 +605,8 @@ if(pset$iplatform<2) {weight=1} else {weight=N/Nc}
 datH <- tibble(Weeks  = 1 + mE$byw$time[imodelH]/7 + Week_shift_model,    #model time 0 <> week1 + (Week1_Model-1) = 1 + (4-1) = week4
                Dates  = as.Date(paste(Weeks, "2020", 'Mon'), '%U %Y %a'), #Checked: "Mon" consistent with weeks/dates def throughout 
                H_est  = mE$byw$Hw[imodelH],
-               zdw    = zd*weight)
+               zdw    = zd*weight,
+               R0_week = R0_week[imodelH])
 datD <- tibble(Weeks  = 1 + mE$byw$time[imodelDH]/7 + Week_shift_model,
                Dates  = as.Date(paste(Weeks, "2020", 'Mon'), '%U %Y %a'), #Checked: "Mon" consistent with weeks/dates def throughout 
                DH_est = mE$byw$DHw[imodelDH],
@@ -629,7 +643,12 @@ datD <- tibble(datD,
 ##OS:  datDHa_l  or datDHa
 ##OS:  datDOa_l  or datDOa
 
+#y axis log transformation - default: linear
+YL <- function(y,LOG=0){ if (LOG==1) {z=log(y+1)} else {z=y}; return(z) }
+LOG=1; #0 #apply scale of plotting Age Profiles
+
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
+#indices of data vectors
   if (pset$iplatform==2){
     for (i in 1:9){
       #idataH1-idataH9 
@@ -645,48 +664,34 @@ if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
                            & datDOa_l$Week >= Week1_Fit_DO & datDOa_l$Week <= Week2_Fit_DO)
       assign(paste0("idataDO",eval(i)),values) 
     }}
-#H  
-#H estimated (MAP) - Hiw <= mE$byw_age$Hiw
+
+#Variables (Model and data)  
   for (i in 1:9){
-    values = eval(parse(text = paste0("mE$byw_age$H",eval(i),"w[imodelH]")))
-    assign(paste0("H",eval(i),"w"),values) }
-#H data simulated - Hid <= datM$H_modi - (actually, using true model, as the data too noisy)
-  if (pset$iplatform==0){
-  for (i in 1:9){
-    values = eval(parse(text = paste0("datM$H_mod",eval(i),"[imodelH]")))
-    assign(paste0("H",eval(i),"d"),values) } } else {
-#H data os          - Hid <= datHa_l$Freq[idataHi]
-  for (i in 1:9){
-    values = eval(parse(text = paste0("datHa_l$Freq[idataH",eval(i),"]*weightz[",eval(i),"]")))
-    assign(paste0("H",eval(i),"d"),values) } }
-#DH    
-#DH estimated (MAP) - DHiw <= mE$byw_aHO$DHiw
-  for (i in 1:9){
-    values = eval(parse(text = paste0("mE$byw_aHO$DH",eval(i),"w[imodelDH]")))
-    assign(paste0("DH",eval(i),"w"),values) }
-#DH data simulated  - DHid <= datM$DH_modi - (actually, using true model, as the data too noisy)
-  if (pset$iplatform==0){
-  for (i in 1:9){
-    values = eval(parse(text = paste0("datM$DH_mod",eval(i),"[imodelDH]")))
-    assign(paste0("DH",eval(i),"d"),values) } } else {
-#DH data os         - DHid <= datDHa_l$Freq[idataDHi]
-  for (i in 1:9){
-    values = eval(parse(text = paste0("datDHa_l$Freq[idataDH",eval(i),"]*weightw[",eval(i),"]")))
-    assign(paste0("DH",eval(i),"d"),values) } }
-#DO
-#DO estimated (MAP) - DOiw <= mE$byw_aHO$DOiw
-  for (i in 1:9){
-    values = eval(parse(text = paste0("mE$byw_aHO$DO",eval(i),"w[imodelDO]")))
-    assign(paste0("DO",eval(i),"w"),values) }
-#DO data simulated  - DOid <= datM$DO_modi - (actually, using true model, as the data too noisy)
-  if (pset$iplatform==0){
-  for (i in 1:9){
-    values = eval(parse(text = paste0("datM$DO_mod",eval(i),"[imodelDO]")))
-    assign(paste0("DO",eval(i),"d"),values) } } else {
-#DO data os         - DOid <= datDOa_l$Freq[idataDOi]
-  for (i in 1:9){
-    values = eval(parse(text = paste0("datDOa_l$Freq[idataDO",eval(i),"]*weightv[",eval(i),"]")))
-    assign(paste0("DO",eval(i),"d"),values) } }
+#H Model (MAP)
+    values = eval(parse(text = paste0("mE$byw_age$H",eval(i),"w[imodelH]")))      #Hiw <= mE$byw_age$Hiw
+    assign(paste0("H",eval(i),"w"),  YL(values,LOG))
+#H data: OS or simulated (actually, true model, as data too noisy)
+    if (pset$iplatform>0){     #Hid <= datHa_l$Freq[idataHi]                  or  #Hid <= datM$H_modi
+    values = eval(parse(text = paste0("datHa_l$Freq[idataH",eval(i),"]*weightz[",eval(i),"]")))  } else { 
+    values = eval(parse(text = paste0("datM$H_mod",eval(i),"[imodelH]"))) }
+    assign(paste0("H",eval(i),"d"),  YL(values,LOG))
+#DH Model (MAP)
+    values = eval(parse(text = paste0("mE$byw_aHO$DH",eval(i),"w[imodelDH]")))   #DHiw <= mE$byw_aHO$DHiw
+    assign(paste0("DH",eval(i),"w"), YL(values,LOG))
+#DH data 
+    if (pset$iplatform>0){   #DHid <= datDHa_l$Freq[idataDHi]                or  #DHid <= datM$DH_modi 
+    values = eval(parse(text = paste0("datDHa_l$Freq[idataDH",eval(i),"]*weightw[",eval(i),"]"))) } else {
+    values = eval(parse(text = paste0("datM$DH_mod",eval(i),"[imodelDH]"))) }
+    assign(paste0("DH",eval(i),"d"), YL(values,LOG))
+#DO Model (MAP)
+    values = eval(parse(text = paste0("mE$byw_aHO$DO",eval(i),"w[imodelDO]")))   #DOiw <= mE$byw_aHO$DOiw
+    assign(paste0("DO",eval(i),"w"), YL(values,LOG))
+#DO data
+  if (pset$iplatform>0){     #DOid <= datDOa_l$Freq[idataDOi]                or  #DOid <= datM$DO_modi
+    values = eval(parse(text = paste0("datDOa_l$Freq[idataDO",eval(i),"]*weightv[",eval(i),"]"))) } else {
+    values = eval(parse(text = paste0("datM$DO_mod",eval(i),"[imodelDO]"))) }
+    assign(paste0("DO",eval(i),"d"), YL(values,LOG))
+}
 
 #H
 datHa  <- tibble(Weeks = 1 + mE$byw$time[imodelH]/7 + Week_shift_model,
@@ -743,9 +748,11 @@ svglite(paste0(filenamepath,".svg")); correlationPlot(out); invisible(dev.off())
 colors <- c(  "I_dat"  = "black",   "I_est" = "red",     "I_model" = "green",
              "H_datw"  = "black",   "H_est" = "red",     "H_model" = "pink",
             "DH_datw"  = "grey",   "DH_est" = "blue",   "DH_model" = "cyan",
-            "DO_datw"  = "black",  "DO_est" = "green4", "DO_model" = "green")
+            "DO_datw"  = "black",  "DO_est" = "green4", "DO_model" = "green", "R0_est" = "grey70")
+
+coeff <- (max(datH$zdw)/max(datH$R0_week))
+
 p1 <- ggplot() +
-          labs(x = 'Date', y = 'Hospitalisations & deaths in & outside hospital', color = "Legend") + 
           #xlim(c(0, NA)) +  ylim(c(0, NA)) + #Dont use with Dates, only with Weeks
           scale_color_manual(values = colors) +
           geom_point(data=datH, aes(x=Datesz,y=zdw,    color =  "H_datw"), size = 1.4,   pch = 19) +
@@ -753,13 +760,27 @@ p1 <- ggplot() +
           geom_point(data=datD, aes(x=Datesv,y=vdw,    color = "DO_datw"), size =   1,   pch = 1) +
           geom_line (data=datH, aes(x=Dates, y=H_est,  color =  "H_est")) +
           geom_line (data=datD, aes(x=Dates, y=DH_est, color = "DH_est")) +
-          geom_line (data=datD, aes(x=Dates, y=DO_est, color = "DO_est"))
-			   
-    if (pset$iplatform==0) {
-    p1 <- p1 + 
+          geom_line (data=datD, aes(x=Dates, y=DO_est, color = "DO_est")) +
+          geom_point(data=datH, aes(x=Dates, y=H_est,  color =  "H_est")) +
+          geom_point(data=datD, aes(x=Dates, y=DH_est, color = "DH_est")) +
+          geom_point(data=datD, aes(x=Dates, y=DO_est, color = "DO_est")) +
+          geom_line (data=datH, aes(x=Dates, y=R0_week*coeff,color = "R0_est"))
+
+if (pset$iplatform==0) {
+p1 <- p1 + 
           geom_line (data=datH, aes(x=Dates,y=H_mod,  color =  "H_model")) +
           geom_line (data=datD, aes(x=Dates,y=DH_mod, color = "DH_model")) +
           geom_line (data=datD, aes(x=Dates,y=DO_mod, color = "DO_model"))  }
+#secondary axis for R0
+p1 <- p1 + 
+          scale_y_continuous(
+            name = 'Hospitalisations & deaths in & outside hospital',
+            sec.axis = sec_axis(~.*(1/coeff), name="R0") ) + 
+          labs(x = 'Date', color = "Legend") + #y = 'Hospitalisations & deaths in & outside hospital', color = "Legend") + 
+          theme(
+            axis.title.y = element_text(color = 1), #size=10),
+            axis.title.y.right = element_text(color = 1) ) #colors['R0_est'][[1]]) ) #, size=10) )
+
 print(p1)
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_Overall")
 svglite(paste0(filenamepath,".svg")); print(p1); invisible(dev.off())
@@ -925,8 +946,9 @@ invisible(dev.off())
 #pdf(file = paste0(output_dir,"/",pset$File_fit_variables), height=nrow(mE$byw)/3)
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_variables")
 svglite(paste0(filenamepath,".svg")) #, height=nrow(mE$byw)/3); #os complained
-   gridExtra::grid.table(round(mE$byw[c("time","St","Ht","Hw","Dt","Dw")])) 
-dev.off()
+   plot(1:10)
+   #gridExtra::grid.table(round(mE$byw[c("time","St","Ht","Hw","Dt","Dw")])) 
+invisible(dev.off())
 
 #if (pset$iplatform>0){
 #  
