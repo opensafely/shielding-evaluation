@@ -3,17 +3,13 @@ pset <- within(pset, {
     TODAY <- format(Sys.Date(), "%d-%m-%Y")
     TIME  <- format(Sys.time(),'%H.%M.%S_%d-%m-%Y')
     ## Job no.
-    ReadJobNo=1
-    if(ReadJobNo==0) {
-       Job="J5h_" #J1=lm, J2=fit-simul, J3=SEIR_fit, J4...=SEIUHRD fits, J5 - fir age model
-       } else { 
-       source(file = paste0(input_dir,"/jobno.r")) }
+    Job="J5h_" #J1=lm, J2=fit-simul, J3=SEIR_fit, J4...=SEIUHRD fits, J5 - age model
     ## Model choice
     MODEL    <- c("SEIR", "SEIUHRD");
     imodel   <- 2#1; #2
     ### OpenSafely
     PLATFORM <- c("Simulate", "Fit dummy data", "OpenSafely"); #0, 1, 2
-    iplatform<- 0#1#2#
+    iplatform<- 2#0#1#
     
     ### model fitting
     DOfit    <- 1; #(0=Dont fit, 1=simulated or OS data)
