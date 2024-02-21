@@ -15,13 +15,15 @@ cm_weekmaxev <- vector() #max eigenvalue each week
 #### Read & build contact matrix
 if (pset$DOcmREAD==1 & pset$iplatform==0) {
   #### file names with relevant weeks
-  files <- list.files(path = "./m_9x9matrices_19feb24", pattern="Eng")
+  #files <- list.files(path = "./m_9x9matrices_19feb24", pattern="Eng")
+  files <- list.files(path = "./m_9x9matrices_07feb24", pattern="Eng")
   cdate <- sort(substring(files,8,17)) #8th to 17th character
   cdate <- cdate[1:nd] #### Select 52 weeks from 1st week (2020-01-27) to 2021-01-18") 
   cl = list()
   for (i in seq_along(cdate)) {
-    cl[[i]]=read.csv(paste0("./m_9x9matrices_19feb24/England",cdate[i],"all.csv"),header=T) }
-  #### Build matrix
+    #cl[[i]]=read.csv(paste0("./m_9x9matrices_19feb24/England",cdate[i],"all.csv"),header=T) }
+    cl[[i]]=read.csv(paste0("./m_9x9matrices_07feb24/England",cdate[i],"all.csv"),header=T) }
+#### Build matrix
   cm <- array(0,dim=c(9,9,nd))            #9 age groups, 52 weeks
   for (i in seq_along(cdate)) {
     cm[,,i] = as.matrix(cl[[i]]) }       #By week

@@ -644,7 +644,7 @@ datD <- tibble(datD,
 ##OS:  datDOa_l  or datDOa
 
 #y axis log transformation - default: linear
-YL <- function(y,LOG=0){ if (LOG==1) {z=log(y+1)} else {z=y}; return(z) }
+YL <- function(y,LOG=0){ if (LOG==1) {z=log10(y+1)} else {z=y}; return(z) }
 LOG=1; #0 #apply scale of plotting Age Profiles
 
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
