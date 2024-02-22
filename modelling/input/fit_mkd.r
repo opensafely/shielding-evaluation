@@ -246,24 +246,31 @@ for (i in (9-ndDO+1):9){ #weekly incidence of deaths in hospital
 
 
 ### Parameter bounds
-ArseedMin = 0.1
-ArseedMax = (2*84/9)*5
-logArseedMax = log(ArseedMax)
+#ArseedMin = 0.1
+#ArseedMax = (2*84/9)*5
+#logArseedMax = log(ArseedMax)
 tMax     = 10
 R0Max    = 10
+
 adMax    = 0.99
 adMin    = 0.0099
 logadMax = log(adMax)
+
+hMax    = 0.99
+hMin    = 0.00001
+loghMax = log(hMax)
+
 pE0Max   = 0.10
 pE0Min   = 0.00001   #pop = 565.5
 logpE0Max= log(pE0Max)
+
 pkLower  = 0.1       #1/k^2, NB likelihood and data
 pkLower2 = 0.1       #Assume: same kD for DH and DO
 pkUpper  = 5
 pkUpper2 = 5
-hAMax    = 1
-hAMin    = 0.01
-loghAMax = log(hAMax)
+#hAMax    = 1
+#hAMin    = 0.01
+#loghAMax = log(hAMax)
 
 #pH0Max   = 0.05
 #pH0Min   = 0.000001   #0.005  #pop = 56.55
@@ -277,23 +284,33 @@ LogLikelihood2 <- function(theta){
   ###         MAP      parsE$, 
   ###         sample   parsES$
   ### Proposed parameters
-  pars$rEI = 1/(  theta[1]*tMax)
-  pars$rIR = 1/(  theta[2]*tMax)
+  #pars$rEI = 1/(  theta[1]*tMax)
+  #pars$rIR = 1/(  theta[2]*tMax)
   pars$R0  = exp( theta[3])             #*logR0Max)#*R0Max 
   pars$pE0 = exp(-theta[4] + logpE0Max) #
   pars$ad  = exp(-theta[5] + logadMax)
-  ### NB likelihood
   kH       = 1/(  theta[6]*theta[6])    # pk = theta = 1/sqrt(k) => k = 1/pk^2
   kDH      = 1/(  theta[7]*theta[7])
   kDO      = kDH
+  h1       = exp(-theta[1]  + loghMax)
+  h2       = exp(-theta[2]  + loghMax)
+  h3       = exp(-theta[8]  + loghMax)
+  h4       = exp(-theta[9]  + loghMax)
+  h5       = exp(-theta[10] + loghMax)
+  h6       = exp(-theta[11] + loghMax)
+  h7       = exp(-theta[12] + loghMax)
+  h8       = exp(-theta[13] + loghMax)
+  h9       = exp(-theta[14] + loghMax)
+  pars$h   = c(h1, h2, h3, h4, h5, h6, h7, h8, h9)
   #kDO      = 1/(  theta[8]*theta[8])
   #pars$pH0 = exp(-theta[8] + logpH0Max) #
-  Arseed   = exp(-theta[8] + logArseedMax)
-  hA       = exp(-theta[9] + loghAMax)
+  #Arseed   = exp(-theta[8] + logArseedMax)
+  #hA       = exp(-theta[9] + loghAMax)
+  
   #Dependent parameters
-  pars$h   = hA*pars$h
-  pars$rseed = Arseed*pars$ageons
-  pars$Ea0 = pars$Na0*pars$pE0
+  #pars$h     =       hA*pars$h
+  #pars$rseed =   Arseed*pars$ageons
+  pars$Ea0   = pars$Na0*pars$pE0
   #pars$Ha0 = pars$Na0*pars$pH0
   pars$Sa0 = pars$Na0 - pars$Ea0 - pars$Ia0 - pars$Ua0 - pars$Ha0 - pars$Oa0 - pars$Ra0 - pars$Da0   
   pars$beta= BETA(pars) 
@@ -360,11 +377,14 @@ LogLikelihood2 <- function(theta){
 
 
 ## Likelihood definition, parameter ranges  ####################################
-niter = 120000 #3000 #30000#9000 #200000
-LOWER = c(c(1, 1)/tMax,          0,                 0,                  0, pkLower, pkLower2, 0, 0); #kDO
-UPPER = c(  1, 1,       log(R0Max),log(pE0Max/pE0Min), log(adMax/adMin),   pkUpper, pkUpper2, log(ArseedMax/ArseedMin), log(hAMax/hAMin)); #kDO
-LogLikelihood = LogLikelihood2; #rEI, rIR, R0, pE0, al, kH, kDH, (kDO), rseed
-
+niter = 120000 #6000#3000 #30000#9000 #200000
+#LOWER = c(c(1)/tMax,          0,                 0,                  0, pkLower, pkLower2, 0, 0); #kDO
+#UPPER = c(  1,       log(R0Max),log(pE0Max/pE0Min), log(adMax/adMin),   pkUpper, pkUpper2, log(ArseedMax/ArseedMin), log(hAMax/hAMin)); #kDO
+LOWER = c(rep(0,2),               0,          0,                  0,                
+          pkLower, pkLower2, rep(0,7)); #kDO
+UPPER = c(rep(log(hMax/hMin),2),  log(R0Max), log(pE0Max/pE0Min), log(adMax/adMin), 
+          pkUpper, pkUpper2, rep(log(hMax/hMin),7));
+LogLikelihood = LogLikelihood2; 
 
 #Uniform priors
   #PARSTART = 0.5*UPPER
@@ -417,22 +437,32 @@ MAPE      <- MAP(out) #pasr estimated
 ###         proposal pars$
 ###         MAP      parsE$, 
 ###         sample   parsES$
-parsE$rEI <- 1/(  MAPE$parametersMAP[1]*tMax)
-parsE$rIR <- 1/(  MAPE$parametersMAP[2]*tMax)
+#parsE$rEI <- 1/(  MAPE$parametersMAP[1]*tMax)
+#parsE$rIR <- 1/(  MAPE$parametersMAP[2]*tMax)
 parsE$R0  <- exp( MAPE$parametersMAP[3])#*logR0Max)#*R0Max
 parsE$pE0 <- exp(-MAPE$parametersMAP[4] + logpE0Max)
 parsE$ad  <- exp(-MAPE$parametersMAP[5] + logadMax)
 parsE$kH  <- 1/(  MAPE$parametersMAP[6]^2) #1/pk^2
 parsE$kDH <- 1/(  MAPE$parametersMAP[7]^2)
 parsE$kDO <- parsE$kDH
+h1        <- exp(-MAPE$parametersMAP[1]  + loghMax)
+h2        <- exp(-MAPE$parametersMAP[2]  + loghMax)
+h3        <- exp(-MAPE$parametersMAP[8]  + loghMax)
+h4        <- exp(-MAPE$parametersMAP[9]  + loghMax)
+h5        <- exp(-MAPE$parametersMAP[10] + loghMax)
+h6        <- exp(-MAPE$parametersMAP[11] + loghMax)
+h7        <- exp(-MAPE$parametersMAP[12] + loghMax)
+h8        <- exp(-MAPE$parametersMAP[13] + loghMax)
+h9        <- exp(-MAPE$parametersMAP[14] + loghMax)
+parsE$h   <- c(h1, h2, h3, h4, h5, h6, h7, h8, h9)
 #parsE$kDO <- 1/(      MAPE$parametersMAP[8]^2)
 #parsE$pH0 <- exp(-MAPE$parametersMAP[8] + logpH0Max)
-ArseedE   <- exp(-MAPE$parametersMAP[8] + logArseedMax)
-hAE       <- exp(-MAPE$parametersMAP[9] + loghAMax)
+#ArseedE   <- exp(-MAPE$parametersMAP[8] + logArseedMax)
+#hAE       <- exp(-MAPE$parametersMAP[9] + loghAMax)
 #Dependent parameters
-parsE$h   = hAE*pars$h
-parsE$rseed = ArseedE*parsE$ageons
-parsE$Ea0 = parsE$Na0*parsE$pE0
+#parsE$h     =       hAE*pars$h
+#parsE$rseed =   ArseedE*pars$ageons
+parsE$Ea0   = parsE$Na0*parsE$pE0
 #parsE$Ha0 = parsE$Na0*parsE$pH0
 parsE$Sa0 = parsE$Na0 - parsE$Ea0 - parsE$Ia0 - parsE$Ua0 - parsE$Ha0 - parsE$Oa0 - parsE$Ra0 - parsE$Da0   
 parsE$beta= BETA(parsE)
@@ -450,7 +480,7 @@ pars  <- pars0
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
 npar      = length(LOWER)
 nsample   = 3000#100#500#1000#;
-psample = getSample(out, parametersOnly = T, numSamples = nsample, start=(niter/3)/3) #parametersOnly = F
+psample = getSample(out, parametersOnly = T, numSamples = nsample, start=niter/10) #(niter/3)/3) #parametersOnly = F
 # run model for each parameter set in the sample
 zsample = matrix(0,length(imodelH),nsample)
 wsample = matrix(0,length(imodelH),nsample)
@@ -461,19 +491,28 @@ parsES  = pars
 ###         MAP      parsE$, 
 ###         sample   parsES$
 for(i in 1:nsample){
-  parsES$rEI <- 1/(  as.vector(psample[i,1])*tMax)
-  parsES$rIR <- 1/(  as.vector(psample[i,2])*tMax)
+  #parsES$rEI <- 1/(  as.vector(psample[i,1])*tMax)
+  #parsES$rIR <- 1/(  as.vector(psample[i,2])*tMax)
   parsES$R0  <- exp( as.vector(psample[i,3])) #*logR0Max)#*R0Max
-  parsES$pE0 <- exp(-as.vector(psample[i,4]) + logpE0Max)
-  parsES$ad  <- exp(-as.vector(psample[i,5]) + logadMax)
+  parsES$pE0 <- exp(-as.vector(psample[i,4])  + logpE0Max)
+  parsES$ad  <- exp(-as.vector(psample[i,5])  + logadMax)
+  h1         <- exp(-as.vector(psample[i,1])  + loghMax)
+  h2         <- exp(-as.vector(psample[i,2])  + loghMax)
+  h3         <- exp(-as.vector(psample[i,8])  + loghMax)
+  h4         <- exp(-as.vector(psample[i,9])  + loghMax)
+  h5         <- exp(-as.vector(psample[i,10]) + loghMax)
+  h6         <- exp(-as.vector(psample[i,11]) + loghMax)
+  h7         <- exp(-as.vector(psample[i,12]) + loghMax)
+  h8         <- exp(-as.vector(psample[i,13]) + loghMax)
+  h9         <- exp(-as.vector(psample[i,14]) + loghMax)
+  parsES$h   <- c(h1, h2, h3, h4, h5, h6, h7, h8, h9)
   #parsES$pH0 <- exp(-as.vector(psample[i,8]) + logpH0Max)
-  ArseedES   <- exp(-as.vector(psample[i,8]) + logArseedMax)
-  hAES       <- exp(-as.vector(psample[i,9])  + loghAMax)
+  #ArseedES   <- exp(-as.vector(psample[i,8]) + logArseedMax)
+  #hAES       <- exp(-as.vector(psample[i,9])  + loghAMax)
   #Dependent parameters
-  parsES$h   = hAES*pars$h
-  parsES$rseed = ArseedES*parsES$ageons  
-  #Dependent
-  parsES$Ea0 = parsES$Na0*parsES$pE0
+  #parsES$h     =       hAES*pars$h
+  #parsES$rseed =   ArseedES*pars$ageons
+  parsES$Ea0   = parsES$Na0*parsES$pE0
   #parsES$Ha0 = parsES$Na0*parsES$pH0
   parsES$Sa0 = parsES$Na0 - parsES$Ea0 - parsES$Ia0 - parsES$Ua0 - parsES$Ha0 - parsES$Oa0 - parsES$Ra0 - parsES$Da0 
   parsES$beta= BETA(parsES)
@@ -503,8 +542,9 @@ for(it in 1:length(imodelH)){
 
 
 #True parameters (except last two)
-thetaTrue = c(pars$rEI, pars$rIR, pars$R0, pars$pE0, pars$ad, pars$kH, pars$kDH, pars$rseed, 1);
-
+thetaTrue = c(#pars$rEI, pars$rIR, 
+              pars$h[1], pars$h[2], pars$R0, pars$pE0, pars$ad, pars$kH, pars$kDH, 
+              pars$h[3:9]);
 
 #Expected parameters
 
@@ -547,8 +587,8 @@ print(out$settings$runtime)
 print(paste0("Time used (sec): ", round(tout1[[3]],3)))
 cat("\n")
 ## MAP Estimates
-print(paste0("1/rEI MAP: ", round(1/parsE$rEI, 3), ". Expected/start: ", round(1/thetaTrue[1], 3))) #rEI
-print(paste0("1/rIR MAP: ", round(1/parsE$rIR, 3), ". Expected/start: ", round(1/thetaTrue[2], 3))) #rIR
+#print(paste0("1/rEI MAP: ", round(1/parsE$rEI, 3), ". Expected/start: ", round(1/thetaTrue[1], 3))) #rEI
+#print(paste0("1/rIR MAP: ", round(1/parsE$rIR, 3), ". Expected/start: ", round(1/thetaTrue[2], 3))) #rIR
 print(paste0("R0    MAP: ", round(parsE$R0,    3), ". Expected/start: ", round(  pars$R0,      3))) #R0
 print(paste0("pE0   MAP: ", round(parsE$pE0,   4), ". Expected/start: ", round(  pars$pE0,     3))) #pE0
 print(paste0("ad    MAP: ", round(parsE$ad,    4), ". Expected/start: ", round(  pars$ad,      3))) #ad
@@ -556,8 +596,9 @@ print(paste0("kH    MAP: ", round(parsE$kH,    3), ". Expected/start: ", round( 
 print(paste0("kDH,kDO MAP: ", round(parsE$kDH, 3), ". Expected/start: ", round(  pars$kDH,     3))) #kD
 #print(paste0("kDO   dep: ", round(parsE$kDO,   3), ". Expected/start: ", round(  thetaTrue[7], 3))) #kD
 #print(paste0("kDO   dep: ", round(parsE$kDO,   3), ". Expected/start: ", round(  thetaTrue[8], 3))) #kD
-print(paste0("rseed MAP: ", round(sum(parsE$rseed), 0), ". Expected/start: ", round(sum(pars$rseed), 0) )) #rseed
-print(paste0("hA    MAP: ", round(sum(parsE$h)/sum(pars$h),2), ". Expected/start: ", round(1, 0) )) #hA
+#print(paste0("rseed MAP: ", round(sum(parsE$rseed), 0), ". Expected/start: ", round(sum(pars$rseed), 0) )) #rseed
+#print(paste0("hA    MAP: ", round(sum(parsE$h)/sum(pars$h),2), ". Expected/start: ", round(1, 0) )) #hA
+print(paste0("h      MAP: ", round(parsSE$h,   4), ". Expected/start: ")) #hA
 print(paste0("beta  dep: ", round(parsE$beta,      5) ))
 print(paste0("E0    dep: ", round(sum(parsE$Ea0), 0)  )) #or sum(parsE$Na0*parsE$pE0)
 #print(paste0("H0    dep: ", round(sum(parsE$Ha0),   0))) #or sum(parsE$Na0*parsE$HE0)
