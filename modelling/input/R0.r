@@ -44,13 +44,13 @@ pars$beta = beta
 df <- tibble(Week=1:pars$cmdim3, R0_week=R0_week, R0xcmMEV=pars$R0*cmMEV,)
 write.csv(df, row.names = F, file = paste0(output_dir,"/",pset$File_R0_week))
 
-colors <- c(  "R0-cm" = "cyan", "R0-NGM"  = "red")
+colors <- c("R0-cm" = "cyan", "R0-NGM"  = "red")
 p  <- ggplot(df, aes(x = Week)) +
-  geom_line (aes(y = R0xcmMEV, color = 'R0-cm')) +
-  geom_line (aes(y = R0_week,  color = 'R0-NGM')) +
+  geom_line (aes(x=Week, y = R0xcmMEV, color = "R0-cm")) +
+  geom_line (aes(x=Week, y = R0_week,  color = "R0-NGM")) +
   labs(x = 'Week', y = 'R0', color = "Legend") +
-  scale_color_manual(values = colors, breaks=c('R0-NGM', 'R0-cm'))
+  scale_color_manual(values = colors, breaks=c("R0-NGM", "R0-cm"))
   #scale_fill_discrete(breaks=c('R0-NGM', 'R0-cm'))
-print(p)
+if (pset$iplatform<2){ print(p)}
 filenamepath = paste0(output_dir,"/",pset$File_R0_week)
 svglite(paste0(filenamepath,".svg")); print(p); invisible(dev.off())
