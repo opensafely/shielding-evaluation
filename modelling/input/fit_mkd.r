@@ -394,9 +394,10 @@ LogLikelihood = LogLikelihood2;
 #Beta priors
   #PRIOR <- createBetaPrior(3,3,lower = LOWER, upper = UPPER)
   #PRIOR <- createBetaPrior(4,5,lower = LOWER, upper = UPPER)
+  Burnin = round(niter/2)+1 #+1 as "burnin" is the start of effective sample
   PRIOR <- createBetaPrior(3,4,lower = LOWER, upper = UPPER)
   setup  = createBayesianSetup(likelihood=LogLikelihood, prior =PRIOR) #parallel = T,
-  settings = list (iterations = niter, burnin = round(niter*length(LOWER)/15), message=T) #F)
+  settings = list (iterations = niter, burnin = Burnin, message=T) #F) #round(niter*length(LOWER)/15), message=T) #F)
 
 ## Bayesian sample
 tout1 <- system.time(out <- runMCMC(bayesianSetup=setup, settings=settings) )
@@ -479,8 +480,16 @@ pars  <- pars0
 ## Sample the chains
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
 npar      = length(LOWER)
-nsample   = 3000#100#500#1000#;
-psample = getSample(out, parametersOnly = T, numSamples = nsample, start=niter/10) #(niter/3)/3) #parametersOnly = F
+Thin=4
+Chains=3
+StartSampChainPostBurn = 1
+LengtMcmcChainPostBurn = floor((niter-Burnin+1)/Chains)
+LengtSampChainPostBurn = LengtMcmcChainPostBurn - StartSampChainPostBurn + 1
+#nsample = 100#3000#500#1000#;
+nsample = Chains*LengtMcmcChainPostBurn/Thin
+#start-end - for each chain
+psample = getSample(out, parametersOnly = T, start=StartSampChainPostBurn, end= LengtSampChainPostBurn, thin=Thin)
+#dim(psample)#  = c(nsample, npar)
 # run model for each parameter set in the sample
 zsample = matrix(0,length(imodelH),nsample)
 wsample = matrix(0,length(imodelH),nsample)
@@ -598,7 +607,7 @@ print(paste0("kDH,kDO MAP: ", round(parsE$kDH, 3), ". Expected/start: ", round( 
 #print(paste0("kDO   dep: ", round(parsE$kDO,   3), ". Expected/start: ", round(  thetaTrue[8], 3))) #kD
 #print(paste0("rseed MAP: ", round(sum(parsE$rseed), 0), ". Expected/start: ", round(sum(pars$rseed), 0) )) #rseed
 #print(paste0("hA    MAP: ", round(sum(parsE$h)/sum(pars$h),2), ". Expected/start: ", round(1, 0) )) #hA
-print(paste0("h      MAP: ", round(parsSE$h,   4), ". Expected/start: ")) #hA
+print(paste0("h      MAP: ", round(parsE$h,   4), ". Expected/start: ")) #hA
 print(paste0("beta  dep: ", round(parsE$beta,      5) ))
 print(paste0("E0    dep: ", round(sum(parsE$Ea0), 0)  )) #or sum(parsE$Na0*parsE$pE0)
 #print(paste0("H0    dep: ", round(sum(parsE$Ha0),   0))) #or sum(parsE$Na0*parsE$HE0)
@@ -638,7 +647,7 @@ sink()
 
 
 
-##### Plots - overall dataframes ###############################################
+##### Plots - Overall dataframes ###############################################
 N  = pars$Npop
 Nc = pars$Npopcoh
 if(pset$iplatform<2) {weight=1} else {weight=N/Nc}
