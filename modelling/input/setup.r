@@ -9,7 +9,7 @@ pset <- within(pset, {
     imodel   <- 2#1; #2
     ### OpenSafely
     PLATFORM <- c("Simulate", "Fit dummy data", "OpenSafely"); #0, 1, 2
-    iplatform<- 2#0#1#
+    iplatform<- 2#1#0#
     
     ### model fitting
     DOfit    <- 1; #(0=Dont fit, 1=simulated or OS data)
