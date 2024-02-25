@@ -590,11 +590,11 @@ if(pset$iplatform==0){ #simulation: true parameters
 
 
 ##### Summary - txt output
-sink(file = paste0(output_dir,"/","screen.txt"),append=FALSE,split=FALSE)
-  cat("\n")
-  print(paste0(format(Sys.Date(), "%d-%m-%Y"), " - ", format(Sys.time(),'%H.%M.%S_%d-%m-%Y'))); cat("\n")
+SCREEN=0
+if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=FALSE,split=FALSE)
+  cat("\n"); print(paste0(format(Sys.Date(), "%d-%m-%Y"), " - ", format(Sys.time(),'%H.%M.%S_%d-%m-%Y'))); cat("\n")
   print("Summary 1..."); cat("\n")
-sink()
+sink()}
 
 sink(file = paste0(output_dir,"/",pset$File_fit_summary_1),append=FALSE,split=FALSE)
 print(paste0("Likelihood NB"))
@@ -786,29 +786,26 @@ datDOa <- tibble(Weeks = 1 + mE$byw$time[imodelDO]/7 + Week_shift_model,
 #### svg plots #################################################################
 #### Diagnostics
 #1
-sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-  cat("\n"); 
-  print("Fig 1..."); cat("\n")
-sink()
+if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+  cat("\n"); print("Fig 1..."); cat("\n")
+sink()}
 #par(mar =c(0,0,0,0)) # c(0.5, 1, 1, 1)) #ar(mar = c(2, 2, 1, 1))  #bottom, left, top, right
 #p<-marginalPlot(out); print(p)
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_marginalPlot")
 svglite(paste0(filenamepath,".svg")); marginalPlot(out); invisible(dev.off())
 #2-3
-sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-  cat("\n"); 
-  print("Fig 2-3..."); cat("\n")
-sink()
+if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+  cat("\n"); print("Fig 2-3..."); cat("\n")
+sink()}
 par(mar = c(2, 2, 1, 1)) ##bottom, left, top, right
 p<-plot(out); print(p)
 if (pset$iplatform==0){
   filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_plotout_lastPage")
   svglite(paste0(filenamepath,".svg")); plot(out); invisible(dev.off()) }
 #4
-sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-  cat("\n");
-  print("Fig 4..."); cat("\n")
-sink()
+if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+  cat("\n"); print("Fig 4..."); cat("\n")
+sink()}
 par(mar = c(2, 2, 1, 1))
 p<-correlationPlot(out); print(p)
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_correlationPlot")
@@ -817,10 +814,9 @@ svglite(paste0(filenamepath,".svg")); correlationPlot(out); invisible(dev.off())
 
 ### Plot overall
 #5
-sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-  cat("\n"); 
-  print("Fig 5..."); cat("\n")
-sink()
+if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+  cat("\n"); print("Fig 5..."); cat("\n")
+sink()}
 colors <- c(  "I_dat"  = "black",   "I_est" = "red",     "I_model" = "green",
              "H_datw"  = "black",   "H_est" = "red",     "H_model" = "pink",
             "DH_datw"  = "grey",   "DH_est" = "blue",   "DH_model" = "cyan",
@@ -865,10 +861,9 @@ svglite(paste0(filenamepath,".svg")); print(p1); invisible(dev.off())
 ## Plot posterior samples
 #6
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
-sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-  cat("\n"); 
-  print("Fig 6..."); cat("\n")
-sink()
+if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+  cat("\n"); print("Fig 6..."); cat("\n")
+sink()}
 ##
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_PosteriorSample")
 ##
@@ -924,10 +919,9 @@ if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
 colors <- c("0-4" = 1, "05-11" = 2,  "12-17" = 3, "18-29" = 4, "30-39" = 5, 
             "40-49" = 6, "50-59" = 7,  "60-69" = 8, "70+" = 9)
 #7 H
-sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-  cat("\n"); 
-  print("Fig 7..."); cat("\n")
-sink()
+if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+  cat("\n"); print("Fig 7..."); cat("\n")
+sink()}
 p1 <- ggplot() +
     labs(x = 'Date', y = 'Hospitalisations', color = "Legend") +
     #xlim(c(0, NA)) +  ylim(c(0, NA)) + #Don't use with Dates, only with Weeks
@@ -954,10 +948,9 @@ print(p1)
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_AgeProfile_H")
 svglite(paste0(filenamepath,".svg")); print(p1); invisible(dev.off())
 #8 DH
-sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-  cat("\n"); 
-  print("Fig 8..."); cat("\n")
-sink()
+if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+  cat("\n"); print("Fig 8..."); cat("\n")
+sink()}
 p2 <- ggplot() +
     labs(x = 'Date', y = 'Deaths in hospital', color = "Legend") + 
     #xlim(c(0, NA)) +  ylim(c(0, NA)) + #Don't use with Dates, only with Weeks
@@ -984,10 +977,9 @@ print(p2)
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_AgeProfile_DH")
 svglite(paste0(filenamepath,".svg")); print(p2); invisible(dev.off())
 #9 DO
-sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-  cat("\n"); 
-  print("Fig 9..."); cat("\n")
-sink()
+if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+  cat("\n"); print("Fig 9..."); cat("\n")
+sink()}
 p3 <- ggplot() +
     labs(x = 'Date', y = 'Deaths outside hospital', color = "Legend") + 
     scale_color_manual(values = colors) +
@@ -1016,10 +1008,9 @@ svglite(paste0(filenamepath,".svg")); print(p3); invisible(dev.off())
 
 ##summary in text file
 #10
-sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-  cat("\n"); 
-  print("Fig/Tab 10..."); cat("\n")
-sink()
+if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+  cat("\n"); print("Fig/Tab 10..."); cat("\n")
+sink()}
 #plot.new()
 for (i in 1:2){
 filenamepath =  paste0(output_dir,"/",pset$File_fit_summary0,"_",i)
@@ -1036,10 +1027,9 @@ invisible(dev.off())
 
 #need?
 #pdf(file = paste0(output_dir,"/",pset$File_fit_variables), height=nrow(mE$byw)/3)
-sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-  cat("\n"); 
-  print("Fig 11..."); cat("\n")
-sink()
+if(SCREEN==1){ sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+  cat("\n"); print("Fig 11..."); cat("\n")
+sink()}
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_variables")
 svglite(paste0(filenamepath,".svg")) #, height=nrow(mE$byw)/3); #os complained
    plot(1:10)

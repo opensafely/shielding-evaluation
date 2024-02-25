@@ -76,7 +76,7 @@ actions:
         #svg012: output/modelling/J5i_Simul_Infected_and_R0.pdf_4-6.svg
         #txt020: output/modelling/J5i_Simul_run.txt
         #fit
-        txt000: output/modelling/screen.txt
+        #txt000: output/modelling/screen.txt
         html01: output/modelling/J5i_Main_Fit_Report.html
         txt021: output/modelling/J5i_Fit_summary_1.txt
         txt022: output/modelling/J5i_Fit_summary_2.txt  
