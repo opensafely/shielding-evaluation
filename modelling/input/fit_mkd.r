@@ -432,6 +432,7 @@ tout3 <- system.time(out3 <- runMCMC(bayesianSetup=setup, settings=settings) )
 
 
 ## MAP Estimates  ##############################################################
+print("MAP..."); cat("\n")
 parsE     <- pars     #pars setup initially
 MAPE      <- MAP(out) #pasr estimated
 ### UPDATE: @@
@@ -478,6 +479,7 @@ pars  <- pars0
 
 ## UNCERTAINTY  ################################################################
 ## Sample the chains
+print("Sampling..."); cat("\n")
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
 npar      = length(LOWER)
 Thin=4
@@ -588,6 +590,12 @@ if(pset$iplatform==0){ #simulation: true parameters
 
 
 ##### Summary - txt output
+sink(file = paste0(output_dir,"/","screen.txt"),append=FALSE,split=FALSE)
+  cat("\n")
+  print(paste0(format(Sys.Date(), "%d-%m-%Y"), " - ", format(Sys.time(),'%H.%M.%S_%d-%m-%Y'))); cat("\n")
+  print("Summary 1..."); cat("\n")
+sink()
+
 sink(file = paste0(output_dir,"/",pset$File_fit_summary_1),append=FALSE,split=FALSE)
 print(paste0("Likelihood NB"))
 #cat("\n"); 
@@ -619,6 +627,7 @@ print(paste0("Mean by chain and parameter:"))
 print(out$X)
 sink()
 
+print("Summary 2..."); cat("\n")
 sink(file = paste0(output_dir,"/",pset$File_fit_summary_2),append=FALSE,split=FALSE) #append=TRUE,split=FALSE)
 #cat("\n")
 ## Data and model
@@ -648,6 +657,7 @@ sink()
 
 
 ##### Plots - Overall dataframes ###############################################
+print("Data frames..."); cat("\n")
 N  = pars$Npop
 Nc = pars$Npopcoh
 if(pset$iplatform<2) {weight=1} else {weight=N/Nc}
@@ -776,25 +786,41 @@ datDOa <- tibble(Weeks = 1 + mE$byw$time[imodelDO]/7 + Week_shift_model,
 #### svg plots #################################################################
 #### Diagnostics
 #1
-#par(mar = c(0.5, 1, 1, 1)) #ar(mar = c(2, 2, 1, 1))  #bottom, left, top, right
-p<-marginalPlot(out); invisible(print(p))
+sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+  cat("\n"); 
+  print("Fig 1..."); cat("\n")
+sink()
+#par(mar =c(0,0,0,0)) # c(0.5, 1, 1, 1)) #ar(mar = c(2, 2, 1, 1))  #bottom, left, top, right
+#p<-marginalPlot(out); print(p)
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_marginalPlot")
 svglite(paste0(filenamepath,".svg")); marginalPlot(out); invisible(dev.off())
 #2-3
+sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+  cat("\n"); 
+  print("Fig 2-3..."); cat("\n")
+sink()
 par(mar = c(2, 2, 1, 1)) ##bottom, left, top, right
-p<-plot(out); invisible(print(p))
-filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_plotout_lastPage")
+p<-plot(out); print(p)
 if (pset$iplatform==0){
-svglite(paste0(filenamepath,".svg")); plot(out); invisible(dev.off()) }
+  filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_plotout_lastPage")
+  svglite(paste0(filenamepath,".svg")); plot(out); invisible(dev.off()) }
 #4
+sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+  cat("\n");
+  print("Fig 4..."); cat("\n")
+sink()
 par(mar = c(2, 2, 1, 1))
-print(correlationPlot(out))
+p<-correlationPlot(out); print(p)
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_correlationPlot")
 svglite(paste0(filenamepath,".svg")); correlationPlot(out); invisible(dev.off())
 
 
 ### Plot overall
 #5
+sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+  cat("\n"); 
+  print("Fig 5..."); cat("\n")
+sink()
 colors <- c(  "I_dat"  = "black",   "I_est" = "red",     "I_model" = "green",
              "H_datw"  = "black",   "H_est" = "red",     "H_model" = "pink",
             "DH_datw"  = "grey",   "DH_est" = "blue",   "DH_model" = "cyan",
@@ -839,6 +865,10 @@ svglite(paste0(filenamepath,".svg")); print(p1); invisible(dev.off())
 ## Plot posterior samples
 #6
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
+sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+  cat("\n"); 
+  print("Fig 6..."); cat("\n")
+sink()
 ##
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_PosteriorSample")
 ##
@@ -857,7 +887,6 @@ p1 <- ggplot(dzsample, aes(x=Date)) +
        labs(x = 'Date', y = 'Hospitalisations', color = "Legend") + 
        #xlim(c(0, NA)) +  ylim(c(0, zMAX[1])) + #Dont use with Dates, only with Weeks
        scale_color_manual(values = colors) 
-#print(p1)
 
 #DH
 dwsample <- tibble(Date=Datessample, wsample05=wsample95[,1], wsample95=wsample95[,2],  # sample trajectories
@@ -870,7 +899,6 @@ p2 <- ggplot(dwsample, aes(x=Date)) +
   labs(x = 'Date', y = 'Deaths in hospital', color = "Legend") + 
   #xlim(c(0, NA)) +  ylim(c(0, zMAX[1])) + #Dont use with Dates, only with Weeks
   scale_color_manual(values = colors) 
-#print(p2)
 
 #DO
 dvsample <- tibble(Date=Datessample, vsample05=vsample95[,1], vsample95=vsample95[,2],  # sample trajectories
@@ -883,7 +911,7 @@ p3 <- ggplot(dvsample, aes(x=Date)) +
   labs(x = 'Date', y = 'Deaths outside hospital', color = "Legend") + 
   #xlim(c(0, NA)) +  ylim(c(0, zMAX[1])) + #Don't use with Dates, only with Weeks
   scale_color_manual(values = colors) 
-#print(p3)
+
 gridExtra::grid.arrange(p1, p2, p3, nrow = 3)
 
 svglite(paste0(filenamepath,".svg")); 
@@ -893,10 +921,13 @@ invisible(dev.off())
 
 ##Plot by age profiles
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
-
 colors <- c("0-4" = 1, "05-11" = 2,  "12-17" = 3, "18-29" = 4, "30-39" = 5, 
             "40-49" = 6, "50-59" = 7,  "60-69" = 8, "70+" = 9)
 #7 H
+sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+  cat("\n"); 
+  print("Fig 7..."); cat("\n")
+sink()
 p1 <- ggplot() +
     labs(x = 'Date', y = 'Hospitalisations', color = "Legend") +
     #xlim(c(0, NA)) +  ylim(c(0, NA)) + #Don't use with Dates, only with Weeks
@@ -923,6 +954,10 @@ print(p1)
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_AgeProfile_H")
 svglite(paste0(filenamepath,".svg")); print(p1); invisible(dev.off())
 #8 DH
+sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+  cat("\n"); 
+  print("Fig 8..."); cat("\n")
+sink()
 p2 <- ggplot() +
     labs(x = 'Date', y = 'Deaths in hospital', color = "Legend") + 
     #xlim(c(0, NA)) +  ylim(c(0, NA)) + #Don't use with Dates, only with Weeks
@@ -949,6 +984,10 @@ print(p2)
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_AgeProfile_DH")
 svglite(paste0(filenamepath,".svg")); print(p2); invisible(dev.off())
 #9 DO
+sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+  cat("\n"); 
+  print("Fig 9..."); cat("\n")
+sink()
 p3 <- ggplot() +
     labs(x = 'Date', y = 'Deaths outside hospital', color = "Legend") + 
     scale_color_manual(values = colors) +
@@ -977,23 +1016,30 @@ svglite(paste0(filenamepath,".svg")); print(p3); invisible(dev.off())
 
 ##summary in text file
 #10
+sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+  cat("\n"); 
+  print("Fig/Tab 10..."); cat("\n")
+sink()
 #plot.new()
 for (i in 1:2){
 filenamepath =  paste0(output_dir,"/",pset$File_fit_summary0,"_",i)
 txt = readLines(paste0(filenamepath,".txt"))
 if(i==1){
 plot.new()
-gridExtra::grid.table(txt, theme=ttheme_default(base_size = 3, padding = unit(c(1, 1),"mm") ))
-#p<-gridExtra::grid.table(txt, theme=ttheme_default(base_size = 4, padding = unit(c(1, 1),"mm") ))
-#print(p)
+p<-gridExtra::grid.table(txt, theme=ttheme_default(base_size = 2, padding = unit(c(1, 1),"mm") )) #4, padding = unit(c(1, 1),"mm") ))
+print(p)
 }
 svglite(paste0(filenamepath,".svg")); 
-print(gridExtra::grid.table(txt, theme=ttheme_default(base_size = 6, padding = unit(c(1, 1),"mm") )) ); 
+print(gridExtra::grid.table(txt, theme=ttheme_default(base_size = 2, padding = unit(c(1, 1),"mm") )) ); #6, padding = unit(c(1, 1),"mm") )) ); 
 invisible(dev.off())
 }
 
 #need?
 #pdf(file = paste0(output_dir,"/",pset$File_fit_variables), height=nrow(mE$byw)/3)
+sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+  cat("\n"); 
+  print("Fig 11..."); cat("\n")
+sink()
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_variables")
 svglite(paste0(filenamepath,".svg")) #, height=nrow(mE$byw)/3); #os complained
    plot(1:10)
