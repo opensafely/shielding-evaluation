@@ -110,11 +110,14 @@ DAT <- DAT                                                %>%
                 dplyr::contains("hosp_admitted"),              # date,    "covid_hosp_admitted_{n}",
                 dplyr::contains("hosp_discharge"),             # date,    "covid_hosp_admitted_{n}",
                 ons_death_date,                                # date,    covid death
+                highrisk_shield,                               # date,    hirisk_shield_codes.date
+                                                               #          \first_for_patient().date
+                hirisk_shield_count,                           # number:  0:n, hirisk_shield_codes.count_for_patient()
                 shielding,                                     # factor:  High Risk, Low/Moderate risk, No shielding
                 shielding_v1_startdate,                        # date,    High Risk before 2020-04-21 - NA if binary=0
                 shielding_v1_binary,                           # logical: T/F,  High Risk before 2020-04-21
-                dplyr::contains("hirisk_codedate"),            # date,    when received 1st-6th high risk flag
-                hirisk_shield_count)                       %>% # number:  0:n, high risk flags received per patient
+                dplyr::contains("hirisk_codedate"))     %>%    # date,    got 1st-6th hr flag - hirisk_codedate_{n}
+
   ###carehome flag
   mutate(carehome = as.factor(ifelse(care_home==TRUE | care_home_nursing==TRUE, 1, 0)) ) %>% 
   mutate(carehome = replace(carehome, is.na(carehome), as.factor(0))) %>% # number: 0:1 - resident in care home with or without nursing
@@ -132,8 +135,13 @@ DAT <- DAT                                                %>%
   #Adding variables:
   mutate(ageg     = as.integer(factor(age_cat)))           %>% # factor: 1:9 <> 0-4 5-11 12-17 18-29 30-39 40-49 50-59 60-69 70+ 
   ###Shielding flag
-  mutate(shield   = as.factor(ifelse(shielding=="High Risk",1,0)))  %>% # factor: 0:1 - ever shielded (had high risk flag)
-  mutate(shield   = replace(shield, is.na(shield), as.factor(0)))   %>% # TODO: test shield_date < admission_date & < death_date
+  mutate(shield   = as.factor(ifelse(shielding=="High Risk",1,0)))  %>% # factor: 0:1 - ever shielded (had HR flag)
+  mutate(shield   = replace(shield, is.na(shield), as.factor(0)))   %>% # TODO: test shield_date < admission_date & < 
+  #shielding flag - up to 2020-12-01
+  mutate(shieldA  = as.factor(ifelse(hirisk_codedate_1<"2020-12-02",1,0))) %>% # factor: 0:1-ever shield, had HR flag
+  mutate(shieldB  = as.factor(ifelse(highrisk_shield<"2020-12-02",1,0)))   %>% # factor: 0:1-ever shield, had HR flag
+  mutate(shieldA  = replace(shieldA, is.na(shieldA), as.factor(0))) %>% # TODO:test shield_date< admi_date &death_date
+  mutate(shieldA  = replace(shieldB, is.na(shieldB), as.factor(0))) %>% # TODO:test shield_date< admi_date &death_date
   ###Shielding flag, but prior 2020-04-21
   mutate(shield1  = ifelse(shielding_v1_binary==TRUE,1,0)) %>% # number: 0:1 - hHigh Risk before 2020-04-21
   mutate(shield1  = ifelse(is.na(shield1), 0, shield1))    %>% #
@@ -147,9 +155,9 @@ DAT <- DAT                                                %>%
   mutate(discharge_date = covid_hosp_discharge_1)          %>%
   ###(Discarded) Refer discharge to last discharge
   ###Vars replaced by numeric/factor flags
-  select(-c(dplyr::contains("hirisk"), shielding, 
+  select(-c(dplyr::contains("hirisk"), shielding, highrisk_shield,
             shielding_v1_binary, shielding_v1_startdate))    %>%   # no longer need 
-  ###For now, drop thes
+  ###For now, drop these
   select(-c(shield1,shield1_date))
 
 names1 = names(DAT)
