@@ -12,9 +12,9 @@ pars <- within(pars, {
     #total contacts (adhoc normalisation) - JF25jan24 plot of EL data
     #c <- c(1.0, 1.05, 1.0, 0.46, 0.53, 0.55, 0.45, 0.40, 0.30) # round(c/min(c),4) - min <> 70+ (more confident of h agreement)
     c <- c(3.3333, 3.5000, 3.3333, 1.5333, 1.7667, 1.8333, 1.5000, 1.3333, 1.0000)
-    h2 <- c(0.0012, 0.0013, 0.0023, 0.0259, 0.0342, 0.0484, 0.0985, 0.1228, 0.4835) #round(hcoh/(c/min(c)),4)
-    #h3 <- round((hcoh/ageons)*(h[9]/max(hcoh/ageons))/c,4)
-    h3 <- c(0.0034, 0.0020, 0.0044, 0.0231, 0.0342, 0.0514, 0.0974, 0.1550, 0.4755)
+    h02 <- c(0.0012, 0.0013, 0.0023, 0.0259, 0.0342, 0.0484, 0.0985, 0.1228, 0.4835) #round(hcoh/(c/min(c)),4)
+    #h03 <- round((hcoh/ageons)*(h[9]/max(hcoh/ageons))/c,4)
+    h03 <- c(0.0034, 0.0020, 0.0044, 0.0231, 0.0342, 0.0514, 0.0974, 0.1550, 0.4755)
            #close to h (Davies), but less steep rise with age
 
     #Mortality fraction
@@ -43,7 +43,7 @@ pars <- within(pars, {
     na     <- 9               #age groups
     nw     <- 52              #week length of model run
     iw1    <- 1+(0:(nw-1))*7/dt  ##vector indices at start of each week (starts at 1, for R, apply "-1" for c++)
-    rseed  <- 5*ageons #2*84*ageons     #external infections, each age group, 2/county/day, 84 counties (regardless of internal contact matrix)
+    rseed  <- 2*84*ageons# 5*ageons  #external infections, each age group, 2/county/day, 84 counties (regardless of internal contact matrix)
                               #[1]  7.912914 14.823979 11.767488 25.465660 22.702932 21.361472 22.940659 17.965372 23.059523
     rEI    <- 1/3 #1/10#1/4 #1/3   #latency, Davies Nat Med
     rEU    <- rEI             #latency
@@ -53,9 +53,8 @@ pars <- within(pars, {
     rHR    <- 1/12.00 #1/8.6  #recovery rate in hospital - updated 30jan from full reporting in cohort
     rHD    <- 1/13.91 #rHR    #death rate in hospital    - updated 30jan from full reporting in cohort	
     #rHD    <- rHR            #death rate in hospital, Roz - varied during pandemic; 7d in Davies Lancet PH
-    rIO    <- rIH             #death outside hospital - assumed here
-    #rID    <- 1/(1/rIH+0.5/rHD) #death outside hospital - assumed here
-    rOD    <- rHD #1/(1/rIH+1/rHD) #delay in death outside hospital vs death since infection via hospital
+    rID    <- 1/(1/rIH+1/rHD) #death outside hospital - assumed here
+    #rOD    <- rHD #1/(1/rIH+1/rHD) #delay in death outside hospital vs death since infection via hospital
     rRS    <- 0
     rC     <- 1/8.5           #rate of loss of positivity, Davies Lancet ID
     R0     <- 2.23 #3         #2020-wild-type basic reproduction rate, Knock et al 2021
