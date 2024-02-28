@@ -384,7 +384,7 @@ LogLikelihood2 <- function(theta){
 
 
 ## Likelihood definition, parameter ranges  ####################################
-niter = 6000#120000 #3000 #30000#9000 #200000
+niter = 120000 #6000#3000 #30000#9000 #200000
 #LOWER = c(rep(0,2),               0,          0,                  0,                
 #          pkLower, pkLower2, rep(0,7)); #kDO
 #UPPER = c(rep(log(hMax/hMin),2),  log(R0Max), log(pE0Max/pE0Min), log(adMax/adMin), 
