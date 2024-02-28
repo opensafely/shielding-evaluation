@@ -135,13 +135,13 @@ DAT <- DAT                                                %>%
   #Adding variables:
   mutate(ageg     = as.integer(factor(age_cat)))           %>% # factor: 1:9 <> 0-4 5-11 12-17 18-29 30-39 40-49 50-59 60-69 70+ 
   ###Shielding flag
-  mutate(shield   = as.factor(ifelse(shielding=="High Risk",1,0)))  %>% # factor: 0:1 - ever shielded (had HR flag)
-  mutate(shield   = replace(shield, is.na(shield), as.factor(0)))   %>% # TODO: test shield_date < admission_date & < 
+  #mutate(shield   = as.factor(ifelse(shielding=="High Risk",1,0)))  %>% # factor: 0:1 - ever shielded (had HR flag)
+  #mutate(shield   = replace(shield, is.na(shield), as.factor(0)))   %>% # TODO: test shield_date < admission_date & <
   #shielding flag - up to 2020-12-01
-  mutate(shieldA  = as.factor(ifelse(hirisk_codedate_1<"2020-12-02",1,0))) %>% # factor: 0:1-ever shield, had HR flag
+  mutate(shield   = as.factor(ifelse(hirisk_codedate_1<"2020-12-02",1,0))) %>% # factor: 0:1-ever shield, had HR flag
   mutate(shieldB  = as.factor(ifelse(highrisk_shield<"2020-12-02",1,0)))   %>% # factor: 0:1-ever shield, had HR flag
-  mutate(shieldA  = replace(shieldA, is.na(shieldA), as.factor(0))) %>% # TODO:test shield_date< admi_date &death_date
-  mutate(shieldA  = replace(shieldB, is.na(shieldB), as.factor(0))) %>% # TODO:test shield_date< admi_date &death_date
+  mutate(shield   = replace(shield, is.na(shield), as.factor(0))) %>% # TODO:test shield_date< admi_date &death_date
+  mutate(shieldB  = replace(shieldB, is.na(shieldB), as.factor(0))) %>% # TODO:test shield_date< admi_date &death_date
   ###Shielding flag, but prior 2020-04-21
   mutate(shield1  = ifelse(shielding_v1_binary==TRUE,1,0)) %>% # number: 0:1 - hHigh Risk before 2020-04-21
   mutate(shield1  = ifelse(is.na(shield1), 0, shield1))    %>% #
