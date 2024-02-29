@@ -288,7 +288,7 @@ h3oh9 = pars$h[3]/pars$h[9]
 #=> use h1oh9 = h2oh9
 
 source(file = paste0(input_dir,"/BETA.r")) #Used within Likelihood2
-LogLikelihood2 <- function(theta){
+LogLikelihood <- function(theta){
   ### UPDATE: @@
   ###         proposal pars$
   ###         MAP      parsE$, 
@@ -311,12 +311,12 @@ LogLikelihood2 <- function(theta){
   h7       = exp(-theta[12] + loghMax)
   h8       = exp(-theta[13] + loghMax)
   h9       = exp(-theta[14] + loghMax)
+
+  #Dependent parameters
   h1       = h1oh9*h9
   h2       = h2oh9*h9
   h3       = h3oh9*h9
   pars$h   = c(h1, h2, h3, h4, h5, h6, h7, h8, h9)
-
-  #Dependent parameters
   pars$rseed = Arseed*pars$ageons
   pars$Ea0   = pars$Na0*pars$pE0
   pars$Sa0 = pars$Na0 - pars$Ea0 - pars$Ia0 - pars$Ua0 - pars$Ha0 - pars$Oa0 - pars$Ra0 - pars$Da0   
@@ -394,9 +394,7 @@ niter = 120000 #6000#3000 #30000#9000 #200000
 LOWER = c(pkLower, pkLower2, 1/tMax, 1/tMax2, 0,                        0,          0,
           0,                 rep(0,6));
 UPPER = c(pkUpper, pkUpper2, 1,      1,       log(ArseedMax/ArseedMin), log(R0Max), log(pE0Max/pE0Min),
-          log(adMax/adMin),  rep(log(hMax/hMin),7));
-
-LogLikelihood = LogLikelihood2; 
+          log(adMax/adMin),  rep(log(hMax/hMin),6));
 
 
 #Uniform priors
