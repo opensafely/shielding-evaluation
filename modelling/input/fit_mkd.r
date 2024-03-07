@@ -187,13 +187,13 @@ model <- SEIUHRD
 ### can only initialise: Ha0[] and Da0[]
 ### can be inconsistent with other state variables, which, except for Ea0, are assumed=0
 # Ea0 >0 => Ia and Ua increase afterwards (while one of Ia0 or Ua0 wont do that)
-if (pset$iplatform==2){ #>0
+if (pset$iplatform==2 & pset$DataIC==1){ #>0
 for (i in 1:9){ #assigining current incidence to  state variables (neglecting remains of state from previously)
   valueH  = which( datHa_l$ageg==i &  datHa_l$Week==Week1_Fit_H)
   valueDH = which(datDHa_l$ageg==i & datDHa_l$Week==Week1_Fit_H)
   valueDO = which(datDOa_l$ageg==i & datDOa_l$Week==Week1_Fit_H)
-  pars$Ha0[i] =  datHa_l$freq[valueH]
-  pars$Da0[i] = datDHa_l$freq[valueDH] + datDOa_l$freq[valueDO]
+  pars$Ha0[i] =  datHa_l$Freq[valueH]
+  pars$Da0[i] = datDHa_l$Freq[valueDH] + datDOa_l$Freq[valueDO]
 }}
   
 
