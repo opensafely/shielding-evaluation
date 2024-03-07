@@ -14,6 +14,9 @@ pset <- within(pset, {
     ### model fitting
     DOfit    <- 1; #(0=Dont fit, 1=simulated or OS data)
     
+    ### model data-based IC
+    DataIC   <- 1; #(0=Dont use, 1=use)
+    
     ### model output length (weeks)
     nw       <- 52 #week length of run - resolution of contact matrix (really two weeks)
     
