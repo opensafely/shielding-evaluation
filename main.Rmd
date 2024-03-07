@@ -47,7 +47,7 @@ Fit: Select parameters, run mcmc, see outputs.
 # 0-SET UP
 TIME  = format(Sys.time(),'%H.%M.%S_%d-%m-%Y')
 
-#jobno = "J5_" - use pset$Job
+#jobno = "J5k_" - use pset$Job
 
 #wd=repo
 input_dir  <- paste0(getwd(),"/modelling/input")
@@ -120,6 +120,7 @@ print("Main.Rmd: sourced parameters.r")
 ### Return: pars$beta
 ### Output: Simul_R0_by_week.csv
 source(file = paste0(input_dir,"/R0.r"), local = knitr::knit_global())
+r0 = R0(pars=pars,GetBeta=1,GetOutput=1)
 print("Main.Rmd: sourced R0.r")
 
 ```
