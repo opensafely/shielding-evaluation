@@ -2,7 +2,11 @@
 
 ## Compile & run model (weekly points) #########################################
 sourceCpp(file = paste0(input_dir,"/",pset$File_model_choice))
-
+## Get beta for given R0
+## (must have sourced R0.r and run r0=R0(pars=pars,GetBeta=1,GetOutput=1))
+pars$beta = r0[[1]]$beta
+#pars$beta=1
+print(paste0("R0 = ", pars$R0, ",  beta = ", round(pars$beta,2)))
 t1<- system.time( mout <- SEIUHRD(pars) )
 
 ## Test Rcpp code:
@@ -126,7 +130,12 @@ points(1:nd,vd, pch=21, col=4); lines(1:nd,vm,col=4)
 cat("\n")
 print("Simulation plots")
 cat("\n")
+
 #### Plot model and R0
+#### (must have sourced R0.r and run r0=R0(pars=pars,GetBeta=1,GetOutput=1))
+R0_week = r0[[2]]$R0_week
+
+#### dataframes
 N <- pars$Npop
 #panel 1, 2
 datM <- tibble( Weeks = mout$byw$time, 

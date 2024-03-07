@@ -81,7 +81,7 @@ if (pset$iplatform==0) {
   print(paste0("#DO model pts used,  #: ", length(imodelDO), ", list: ", range(imodelDO)[1],"...",range(imodelDO)[2]))  #41, 1...41
   
   Week1_Model  = lubridate::week("2020-01-27") #"2020-02-24")   #[1]  8 #from SEIR_contacts
-  Week2_Model  = lubridate::week("2021-01-17")+53 #no.weeks in 2020 = 53
+  Week2_Model  = lubridate::week("2021-01-17")+52 #only days #3 #no.weeks in 2020 = 53
   Week_shift_model = 0
   
 } else { #if iplatform>0
@@ -182,6 +182,21 @@ sourceCpp(file = paste0(input_dir,"/",pset$File_model_choice)) }
 model <- SEIUHRD
 
 
+### Model IC based on data
+### (no merging, as only applies to data fitting)
+### can only initialise: Ha0[] and Da0[]
+### can be inconsistent with other state variables, which, except for Ea0, are assumed=0
+# Ea0 >0 => Ia and Ua increase afterwards (while one of Ia0 or Ua0 wont do that)
+if (pset$iplatform==2){ #>0
+for (i in 1:9){ #assigining current incidence to  state variables (neglecting remains of state from previously)
+  valueH  = which( datHa_l$ageg==i &  datHa_l$Week==Week1_Fit_H)
+  valueDH = which(datDHa_l$ageg==i & datDHa_l$Week==Week1_Fit_H)
+  valueDO = which(datDOa_l$ageg==i & datDOa_l$Week==Week1_Fit_H)
+  pars$Ha0[i] =  datHa_l$freq[valueH]
+  pars$Da0[i] = datDHa_l$freq[valueDH] + datDOa_l$freq[valueDO]
+}}
+  
+
 #### Weighing the data vs model
 if(pset$iplatform==2){
   
@@ -246,81 +261,60 @@ for (i in (9-ndDO+1):9){ #weekly incidence of deaths in hospital
 
 
 ### Parameter bounds
-pkLower  = 0.1       #1/k^2, NB likelihood and data
-pkLower2 = 0.1       #Assume: same kD for DH and DO
-pkUpper  = 5
-pkUpper2 = 5
+pkMin  = 0.1  #1/k^2, NB likelihood and data
+pkMax  = 5    #Assume: same kD for DH and DO
 
-tMax     = 10
-tMax2    = 30
+tMax     = 20 #10
+tMax2    = 50 #30
+tMin     = 1  #implicit in LOWER and par resacaling
+tMin2    = 1  #implicit in UPPER and par resacaling
 
-ArseedMin = 0.1
-ArseedMax = (2*84/9)*2
-logArseedMax = log(ArseedMax)
 
-R0Max    = 10
+ArseedMin = 0
+ArseedMax = (2*84)*2 #sum(pars$rseed)*2
+
+R0Max    = 20 #10
+R0Min    = 0.01
 
 pE0Max   = 0.10
 pE0Min   = 0.00001   #pop = 565.5
-logpE0Max= log(pE0Max)
 
 adMax    = 0.99
 adMin    = 0.0099
-logadMax = log(adMax)
+
+hAMax    = 2 #1
+hAMin    = 0.01
 
 hMax    = 0.99
 hMin    = 0.00001
-loghMax = log(hMax)
-#hAMax    = 1
-#hAMin    = 0.01
-#loghAMax = log(hAMax)
 
-#pH0Max   = 0.05
-#pH0Min   = 0.000001   #0.005  #pop = 56.55
-#logpH0Max= log(pH0Max)
 
 ### LIKELIHOOD FUNCTION
-h2oh9 = pars$h[2]/pars$h[9]
-h1oh9 = h2oh9
-h3oh9 = pars$h[3]/pars$h[9]
-#> pars$h[1:3]/pars$h[9]
-#[1] 0.000000000 0.004837014 0.016824395
-#=> use h1oh9 = h2oh9
 
-source(file = paste0(input_dir,"/BETA.r")) #Used within Likelihood2
+source(file = paste0(input_dir,"/BETA.r")) #Used within Likelihood
 LogLikelihood <- function(theta){
   ### UPDATE: @@
   ###         proposal pars$
   ###         MAP      parsE$, 
   ###         sample   parsES$
   ### Proposed parameters
-  kH       = 1/(  theta[1]*theta[1])    # pk = theta = 1/sqrt(k) => k = 1/pk^2
-  kDH      = 1/(  theta[2]*theta[2])
+  pars$rEI = 1/(  theta[1]*tMax)
+  pars$rID = 1/(  theta[2]*tMax2)
+  pars$R0  =      theta[3]^2
+  pars$pE0 =      theta[4]
+  Arseed   =      theta[5]
+  hA       =      theta[6] #hAMin+theta[]*(hAMax-hAMin)
+  pars$ad  =      theta[7] #adMin+theta[]*(adMax-adMin)
+  kH       = 1/(  theta[8]*theta[8])    # pk = theta = 1/sqrt(k) => k = 1/pk^2
+  kDH      = 1/(  theta[9]*theta[9])
   kDO      = kDH
   #kDO      = 1/(  theta[3]*theta[3])
-  pars$rEI = 1/(  theta[3]*tMax)
-  pars$rID = 1/(  theta[4]*tMax2)
-  #pars$rIR = 1/(  theta[2]*tMax)
-  Arseed   = exp(-theta[5]  + logArseedMax)
-  pars$R0  = exp( theta[6])             #*logR0Max)#*R0Max 
-  pars$pE0 = exp(-theta[7]  + logpE0Max) #
-  pars$ad  = exp(-theta[8]  + logadMax)
-  h4       = exp(-theta[9]  + loghMax)
-  h5       = exp(-theta[10] + loghMax)
-  h6       = exp(-theta[11] + loghMax)
-  h7       = exp(-theta[12] + loghMax)
-  h8       = exp(-theta[13] + loghMax)
-  h9       = exp(-theta[14] + loghMax)
-
   #Dependent parameters
-  h1       = h1oh9*h9
-  h2       = h2oh9*h9
-  h3       = h3oh9*h9
-  pars$h   = c(h1, h2, h3, h4, h5, h6, h7, h8, h9)
+  pars$h     = hA*pars$h
   pars$rseed = Arseed*pars$ageons
   pars$Ea0   = pars$Na0*pars$pE0
-  pars$Sa0 = pars$Na0 - pars$Ea0 - pars$Ia0 - pars$Ua0 - pars$Ha0 - pars$Oa0 - pars$Ra0 - pars$Da0   
-  pars$beta= BETA(pars) 
+  pars$Sa0   = pars$Na0 - pars$Ea0 - pars$Ia0 - pars$Ua0 - pars$Ha0 - pars$Oa0 - pars$Ra0 - pars$Da0   
+  pars$beta  = BETA(pars) 
 
   ### Model outputs (from Rcpp, given the proposed parameters)
   m <- model(pars)
@@ -384,18 +378,15 @@ LogLikelihood <- function(theta){
 
 
 ## Likelihood definition, parameter ranges  ####################################
-niter = 120000 #6000#3000 #30000#9000 #200000
+niter = 120000 #30000#6000#3000 #9000 #200000
 #LOWER = c(rep(0,2),               0,          0,                  0,                
 #          pkLower, pkLower2, rep(0,7)); #kDO
 #UPPER = c(rep(log(hMax/hMin),2),  log(R0Max), log(pE0Max/pE0Min), log(adMax/adMin), 
 #          pkUpper, pkUpper2, rep(log(hMax/hMin),7));
 
-          #kH,     kD,       rEI,    rID,     Arseed,                   R0,         pE0,    #ad, h4-h9
-LOWER = c(pkLower, pkLower2, 1/tMax, 1/tMax2, 0,                        0,          0,
-          0,                 rep(0,6));
-UPPER = c(pkUpper, pkUpper2, 1,      1,       log(ArseedMax/ArseedMin), log(R0Max), log(pE0Max/pE0Min),
-          log(adMax/adMin),  rep(log(hMax/hMin),6));
-
+          #kH,     kD,       rEI,    rID,     Arseed,    R0,           pE0,     ad,     hA
+LOWER = c(1/tMax, 1/tMax2, sqrt(R0Min),  pE0Min,  ArseedMin, hAMin, adMin,  pkMin, pkMin);
+UPPER = c(1,      1,       sqrt(R0Max),  pE0Max,  ArseedMax, hAMax, adMax,  pkMax, pkMax);
 
 #Uniform priors
   #PARSTART = 0.5*UPPER
@@ -403,10 +394,8 @@ UPPER = c(pkUpper, pkUpper2, 1,      1,       log(ArseedMax/ArseedMin), log(R0Ma
   #setup    = createBayesianSetup(likelihood=LogLikelihood, lower = LOWER, upper = UPPER) #parallel = T,
   #settings = list (startValue=t(array(PARSTART,dim=c(length(PARSTART),nchain))), iterations = niter, burnin = round(niter*length(LOWER)/15), message=T) #F)
 #Beta priors
-  #PRIOR <- createBetaPrior(3,3,lower = LOWER, upper = UPPER)
-  #PRIOR <- createBetaPrior(4,5,lower = LOWER, upper = UPPER)
-  Burnin = round(niter/2)+1 #+1 as "burnin" is the start of effective sample
-  PRIOR <- createBetaPrior(3,4,lower = LOWER, upper = UPPER)
+  Burnin = round(niter/2)+1  #round(niter/4)+1 #+1 as "burnin" is the start of effective sample
+  PRIOR <- createBetaPrior(3,3,lower = LOWER, upper = UPPER)
   setup  = createBayesianSetup(likelihood=LogLikelihood, prior =PRIOR) #parallel = T,
   settings = list (iterations = niter, burnin = Burnin, message=T) #F) #round(niter*length(LOWER)/15), message=T) #F)
 
@@ -451,47 +440,37 @@ MAPE      <- MAP(out) #pasr estimated
 ###         MAP      parsE$, 
 ###         sample   parsES$
 #kH,     kD,       rEI,    rID,     Arseed,         R0,         pE0,    #ad, h4-h9
-parsE$kH  <- 1/(  MAPE$parametersMAP[1]^2) #1/pk^2
-parsE$kDH <- 1/(  MAPE$parametersMAP[2]^2)
+parsE$rEI <- 1/(  as.vector(MAPE$parametersMAP[1]*tMax))
+parsE$rID <- 1/(  as.vector(MAPE$parametersMAP[2]*tMax2))
+parsE$R0  <-      as.vector(MAPE$parametersMAP[3]^2)
+parsE$pE0 <-      as.vector(MAPE$parametersMAP[4])
+ArseedE   <-      as.vector(MAPE$parametersMAP[5])
+hAE       <-      as.vector(MAPE$parametersMAP[6])
+parsE$ad  <-      as.vector(MAPE$parametersMAP[7])
+parsE$kH  <- 1/(  as.vector(MAPE$parametersMAP[8]^2)) #1/pk^2
+parsE$kDH <- 1/(  as.vector(MAPE$parametersMAP[9]^2))
 parsE$kDO <- parsE$kDH
-parsE$rEI <- 1/(  MAPE$parametersMAP[3]*tMax)
-parsE$rID <- 1/(  MAPE$parametersMAP[4]*tMax2)
-ArseedE   <- exp(-MAPE$parametersMAP[5]  + logArseedMax)
-parsE$R0  <- exp( MAPE$parametersMAP[6])
-parsE$pE0 <- exp(-MAPE$parametersMAP[7]  + logpE0Max)
-parsE$ad  <- exp(-MAPE$parametersMAP[8]  + logadMax)
-h4E       <- exp(-MAPE$parametersMAP[9]  + loghMax)
-h5E       <- exp(-MAPE$parametersMAP[10] + loghMax)
-h6E       <- exp(-MAPE$parametersMAP[11] + loghMax)
-h7E       <- exp(-MAPE$parametersMAP[12] + loghMax)
-h8E       <- exp(-MAPE$parametersMAP[13] + loghMax)
-h9E       <- exp(-MAPE$parametersMAP[14] + loghMax)
-h1E       <- h1oh9*h9E
-h2E       <- h2oh9*h9E
-h3E       <- h3oh9*h9E
-parsE$h   <- c(h1E, h2E, h3E, h4E, h5E, h6E, h7E, h8E, h9E)
-
 #Dependent parameters
+parsE$h     =       hAE*parsE$h
 parsE$rseed =   ArseedE*pars$ageons
 parsE$Ea0   = parsE$Na0*parsE$pE0
-#parsE$Ha0 = parsE$Na0*parsE$pH0
-parsE$Sa0 = parsE$Na0 - parsE$Ea0 - parsE$Ia0 - parsE$Ua0 - parsE$Ha0 - parsE$Oa0 - parsE$Ra0 - parsE$Da0   
-parsE$beta= BETA(parsE)
-#predictions
+parsE$Sa0   = parsE$Na0 - parsE$Ea0 - parsE$Ia0 - parsE$Ua0 - parsE$Ha0 - parsE$Oa0 - parsE$Ra0 - parsE$Da0   
+parsE$beta  = BETA(parsE)
+#Predictions
 mE        <- model(parsE)
-#R0_week using MAP
-pars0 <- pars
-pars  <- parsE
-source(file = paste0(input_dir,"/R0.r")) #uses pars (Not parsE)
-pars  <- pars0
+#R0_week using MAP-parameters
+source(file = paste0(input_dir,"/R0.r"))
+R0_weekE = R0(parsE, GetBeta=0, GetOutput=1, Sampling=1)[[2]]$R0_week
+#Note: R0(parsE, GetBeta=0, GetOutput=1, Sampling=1)[[1]]$R0 - same as parsE$R0
 
 
-## UNCERTAINTY  ################################################################
+## Credible Intervals ##########################################################
 ## Sample the chains
 print("Sampling..."); cat("\n")
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
-npar      = length(LOWER)
-Thin=4
+
+npar = length(LOWER)
+Thin=4#2#4
 Chains=3
 StartSampChainPostBurn = 1
 LengtMcmcChainPostBurn = floor((niter-Burnin+1)/Chains)
@@ -499,41 +478,33 @@ LengtSampChainPostBurn = LengtMcmcChainPostBurn - StartSampChainPostBurn + 1
 #nsample = 100#3000#500#1000#;
 nsample = Chains*LengtMcmcChainPostBurn/Thin
 #start-end - for each chain
-psample = getSample(out, parametersOnly = T, start=StartSampChainPostBurn, end= LengtSampChainPostBurn, thin=Thin)
+#Note: parametersOnly = N = gives extra: Lposterior Llikelihood     Lprior
+psample = getSample(out, parametersOnly = N, start=StartSampChainPostBurn, end= LengtSampChainPostBurn, thin=Thin)
 #dim(psample)#  = c(nsample, npar)
 # run model for each parameter set in the sample
 zsample = matrix(0,length(imodelH),nsample)
 wsample = matrix(0,length(imodelH),nsample)
 vsample = matrix(0,length(imodelH),nsample)
-parsES  = pars
+parsES  = pars #parsE
 ### UPDATE: @@
 ###         proposal pars$
 ###         MAP      parsE$, 
 ###         sample   parsES$
 for(i in 1:nsample){
   #kH,     kD,       rEI,    rID,     Arseed,         R0,         pE0,    #ad, h4-h9
-  parsES$rEI <- 1/(  as.vector(psample[i,3])*tMax)
-  parsES$rID <- 1/(  as.vector(psample[i,4])*tMax2)
-  ArseedES   <- exp(-as.vector(psample[i,5])  + logArseedMax)
-  parsES$R0  <- exp( as.vector(psample[i,6]))
-  parsES$pE0 <- exp(-as.vector(psample[i,7])  + logpE0Max)
-  parsES$ad  <- exp(-as.vector(psample[i,8])  + logadMax)
-  h4ES       <- exp(-as.vector(psample[i,9])  + loghMax)
-  h5ES       <- exp(-as.vector(psample[i,10]) + loghMax)
-  h6ES       <- exp(-as.vector(psample[i,11]) + loghMax)
-  h7ES       <- exp(-as.vector(psample[i,12]) + loghMax)
-  h8ES       <- exp(-as.vector(psample[i,13]) + loghMax)
-  h9ES       <- exp(-as.vector(psample[i,14]) + loghMax)
-  h1ES       <- h1oh9*h9ES
-  h2ES       <- h2oh9*h9ES
-  h3ES       <- h3oh9*h9ES
-  parsES$h   <- c(h1ES, h2ES, h3ES, h4ES, h5ES, h6ES, h7ES, h8ES, h9ES)
-
+  parsES$rEI <- 1/(  as.vector(psample[i,1])*tMax)
+  parsES$rID <- 1/(  as.vector(psample[i,2])*tMax2)
+  parsES$R0  <-      as.vector(psample[i,3])^2
+  parsES$pE0 <-      as.vector(psample[i,4])
+  ArseedES   <-      as.vector(psample[i,5])
+  hAES       <-      as.vector(psample[i,6])
+  parsES$ad  <-      as.vector(psample[i,7])
   #Dependent parameters
-  parsES$rseed =   ArseedES*pars$ageons
-  parsES$Ea0   = parsES$Na0*parsES$pE0
-  parsES$Sa0 = parsES$Na0 - parsES$Ea0 - parsES$Ia0 - parsES$Ua0 - parsES$Ha0 - parsES$Oa0 - parsES$Ra0 - parsES$Da0 
-  parsES$beta= BETA(parsES)
+  parsES$h    =       hAES*pars$h #parsES$h
+  parsES$rseed=   ArseedES*pars$ageons
+  parsES$Ea0  = parsES$Na0*parsES$pE0
+  parsES$Sa0  = parsES$Na0 - parsES$Ea0 - parsES$Ia0 - parsES$Ua0 - parsES$Ha0 - parsES$Oa0 - parsES$Ra0 - parsES$Da0 
+  parsES$beta = BETA(parsES)
   outs        = model(as.vector(parsES))
   zsample[,i] = outs$byw$Hw[imodelH]
   wsample[,i] = outs$byw$DHw[imodelH]
@@ -545,18 +516,51 @@ Datessample = as.Date(paste(Weekssample, "2020", 'Mon'), '%U %Y %a') #Checked: "
 zsample95 = matrix(0,length(imodelH),2)
 wsample95 = matrix(0,length(imodelH),2)
 vsample95 = matrix(0,length(imodelH),2)
+q1=0.01 #0.05
+q2=0.99 #0.95
 for(it in 1:length(imodelH)){
   samp_it <- zsample[it,]
-  zsample95[it,1] = quantile(samp_it,0.05)
-  zsample95[it,2] = quantile(samp_it,0.95)
+  zsample95[it,1] = quantile(samp_it,q1)[[1]]
+  zsample95[it,2] = quantile(samp_it,q2)[[1]]
   samp_it <- wsample[it,]
-  wsample95[it,1] = quantile(samp_it,0.05)
-  wsample95[it,2] = quantile(samp_it,0.95)
+  wsample95[it,1] = quantile(samp_it,q1)[[1]]
+  wsample95[it,2] = quantile(samp_it,q2)[[1]]
   samp_it <- vsample[it,]
-  vsample95[it,1] = quantile(samp_it,0.05)
-  vsample95[it,2] = quantile(samp_it,0.95) 
+  vsample95[it,1] = quantile(samp_it,q1)[[1]]
+  vsample95[it,2] = quantile(samp_it,q2)[[1]]
 }
+## R0_week
+nsampleR0 = min(750,nsample) #300#100
+R0weeksample = matrix(0,length(imodelH),nsampleR0)
+for(i in 1:nsampleR0){
+  #kH,     kD,       rEI,    rID,     Arseed,         R0,         pE0,    #ad, h4-h9
+  parsES$rEI <- 1/(  as.vector(psample[i,1])*tMax)
+  parsES$rID <- 1/(  as.vector(psample[i,2])*tMax2)
+  parsES$R0  <-      as.vector(psample[i,3])^2
+  parsES$pE0 <-      as.vector(psample[i,4])
+  ArseedES   <-      as.vector(psample[i,5])
+  hAES       <-      as.vector(psample[i,6])
+  parsES$ad  <-      as.vector(psample[i,7])
+  #Dependent parameters
+  parsES$h    =       hAES*pars$h #parsES$h
+  parsES$rseed=   ArseedES*pars$ageons
+  parsES$Ea0  = parsES$Na0*parsES$pE0
+  parsES$Sa0  = parsES$Na0 - parsES$Ea0 - parsES$Ia0 - parsES$Ua0 - parsES$Ha0 - parsES$Oa0 - parsES$Ra0 - parsES$Da0 
+  parsES$beta = BETA(parsES)
+  outs        = model(as.vector(parsES))
+  R0weeksample[,i] = R0(parsES, GetBeta=0, GetOutput=1, Sampling=1)[[2]]$R0_week 
+}
+R0weeksample95 = matrix(0,length(imodelH),2)
+for(it in 1:length(imodelH)) {
+  samp_it <- R0weeksample[it,]
+  R0weeksample95[it,1] = quantile(samp_it,0.01)[[1]] #min(samp_it) #quantile(samp_it,q1)[[1]]
+  R0weeksample95[it,2] = quantile(samp_it,0.99)[[1]] #max(samp_it) #quantile(samp_it,q2)[[1]]
+}
+
+
 } 
+## Credible Intervals ##########################################################
+
 
 
 ##### Summary - txt output
@@ -575,19 +579,19 @@ print(paste0("Time used (sec): ", round(tout1[[3]],3)))
 cat("\n")
 ### UPDATE: @@
 #Expected parameters
-thetaTrue = c(pars$kH, pars$kDH, pars$rEI, pars$rID, pars$rseed, pars$R0, pars$pE0, pars$ad, pars$h[1:9]);
+thetaTrue = c(pars$rEI, pars$rID, pars$R0, pars$pE0, pars$rseed, pars$ad, sum(pars$h), pars$kH, pars$kDH) #pars$h[1:9]);
 ## MAP Estimates
+print(paste0("kH    MAP: ", round(parsE$kH,    3), ". Expected/start: ", round(  pars$kH,      3))) #kH
+print(paste0("kDH,kDO MAP: ", round(parsE$kDH, 3), ". Expected/start: ", round(  pars$kDH,     3))) #kD
 print(paste0("1/rEI MAP: ", round(1/parsE$rEI, 3), ". Expected/start: ", round(1/pars$rEI,     3))) #rEI
 print(paste0("1/rID MAP: ", round(1/parsE$rID, 3), ". Expected/start: ", round(1/pars$rID,     3))) #rID
 print(paste0("R0    MAP: ", round(parsE$R0,    3), ". Expected/start: ", round(  pars$R0,      3))) #R0
 print(paste0("pE0   MAP: ", round(parsE$pE0,   4), ". Expected/start: ", round(  pars$pE0,     3))) #pE0
-print(paste0("ad    MAP: ", round(parsE$ad,    4), ". Expected/start: ", round(  pars$ad,      3))) #ad
-print(paste0("kH    MAP: ", round(parsE$kH,    3), ". Expected/start: ", round(  pars$kH,      3))) #kH
-print(paste0("kDH,kDO MAP: ", round(parsE$kDH, 3), ". Expected/start: ", round(  pars$kDH,     3))) #kD
 print(paste0("rseed MAP: ", round(sum(parsE$rseed), 0), ". Expected/start: ", round(sum(pars$rseed), 0) )) #rseed
-print(paste0("h     MAP: ", round(parsE$h,     4), ". Expected/start: ")) #hA
+print(paste0("hA   MAP: ",  round(parsE$h[9]/pars$h[9], 4), ". Expected/start: ")) #hA
+print(paste0("ad    MAP: ", round(parsE$ad,    4), ". Expected/start: ", round(  pars$ad,      3))) #ad
 print(paste0("beta  dep: ", round(parsE$beta,     5) ))
-print(paste0("E0    dep: ", round(sum(parsE$Ea0), 0) )) #or sum(parsE$Na0*parsE$pE0)
+print(paste0("E0    dep: ", round(sum(parsE$Ea0), 0), ". Expected/start: ", round(sum(pars$Na0*pars$pE0)) ))
 print(paste0("Estimated proportion deaths outside hospital = ", round(parsE$ad/(1+parsE$ad),3)))
 cat("\n");
 print(summary(out)); 
@@ -595,6 +599,7 @@ cat("\n")
 print(paste0("Mean by chain and parameter:"))
 print(out$X)
 sink()
+
 
 print("Summary 2..."); cat("\n")
 sink(file = paste0(output_dir,"/",pset$File_fit_summary_2),append=FALSE,split=FALSE) #append=TRUE,split=FALSE)
@@ -630,7 +635,7 @@ datH <- tibble(Weeks  = 1 + mE$byw$time[imodelH]/7 + Week_shift_model,    #model
                Dates  = as.Date(paste(Weeks, "2020", 'Mon'), '%U %Y %a'), #Checked: "Mon" consistent with weeks/dates def throughout 
                H_est  = mE$byw$Hw[imodelH],
                zdw    = zd*weight,
-               R0_week = R0_week[imodelH])
+               R0_week = R0_weekE[imodelH])
 datD <- tibble(Weeks  = 1 + mE$byw$time[imodelDH]/7 + Week_shift_model,
                Dates  = as.Date(paste(Weeks, "2020", 'Mon'), '%U %Y %a'), #Checked: "Mon" consistent with weeks/dates def throughout 
                DH_est = mE$byw$DHw[imodelDH],
@@ -770,8 +775,12 @@ if (pset$iplatform==0){
 if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
   cat("\n"); print("Fig 4..."); cat("\n")
 sink()}
-par(mar = c(2, 2, 1, 1))
-p<-correlationPlot(out); print(p)
+#par(mar = c(2, 2, 1, 1))
+#par(mar = c(1, 1, 1, 1))
+par(mar = c(0,0,0,0))
+#pdf("corr.pdf")
+#p<-correlationPlot(out); print(p) #Error in plot.new() : figure margins too large
+#dev.off()
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_correlationPlot")
 svglite(paste0(filenamepath,".svg")); correlationPlot(out); invisible(dev.off())
 
@@ -831,12 +840,12 @@ sink()}
 ##
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_PosteriorSample")
 ##
-par(mfrow = c(3,1))
-par(mar = c(2, 4, 1, 1)) #bottom, left, top, right
+par(mfrow = c(4,1))
+par(mar = c(2, 2, 1, 1)) #c(2, 4, 1, 1)) #bottom, left, top, right
 colors <- c("Data" = 1,  "MAP" = 2, "95% CrI" = "grey70", "95% perc" = "grey70")
 zMAX = rep(range(zsample)[2],length(Datessample))
 #H
-dzsample <- tibble(Date=Datessample, zsample05=zsample95[,1], zsample95=zsample95[,2],  # sample trajectories
+dzsample <- tibble(Date=Datessample, zsample05=zsample95[,1], zsample95=zsample95[,2],
                    zMAP=outs$byw$Hw[imodelH], Datez=datH$Datesz, zdw=datH$zdw, yLIM=zMAX )
 p1 <- ggplot(dzsample, aes(x=Date)) + 
        geom_ribbon(aes(ymin = zsample05, ymax = zsample95), fill = "grey70") +
@@ -848,7 +857,7 @@ p1 <- ggplot(dzsample, aes(x=Date)) +
        scale_color_manual(values = colors) 
 
 #DH
-dwsample <- tibble(Date=Datessample, wsample05=wsample95[,1], wsample95=wsample95[,2],  # sample trajectories
+dwsample <- tibble(Date=Datessample, wsample05=wsample95[,1], wsample95=wsample95[,2],
                    wMAP=outs$byw$DHw[imodelDH], Datew=datD$Datesw, wdw=datD$wdw, yLIM=zMAX ) 
 p2 <- ggplot(dwsample, aes(x=Date)) + 
   geom_ribbon(aes(ymin = wsample05, ymax = wsample95), fill = "grey70") +
@@ -860,7 +869,7 @@ p2 <- ggplot(dwsample, aes(x=Date)) +
   scale_color_manual(values = colors) 
 
 #DO
-dvsample <- tibble(Date=Datessample, vsample05=vsample95[,1], vsample95=vsample95[,2],  # sample trajectories
+dvsample <- tibble(Date=Datessample, vsample05=vsample95[,1], vsample95=vsample95[,2],
                    vMAP=outs$byw$DOw[imodelDO], Datev=datD$Datesv, vdw=datD$vdw, yLIM=zMAX ) 
 p3 <- ggplot(dvsample, aes(x=Date)) + 
   geom_ribbon(aes(ymin = vsample05, ymax = vsample95), fill = "grey70") +
@@ -871,12 +880,32 @@ p3 <- ggplot(dvsample, aes(x=Date)) +
   #xlim(c(0, NA)) +  ylim(c(0, zMAX[1])) + #Don't use with Dates, only with Weeks
   scale_color_manual(values = colors) 
 
-gridExtra::grid.arrange(p1, p2, p3, nrow = 3)
+### Plot R0 over time
+#filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_PosteriorSampleR0")
+#par(mfrow = c(1,1))
+#par(mar = c(2, 2, 1, 1)) #bottom, left, top, right
+colors <- c("Contact mtx" = 1,  "MAP" = 2, "95% CrI" = "grey70", "95% perc" = "grey70")
+zMAX = rep(range(R0weeksample)[2],length(Datessample))
+#H
+dzsample <- tibble(Date=Datessample, R0sample05=R0weeksample95[,1], R0sample95=R0weeksample95[,2],
+                   R0MAP=datH$R0_week, R0xcmMEV=r0[[2]]$R0xcmMEV, yLIM=zMAX )
+pR0 <- ggplot(dzsample, aes(x=Date)) + 
+  geom_ribbon(aes(ymin = R0sample05, ymax = R0sample95), fill = "grey70") +
+  geom_point(aes(x=Date, y = R0xcmMEV,   color="Contact mtx")) +
+  geom_line (aes(x=Date, y = R0MAP,      color="MAP")) +
+  geom_line (aes(x=Date, y = R0sample05, color="95% CrI")) +
+  labs(x = 'Date', y = 'R0 estimate', color = "Legend") + 
+  #xlim(c(0, NA)) +  ylim(c(0, zMAX[1])) + #Dont use with Dates, only with Weeks
+  scale_color_manual(values = colors) 
+
+gridExtra::grid.arrange(p1, p2, p3, pR0, nrow = 4)
 
 svglite(paste0(filenamepath,".svg")); 
-   gridExtra::grid.arrange(p1, p2, p3, nrow = 3)
+gridExtra::grid.arrange(p1, p2, p3, pR0, nrow = 4)
 invisible(dev.off())
+
 }
+
 
 ##Plot by age profiles
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
@@ -972,33 +1001,33 @@ svglite(paste0(filenamepath,".svg")); print(p3); invisible(dev.off())
 
 ##summary in text file
 #10
-if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-  cat("\n"); print("Fig/Tab 10..."); cat("\n")
-sink()}
+#if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+#  cat("\n"); print("Fig/Tab 10..."); cat("\n")
+#sink()}
 #plot.new()
-for (i in 1:2){
-filenamepath =  paste0(output_dir,"/",pset$File_fit_summary0,"_",i)
-txt = readLines(paste0(filenamepath,".txt"))
-if(i==1){
-plot.new()
-p<-gridExtra::grid.table(txt, theme=ttheme_default(base_size = 2, padding = unit(c(1, 1),"mm") )) #4, padding = unit(c(1, 1),"mm") ))
-print(p)
-}
-svglite(paste0(filenamepath,".svg")); 
-print(gridExtra::grid.table(txt, theme=ttheme_default(base_size = 2, padding = unit(c(1, 1),"mm") )) ); #6, padding = unit(c(1, 1),"mm") )) ); 
-invisible(dev.off())
-}
+#for (i in 1:2){
+#filenamepath =  paste0(output_dir,"/",pset$File_fit_summary0,"_",i)
+#txt = readLines(paste0(filenamepath,".txt"))
+#if(i==1){
+#plot.new()
+#p<-gridExtra::grid.table(txt, theme=ttheme_default(base_size = 2, padding = unit(c(1, 1),"mm") )) #4, padding = unit(c(1, 1),"mm") ))
+#print(p)
+#}
+#svglite(paste0(filenamepath,".svg")); 
+#print(gridExtra::grid.table(txt, theme=ttheme_default(base_size = 2, padding = unit(c(1, 1),"mm") )) ); #6, padding = unit(c(1, 1),"mm") )) ); 
+#invisible(dev.off())
+#}
 
 #need?
 #pdf(file = paste0(output_dir,"/",pset$File_fit_variables), height=nrow(mE$byw)/3)
-if(SCREEN==1){ sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-  cat("\n"); print("Fig 11..."); cat("\n")
-sink()}
-filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_variables")
-svglite(paste0(filenamepath,".svg")) #, height=nrow(mE$byw)/3); #os complained
-   plot(1:10)
-   #gridExtra::grid.table(round(mE$byw[c("time","St","Ht","Hw","Dt","Dw")])) 
-invisible(dev.off())
+#if(SCREEN==1){ sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+#  cat("\n"); print("Fig 11..."); cat("\n")
+#sink()}
+#filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_variables")
+#svglite(paste0(filenamepath,".svg")) #, height=nrow(mE$byw)/3); #os complained
+#   plot(1:10)
+#   #gridExtra::grid.table(round(mE$byw[c("time","St","Ht","Hw","Dt","Dw")])) 
+#invisible(dev.off())
 
 #if (pset$iplatform>0){
 #  
