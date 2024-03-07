@@ -478,8 +478,8 @@ LengtSampChainPostBurn = LengtMcmcChainPostBurn - StartSampChainPostBurn + 1
 #nsample = 100#3000#500#1000#;
 nsample = Chains*LengtMcmcChainPostBurn/Thin
 #start-end - for each chain
-#Note: parametersOnly = N = gives extra: Lposterior Llikelihood     Lprior
-psample = getSample(out, parametersOnly = N, start=StartSampChainPostBurn, end= LengtSampChainPostBurn, thin=Thin)
+#Note: parametersOnly = F = gives extra: Lposterior Llikelihood     Lprior
+psample = getSample(out, parametersOnly = T, start=StartSampChainPostBurn, end= LengtSampChainPostBurn, thin=Thin)
 #dim(psample)#  = c(nsample, npar)
 # run model for each parameter set in the sample
 zsample = matrix(0,length(imodelH),nsample)
