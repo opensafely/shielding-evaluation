@@ -1,9 +1,8 @@
-## 01mar24 - R0.r became a function
+## R0 function outputs: 
+##   parameter:   beta or R0
+##   time series: R0_week, R0xcmMEV, Week, Date
 
-## R0 by week
-## cmMEV = cm maxEV by week
-
-R0 <- function(pars,GetBeta,GetOutput,Sampling=0 ){
+R0 <- function(pars,GetBeta,GetOutput,Sampling=0, nt=pars$cmdim3 ){
 
 R0_week   = vector()
 cmMEV     = vector()
@@ -11,7 +10,7 @@ rIR       = pars$rIR
 u         = pars$u
 ngm       = cm
 beta0     = pars$beta 
-ntcontact = pars$cmdim3
+ntcontact = nt
 
 ## cmMEV
 for (i in 1:ntcontact) { #1:52
@@ -58,7 +57,7 @@ if(GetBeta==1){
 } else {
   #calculate R0 based on input beta0=pars$beta, as maxEV of NGM in week 1 (max contacts)
   R0 = R0_week[1]
-  #store beta in pars
+  #store R0 in pars
   pars$R0 = R0
   #R0 over time has already been calculated as R0_week
 }
@@ -67,8 +66,10 @@ if(GetBeta==1){
 if (GetOutput) {
 #save R0 over time
 Week = week("2020-01-27")-1+1:ntcontact  #contacts.r: Week1_Model = "2020-01-27" 
-Date = c(as.Date(paste(Week[1:49], "2020", 'Mon'), '%U %Y %a'), as.Date(paste(Week[50:52]-52, "2021", 'Mon'), '%U %Y %a'))
-
+if (nt==52){
+  Date = c(as.Date(paste(Week[1:49], "2020", 'Mon'), '%U %Y %a'), as.Date(paste(Week[50:52]-52, "2021", 'Mon'), '%U %Y %a'))
+} else { #if nt<50, up to "2020-12-28"
+  Date = c(as.Date(paste(Week[1:ntcontact], "2020", 'Mon'), '%U %Y %a')) }
 WeekDateR0 <- tibble(Week=Week, Date=Date, R0_week=R0_week, R0xcmMEV=pars$R0*cmMEV,)
 
 if(Sampling==0){

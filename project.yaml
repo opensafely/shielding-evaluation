@@ -80,17 +80,13 @@ actions:
         html01: output/modelling/J5l_Main_Fit_Report.html
         txt021: output/modelling/J5l_Fit_summary_1.txt
         txt022: output/modelling/J5l_Fit_summary_2.txt  
-        #svg021: output/modelling/J5l_Fit_summary_1.svg
-        #svg022: output/modelling/J5l_Fit_summary_2.svg
         svg031: output/modelling/J5l_Fit_MCMC_marginalPlot.svg
         #svg032: output/modelling/J5l_Fit_MCMC_plotout_lastPage.svg
         svg033: output/modelling/J5l_Fit_MCMC_correlationPlot.svg
         svg034: output/modelling/J5l_Fit_MCMC_Overall.svg
         svg035: output/modelling/J5l_Fit_MCMC_PosteriorSample.svg
-        svg036: output/modelling/J5l_Fit_MCMC_AgeProfile_H.svg
-        svg037: output/modelling/J5l_Fit_MCMC_AgeProfile_DH.svg
-        svg038: output/modelling/J5l_Fit_MCMC_AgeProfile_DO.svg
-        #svg039: output/modelling/J5l_Fit_MCMC_variables.svg
+        svg036: output/modelling/J5l_Fit_MCMC_AgeProfile.svg
+
 
   
   HD_data_questions:
