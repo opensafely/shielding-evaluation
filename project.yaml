@@ -39,8 +39,8 @@ actions:
         table2_shielding_v1: output/tables/shielding_v1_table2.html
         table2_shielding_v2: output/tables/shielding_v2_table2.html
   
-  #fit_HDdata: 
   fit_HDdata_woIC:
+  #fit_HDdata: 
     run: > 
       r:latest
         modelling/runmkd_main.R
