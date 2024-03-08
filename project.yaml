@@ -85,7 +85,7 @@ actions:
         svg033: output/modelling/J5l_Fit_MCMC_correlationPlot.svg
         svg034: output/modelling/J5l_Fit_MCMC_Overall.svg
         svg035: output/modelling/J5l_Fit_MCMC_PosteriorSample.svg
-        svg036: output/modelling/J5l_Fit_MCMC_AgeProfile.svg
+        svg036: output/modelling/J5l_Fit_MCMC_AgeProfiles.svg
 
 
   
