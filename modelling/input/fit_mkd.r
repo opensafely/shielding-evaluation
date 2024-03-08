@@ -378,7 +378,8 @@ LogLikelihood <- function(theta){
 
 
 ## Likelihood definition, parameter ranges  ####################################
-niter = 120000 #30000#6000#3000 #9000 #200000
+niter = 30000#6000##3000
+if (pset$iplatform==2){niter=120000} #200000
 #LOWER = c(rep(0,2),               0,          0,                  0,                
 #          pkLower, pkLower2, rep(0,7)); #kDO
 #UPPER = c(rep(log(hMax/hMin),2),  log(R0Max), log(pE0Max/pE0Min), log(adMax/adMin), 
@@ -460,15 +461,17 @@ parsE$beta  = BETA(parsE)
 mE        <- model(parsE)
 #R0_week using MAP-parameters
 source(file = paste0(input_dir,"/R0.r"))
-R0_weekE = R0(parsE, GetBeta=0, GetOutput=1, Sampling=1)[[2]]$R0_week
-#Note: R0(parsE, GetBeta=0, GetOutput=1, Sampling=1)[[1]]$R0 - same as parsE$R0
+ntimes = length(imodelH)
+r0 = R0(parsE, GetBeta=0, GetOutput=1, Sampling=1, nt=ntimes)
+R0_weekE = r0[[2]]$R0_week
+#Note: R0(parsE, GetBeta=0, GetOutput=1, Sampling=1, nt=ntimes)[[1]]$R0 - same as parsE$R0
 
 
 ## Credible Intervals ##########################################################
 ## Sample the chains
-print("Sampling..."); cat("\n")
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
-
+print("Sampling..."); cat("\n")
+  
 npar = length(LOWER)
 Thin=4#2#4
 Chains=3
@@ -482,9 +485,9 @@ nsample = Chains*LengtMcmcChainPostBurn/Thin
 psample = getSample(out, parametersOnly = T, start=StartSampChainPostBurn, end= LengtSampChainPostBurn, thin=Thin)
 #dim(psample)#  = c(nsample, npar)
 # run model for each parameter set in the sample
-zsample = matrix(0,length(imodelH),nsample)
-wsample = matrix(0,length(imodelH),nsample)
-vsample = matrix(0,length(imodelH),nsample)
+zsample = matrix(0,ntimes,nsample)
+wsample = matrix(0,ntimes,nsample)
+vsample = matrix(0,ntimes,nsample)
 parsES  = pars #parsE
 ### UPDATE: @@
 ###         proposal pars$
@@ -513,12 +516,12 @@ for(i in 1:nsample){
 Weekssample = 1 + outs$byw$time[imodelH]/7 + Week_shift_model
 Datessample = as.Date(paste(Weekssample, "2020", 'Mon'), '%U %Y %a') #Checked: "Mon" consistent with weeks/dates def throughout 
 ##95% CrI
-zsample95 = matrix(0,length(imodelH),2)
-wsample95 = matrix(0,length(imodelH),2)
-vsample95 = matrix(0,length(imodelH),2)
+zsample95 = matrix(0,ntimes,2)
+wsample95 = matrix(0,ntimes,2)
+vsample95 = matrix(0,ntimes,2)
 q1=0.01 #0.05
 q2=0.99 #0.95
-for(it in 1:length(imodelH)){
+for(it in 1:ntimes){
   samp_it <- zsample[it,]
   zsample95[it,1] = quantile(samp_it,q1)[[1]]
   zsample95[it,2] = quantile(samp_it,q2)[[1]]
@@ -531,9 +534,9 @@ for(it in 1:length(imodelH)){
 }
 ## R0_week
 nsampleR0 = min(750,nsample) #300#100
-R0weeksample = matrix(0,length(imodelH),nsampleR0)
+R0weeksample = matrix(0,ntimes,nsampleR0)
 for(i in 1:nsampleR0){
-  #kH,     kD,       rEI,    rID,     Arseed,         R0,         pE0,    #ad, h4-h9
+  #rEI,   rID,    R0,   pE0,    Arseed,  hA,    ad,   kH,   kD       
   parsES$rEI <- 1/(  as.vector(psample[i,1])*tMax)
   parsES$rID <- 1/(  as.vector(psample[i,2])*tMax2)
   parsES$R0  <-      as.vector(psample[i,3])^2
@@ -548,10 +551,10 @@ for(i in 1:nsampleR0){
   parsES$Sa0  = parsES$Na0 - parsES$Ea0 - parsES$Ia0 - parsES$Ua0 - parsES$Ha0 - parsES$Oa0 - parsES$Ra0 - parsES$Da0 
   parsES$beta = BETA(parsES)
   outs        = model(as.vector(parsES))
-  R0weeksample[,i] = R0(parsES, GetBeta=0, GetOutput=1, Sampling=1)[[2]]$R0_week 
+  R0weeksample[,i] = R0(parsES, GetBeta=0, GetOutput=1, Sampling=1, nt=ntimes)[[2]]$R0_week 
 }
 R0weeksample95 = matrix(0,length(imodelH),2)
-for(it in 1:length(imodelH)) {
+for(it in 1:ntimes) {
   samp_it <- R0weeksample[it,]
   R0weeksample95[it,1] = quantile(samp_it,0.01)[[1]] #min(samp_it) #quantile(samp_it,q1)[[1]]
   R0weeksample95[it,2] = quantile(samp_it,0.99)[[1]] #max(samp_it) #quantile(samp_it,q2)[[1]]
@@ -673,7 +676,7 @@ datD <- tibble(datD,
 ##OS:  datDOa_l  or datDOa
 
 #y axis log transformation - default: linear
-YL <- function(y,LOG=0){ if (LOG==1) {z=log10(y+1)} else {z=y}; return(z) }
+YLOG <- function(y,LOG=0){ if (LOG==1) {z=log10(y+1)} else {z=y}; return(z) }
 LOG=1; #0 #apply scale of plotting Age Profiles
 
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
@@ -698,28 +701,28 @@ if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
   for (i in 1:9){
 #H Model (MAP)
     values = eval(parse(text = paste0("mE$byw_age$H",eval(i),"w[imodelH]")))      #Hiw <= mE$byw_age$Hiw
-    assign(paste0("H",eval(i),"w"),  YL(values,LOG))
+    assign(paste0("H",eval(i),"w"),  YLOG(values,LOG))
 #H data: OS or simulated (actually, true model, as data too noisy)
     if (pset$iplatform>0){     #Hid <= datHa_l$Freq[idataHi]                  or  #Hid <= datM$H_modi
     values = eval(parse(text = paste0("datHa_l$Freq[idataH",eval(i),"]*weightz[",eval(i),"]")))  } else { 
     values = eval(parse(text = paste0("datM$H_mod",eval(i),"[imodelH]"))) }
-    assign(paste0("H",eval(i),"d"),  YL(values,LOG))
+    assign(paste0("H",eval(i),"d"),  YLOG(values,LOG))
 #DH Model (MAP)
     values = eval(parse(text = paste0("mE$byw_aHO$DH",eval(i),"w[imodelDH]")))   #DHiw <= mE$byw_aHO$DHiw
-    assign(paste0("DH",eval(i),"w"), YL(values,LOG))
+    assign(paste0("DH",eval(i),"w"), YLOG(values,LOG))
 #DH data 
     if (pset$iplatform>0){   #DHid <= datDHa_l$Freq[idataDHi]                or  #DHid <= datM$DH_modi 
     values = eval(parse(text = paste0("datDHa_l$Freq[idataDH",eval(i),"]*weightw[",eval(i),"]"))) } else {
     values = eval(parse(text = paste0("datM$DH_mod",eval(i),"[imodelDH]"))) }
-    assign(paste0("DH",eval(i),"d"), YL(values,LOG))
+    assign(paste0("DH",eval(i),"d"), YLOG(values,LOG))
 #DO Model (MAP)
     values = eval(parse(text = paste0("mE$byw_aHO$DO",eval(i),"w[imodelDO]")))   #DOiw <= mE$byw_aHO$DOiw
-    assign(paste0("DO",eval(i),"w"), YL(values,LOG))
+    assign(paste0("DO",eval(i),"w"), YLOG(values,LOG))
 #DO data
   if (pset$iplatform>0){     #DOid <= datDOa_l$Freq[idataDOi]                or  #DOid <= datM$DO_modi
     values = eval(parse(text = paste0("datDOa_l$Freq[idataDO",eval(i),"]*weightv[",eval(i),"]"))) } else {
     values = eval(parse(text = paste0("datM$DO_mod",eval(i),"[imodelDO]"))) }
-    assign(paste0("DO",eval(i),"d"), YL(values,LOG))
+    assign(paste0("DO",eval(i),"d"), YLOG(values,LOG))
 }
 
 #H
@@ -753,8 +756,10 @@ datDOa <- tibble(Weeks = 1 + mE$byw$time[imodelDO]/7 + Week_shift_model,
 #pdf(file = paste0(output_dir,"/",pset$File_fit_output))
 
 #### svg plots #################################################################
+
 #### Diagnostics
-#1
+
+#1 marginal
 if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
   cat("\n"); print("Fig 1..."); cat("\n")
 sink()}
@@ -762,7 +767,8 @@ sink()}
 #p<-marginalPlot(out); print(p)
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_marginalPlot")
 svglite(paste0(filenamepath,".svg")); marginalPlot(out); invisible(dev.off())
-#2-3
+
+#2-3 trace
 if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
   cat("\n"); print("Fig 2-3..."); cat("\n")
 sink()}
@@ -771,29 +777,29 @@ p<-plot(out); print(p)
 if (pset$iplatform==0){
   filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_plotout_lastPage")
   svglite(paste0(filenamepath,".svg")); plot(out); invisible(dev.off()) }
-#4
+
+#4 correlations
 if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
   cat("\n"); print("Fig 4..."); cat("\n")
 sink()}
-#par(mar = c(2, 2, 1, 1))
-#par(mar = c(1, 1, 1, 1))
-par(mar = c(0,0,0,0))
+par(mar = c(0,0,0,0)) #par(mar = c(2, 2, 1, 1))
 #pdf("corr.pdf")
-#p<-correlationPlot(out); print(p) #Error in plot.new() : figure margins too large
+#p<-correlationPlot(out); print(p)  #Error in plot.new() : figure margins too large  (16 par)
 #dev.off()
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_correlationPlot")
 svglite(paste0(filenamepath,".svg")); correlationPlot(out); invisible(dev.off())
 
 
-### Plot overall
-#5
+### Results
+
+#5 overall
 if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
   cat("\n"); print("Fig 5..."); cat("\n")
 sink()}
 colors <- c(  "I_dat"  = "black",   "I_est" = "red",     "I_model" = "green",
              "H_datw"  = "black",   "H_est" = "red",     "H_model" = "pink",
             "DH_datw"  = "grey",   "DH_est" = "blue",   "DH_model" = "cyan",
-            "DO_datw"  = "black",  "DO_est" = "green4", "DO_model" = "green", "R0_est" = "grey70")
+            "DO_datw"  = "black",  "DO_est" = "green4", "DO_model" = "green", "R0_est" = "grey40")
 
 coeff <- (max(datH$zdw)/max(datH$R0_week))
 
@@ -821,18 +827,22 @@ p1 <- p1 +
           scale_y_continuous(
             name = 'Hospitalisations & deaths in & outside hospital',
             sec.axis = sec_axis(~.*(1/coeff), name="R0") ) + 
-          labs(x = 'Date', color = "Legend") + #y = 'Hospitalisations & deaths in & outside hospital', color = "Legend") + 
-          theme(
-            axis.title.y = element_text(color = 1), #size=10),
-            axis.title.y.right = element_text(color = 1) ) #colors['R0_est'][[1]]) ) #, size=10) )
-
+          labs(x = 'Date', color = "Variable") + #Legend") + #y = 'Hospitalisations & deaths in & outside hospital', color = "Legend") + 
+          theme(axis.title.y       = element_text(color = 1),
+                axis.title.y.right = element_text(color = 1) ,
+                axis.text          = element_text(size = 16),
+                axis.title         = element_text(size = 18, face = "bold"),
+                legend.title       = element_text(size = 18),
+                legend.text        = element_text(size = 14))
 print(p1)
+
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_Overall")
-svglite(paste0(filenamepath,".svg")); print(p1); invisible(dev.off())
+sc = 3#10
+svglite(paste0(filenamepath,".svg"),width=sc*6, height=sc*3); print(p1); invisible(dev.off())
 
 
-## Plot posterior samples
-#6
+
+#6 Plot posterior samples
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
 if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
   cat("\n"); print("Fig 6..."); cat("\n")
@@ -841,62 +851,65 @@ sink()}
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_PosteriorSample")
 ##
 par(mfrow = c(4,1))
-par(mar = c(2, 2, 1, 1)) #c(2, 4, 1, 1)) #bottom, left, top, right
+par(mar = c(2, 2, 1, 1)) #bottom, left, top, right
 colors <- c("Data" = 1,  "MAP" = 2, "95% CrI" = "grey70", "95% perc" = "grey70")
 zMAX = rep(range(zsample)[2],length(Datessample))
 #H
 dzsample <- tibble(Date=Datessample, zsample05=zsample95[,1], zsample95=zsample95[,2],
                    zMAP=outs$byw$Hw[imodelH], Datez=datH$Datesz, zdw=datH$zdw, yLIM=zMAX )
 p1 <- ggplot(dzsample, aes(x=Date)) + 
-       geom_ribbon(aes(ymin = zsample05, ymax = zsample95), fill = "grey70") +
-       geom_point(aes(x=Datez, y = zdw,       color="Data")) +
-       geom_line (aes(x=Date,  y = zMAP,      color="MAP")) +
-       geom_line (aes(x=Date,  y = zsample05, color="95% CrI")) +
-       labs(x = 'Date', y = 'Hospitalisations', color = "Legend") + 
-       #xlim(c(0, NA)) +  ylim(c(0, zMAX[1])) + #Dont use with Dates, only with Weeks
-       scale_color_manual(values = colors) 
+      geom_ribbon(aes(ymin = zsample05, ymax = zsample95), fill = "grey70") +
+      geom_point(aes(x=Datez, y = zdw,       color="Data")) +
+      geom_line (aes(x=Date,  y = zMAP,      color="MAP")) +
+      geom_line (aes(x=Date,  y = zsample05, color="95% CrI")) +
+      labs(x = "", y = 'Hospitalisations',   color = "") + #Legend") + 
+      scale_color_manual(values = colors) +
+      theme(axis.title         = element_text(size = 12, face = "bold"))#,
+           #axis.title.y       = element_text(color = 1),
+           #axis.title.y.right = element_text(color = 1) ,
+           #axis.text          = element_text(size = 16),
+           #legend.title       = element_text(size = 16),
+           #legend.text        = element_text(size = 12))
 
 #DH
 dwsample <- tibble(Date=Datessample, wsample05=wsample95[,1], wsample95=wsample95[,2],
                    wMAP=outs$byw$DHw[imodelDH], Datew=datD$Datesw, wdw=datD$wdw, yLIM=zMAX ) 
 p2 <- ggplot(dwsample, aes(x=Date)) + 
-  geom_ribbon(aes(ymin = wsample05, ymax = wsample95), fill = "grey70") +
-  geom_point(aes(x=Datew, y = wdw,       color="Data")) +
-  geom_line (aes(x=Date,  y = wMAP,      color="MAP")) +
-  geom_line (aes(x=Date,  y = wsample05, color="95% CrI")) +
-  labs(x = 'Date', y = 'Deaths in hospital', color = "Legend") + 
-  #xlim(c(0, NA)) +  ylim(c(0, zMAX[1])) + #Dont use with Dates, only with Weeks
-  scale_color_manual(values = colors) 
+      geom_ribbon(aes(ymin = wsample05, ymax = wsample95), fill = "grey70") +
+      geom_point(aes(x=Datew, y = wdw,       color="Data")) +
+      geom_line (aes(x=Date,  y = wMAP,      color="MAP")) +
+      geom_line (aes(x=Date,  y = wsample05, color="95% CrI")) +
+      labs(x = "", y = 'Deaths in hospital', color = "") + #Legend") + 
+      scale_color_manual(values = colors) +
+      theme(axis.title = element_text(size = 12, face = "bold"))
 
 #DO
 dvsample <- tibble(Date=Datessample, vsample05=vsample95[,1], vsample95=vsample95[,2],
                    vMAP=outs$byw$DOw[imodelDO], Datev=datD$Datesv, vdw=datD$vdw, yLIM=zMAX ) 
 p3 <- ggplot(dvsample, aes(x=Date)) + 
-  geom_ribbon(aes(ymin = vsample05, ymax = vsample95), fill = "grey70") +
-  geom_point(aes(x=Datev, y = vdw,       color="Data")) +
-  geom_line (aes(x=Date,  y = vMAP,      color="MAP")) +
-  geom_line (aes(x=Date,  y = vsample05, color="95% CrI")) +
-  labs(x = 'Date', y = 'Deaths outside hospital', color = "Legend") + 
-  #xlim(c(0, NA)) +  ylim(c(0, zMAX[1])) + #Don't use with Dates, only with Weeks
-  scale_color_manual(values = colors) 
+      geom_ribbon(aes(ymin = vsample05, ymax = vsample95), fill = "grey70") +
+      geom_point(aes(x=Datev, y = vdw,       color="Data")) +
+      geom_line (aes(x=Date,  y = vMAP,      color="MAP")) +
+      geom_line (aes(x=Date,  y = vsample05, color="95% CrI")) +
+      labs(x = '', y = 'Deaths outside hospital', color = "") + 
+      scale_color_manual(values = colors) +
+      theme(axis.title = element_text(size = 12, face = "bold"))
 
 ### Plot R0 over time
 #filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_PosteriorSampleR0")
-#par(mfrow = c(1,1))
-#par(mar = c(2, 2, 1, 1)) #bottom, left, top, right
 colors <- c("Contact mtx" = 1,  "MAP" = 2, "95% CrI" = "grey70", "95% perc" = "grey70")
 zMAX = rep(range(R0weeksample)[2],length(Datessample))
 #H
 dzsample <- tibble(Date=Datessample, R0sample05=R0weeksample95[,1], R0sample95=R0weeksample95[,2],
                    R0MAP=datH$R0_week, R0xcmMEV=r0[[2]]$R0xcmMEV, yLIM=zMAX )
-pR0 <- ggplot(dzsample, aes(x=Date)) + 
-  geom_ribbon(aes(ymin = R0sample05, ymax = R0sample95), fill = "grey70") +
-  geom_point(aes(x=Date, y = R0xcmMEV,   color="Contact mtx")) +
-  geom_line (aes(x=Date, y = R0MAP,      color="MAP")) +
-  geom_line (aes(x=Date, y = R0sample05, color="95% CrI")) +
-  labs(x = 'Date', y = 'R0 estimate', color = "Legend") + 
-  #xlim(c(0, NA)) +  ylim(c(0, zMAX[1])) + #Dont use with Dates, only with Weeks
-  scale_color_manual(values = colors) 
+pR0 <-ggplot(dzsample, aes(x=Date)) + 
+      geom_ribbon(aes(ymin = R0sample05, ymax = R0sample95), fill = "grey70") +
+      geom_point(aes(x=Date, y = R0xcmMEV,   color="Contact mtx")) +
+      geom_line (aes(x=Date, y = R0MAP,      color="MAP")) +
+      geom_line (aes(x=Date, y = R0sample05, color="95% CrI")) +
+      labs(x = 'Date', y = 'R0 estimate', color = "") + 
+      scale_color_manual(values = colors) +
+      theme(axis.title = element_text(size = 12, face = "bold"))
 
 gridExtra::grid.arrange(p1, p2, p3, pR0, nrow = 4)
 
@@ -907,18 +920,21 @@ invisible(dev.off())
 }
 
 
-##Plot by age profiles
+##7 age profiles
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
 colors <- c("0-4" = 1, "05-11" = 2,  "12-17" = 3, "18-29" = 4, "30-39" = 5, 
             "40-49" = 6, "50-59" = 7,  "60-69" = 8, "70+" = 9)
-#7 H
+Yname = c('Hospitalisations', 'Deaths in hospital', 'Deaths outside hospital')
+if (LOG==1) {Yname = c('log Hospitalisations', 'log Deaths in hospital', 'log Deaths outside hospital')}
+
+#H
 if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
   cat("\n"); print("Fig 7..."); cat("\n")
 sink()}
 p1 <- ggplot() +
-    labs(x = 'Date', y = 'Hospitalisations', color = "Legend") +
-    #xlim(c(0, NA)) +  ylim(c(0, NA)) + #Don't use with Dates, only with Weeks
+    labs(x = "", y = Yname[1], color = "") + #Legend") + 
     scale_color_manual(values = colors) +
+    theme(axis.title = element_text(size = 12, face = "bold"))+
     geom_line (data=datHa, aes(x=Dates,y=H1w, color = "0-4")) +
     geom_line (data=datHa, aes(x=Dates,y=H2w, color = "05-11")) +
     geom_line (data=datHa, aes(x=Dates,y=H3w, color = "12-17")) +
@@ -937,17 +953,15 @@ p1 <- ggplot() +
     geom_point(data=datHa, aes(x=Dates,y=H7d, color = "50-59")) +
     geom_point(data=datHa, aes(x=Dates,y=H8d, color = "60-69")) +
     geom_point(data=datHa, aes(x=Dates,y=H9d, color = "70+"))
-print(p1)
-filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_AgeProfile_H")
-svglite(paste0(filenamepath,".svg")); print(p1); invisible(dev.off())
-#8 DH
+
+#DH
 if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
   cat("\n"); print("Fig 8..."); cat("\n")
 sink()}
 p2 <- ggplot() +
-    labs(x = 'Date', y = 'Deaths in hospital', color = "Legend") + 
-    #xlim(c(0, NA)) +  ylim(c(0, NA)) + #Don't use with Dates, only with Weeks
+    labs(x = "", y = Yname[2], color = "Age group") + #Legend") + 
     scale_color_manual(values = colors) +
+    theme(axis.title = element_text(size = 12, face = "bold"))+
     geom_line (data=datDHa, aes(x=Dates,y=DH1w, color = "0-4")) +
     geom_line (data=datDHa, aes(x=Dates,y=DH2w, color = "05-11")) +
     geom_line (data=datDHa, aes(x=Dates,y=DH3w, color = "12-17")) +
@@ -966,16 +980,15 @@ p2 <- ggplot() +
     geom_point(data=datDHa, aes(x=Dates,y=DH7d, color = "50-59")) +
     geom_point(data=datDHa, aes(x=Dates,y=DH8d, color = "60-69")) +
     geom_point(data=datDHa, aes(x=Dates,y=DH9d, color = "70+"))  
-print(p2)
-filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_AgeProfile_DH")
-svglite(paste0(filenamepath,".svg")); print(p2); invisible(dev.off())
-#9 DO
+
+#DO
 if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
   cat("\n"); print("Fig 9..."); cat("\n")
 sink()}
 p3 <- ggplot() +
-    labs(x = 'Date', y = 'Deaths outside hospital', color = "Legend") + 
+    labs(x = 'Date', y = Yname[3], color = "") + #Legend") + 
     scale_color_manual(values = colors) +
+    theme(axis.title = element_text(size = 12, face = "bold"))+
     geom_line (data=datDOa, aes(x=Dates,y=DO1w, color = "0-4")) +
     geom_line (data=datDOa, aes(x=Dates,y=DO2w, color = "05-11")) +
     geom_line (data=datDOa, aes(x=Dates,y=DO3w, color = "12-17")) +
@@ -994,9 +1007,14 @@ p3 <- ggplot() +
     geom_point(data=datDOa, aes(x=Dates,y=DO7d, color = "50-59")) +
     geom_point(data=datDOa, aes(x=Dates,y=DO8d, color = "60-69")) +
     geom_point(data=datDOa, aes(x=Dates,y=DO9d, color = "70+"))  
-print(p3)
-filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_AgeProfile_DO")
-svglite(paste0(filenamepath,".svg")); print(p3); invisible(dev.off())  
+
+gridExtra::grid.arrange(p1, p2, p3, nrow = 3)
+
+filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_AgeProfiles")
+svglite(paste0(filenamepath,".svg")); 
+gridExtra::grid.arrange(p1, p2, p3, nrow = 3)
+invisible(dev.off())
+
 }
 
 ##summary in text file
