@@ -4,9 +4,11 @@ pset <- within(pset, {
     TIME  <- format(Sys.time(),'%H.%M.%S_%d-%m-%Y')
     ## Job no.
     Job="J5l_" #J1=lm, J2=fit-simul, J3=SEIR_fit, J4...=SEIUHRD fits, J5 - age model
+
     ## Model choice
     MODEL    <- c("SEIR", "SEIUHRD");
     imodel   <- 2#1; #2
+
     ### OpenSafely
     PLATFORM <- c("Simulate", "Fit dummy data", "OpenSafely"); #0, 1, 2
     iplatform<- 2#0#1#
@@ -15,7 +17,7 @@ pset <- within(pset, {
     DOfit    <- 1; #(0=Dont fit, 1=simulated or OS data)
     
     ### model data-based IC
-    DataIC   <- 0#1; #(0=Dont use, 1=use )
+    DataIC   <- 1; #(0=Dont use, 1=use)
     
     ### model output length (weeks)
     nw       <- 52 #week length of run - resolution of contact matrix (really two weeks)

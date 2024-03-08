@@ -2,11 +2,15 @@
 
 ## Compile & run model (weekly points) #########################################
 sourceCpp(file = paste0(input_dir,"/",pset$File_model_choice))
+
 ## Get beta for given R0
-## (must have sourced R0.r and run r0=R0(pars=pars,GetBeta=1,GetOutput=1))
+source(file = paste0(input_dir,"/R0.r"))
+r0 = R0(pars,GetBeta=1,GetOutput=1) #, Sampling=0, 45)  #Defaults used: Sampling=0, nt=pars$cmdim3
 pars$beta = r0[[1]]$beta
 #pars$beta=1
 print(paste0("R0 = ", pars$R0, ",  beta = ", round(pars$beta,2)))
+
+## run model
 t1<- system.time( mout <- SEIUHRD(pars) )
 
 ## Test Rcpp code:
