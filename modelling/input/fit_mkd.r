@@ -305,7 +305,7 @@ LogLikelihood <- function(theta){
   ### Proposed parameters
   pars$rEI = 1/(  theta[1]*tMax)
   pars$rID = 1/(  theta[2]*tMax2)
-  pars$R0  =      theta[3]^2
+  pars$R0  =  exp(theta[3]) #^2
   pars$pE0 =      theta[4]
   Arseed   =      theta[5]
   hA       =      theta[6] #hAMin+theta[]*(hAMax-hAMin)
@@ -394,8 +394,8 @@ niter = 30000#6000##3000
 if (pset$iplatform==2){niter=120000} #200000
 
           #rEI,    rID,     R0,          pE0,     Arseed,    hA,    ad,     sdH,   kD
-LOWER = c(1/tMax, 1/tMax2, sqrt(R0Min),  pE0Min,  ArseedMin, hAMin, adMin,  sdHMin, pkMin);
-UPPER = c(1,      1,       sqrt(R0Max),  pE0Max,  ArseedMax, hAMax, adMax,  sdHMax, pkMax);
+LOWER = c(1/tMax, 1/tMax2, log(R0Min),  pE0Min,  ArseedMin, hAMin, adMin,  sdHMin, pkMin);
+UPPER = c(1,      1,       log(R0Max),  pE0Max,  ArseedMax, hAMax, adMax,  sdHMax, pkMax);
 
 #Uniform priors
   #PARSTART = 0.5*UPPER
@@ -451,7 +451,7 @@ MAPE      <- MAP(out) #pasr estimated
 #kH,     kD,       rEI,    rID,     Arseed,         R0,         pE0,    #ad, h4-h9
 parsE$rEI <- 1/(  as.vector(MAPE$parametersMAP[1]*tMax))
 parsE$rID <- 1/(  as.vector(MAPE$parametersMAP[2]*tMax2))
-parsE$R0  <-      as.vector(MAPE$parametersMAP[3]^2)
+parsE$R0  <-  exp(as.vector(MAPE$parametersMAP[3])) #^2)
 parsE$pE0 <-      as.vector(MAPE$parametersMAP[4])
 ArseedE   <-      as.vector(MAPE$parametersMAP[5])
 hAE       <-      as.vector(MAPE$parametersMAP[6])
@@ -506,7 +506,7 @@ for(i in 1:nsample){
   #rEI,     rID,     R0,     pE0,     Arseed,     hA,     ad,     sdH,     kD
   parsES$rEI <- 1/(  as.vector(psample[i,1])*tMax)
   parsES$rID <- 1/(  as.vector(psample[i,2])*tMax2)
-  parsES$R0  <-      as.vector(psample[i,3])^2
+  parsES$R0  <-  exp(as.vector(psample[i,3])) #^2
   parsES$pE0 <-      as.vector(psample[i,4])
   ArseedES   <-      as.vector(psample[i,5])
   hAES       <-      as.vector(psample[i,6])
@@ -548,7 +548,7 @@ for(i in 1:nsampleR0){
   #rEI,     rID,     R0,     pE0,     Arseed,     hA,     ad,     sdH,     kD
   parsES$rEI <- 1/(  as.vector(psample[i,1])*tMax)
   parsES$rID <- 1/(  as.vector(psample[i,2])*tMax2)
-  parsES$R0  <-      as.vector(psample[i,3])^2
+  parsES$R0  <-  exp(as.vector(psample[i,3])) #^2
   parsES$pE0 <-      as.vector(psample[i,4])
   ArseedES   <-      as.vector(psample[i,5])
   hAES       <-      as.vector(psample[i,6])
