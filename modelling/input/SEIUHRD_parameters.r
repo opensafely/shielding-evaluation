@@ -77,7 +77,8 @@ pars <- within(pars, {
     k      <- 1               #dispersion/shape parameter of NB likelihood (and noise if simulating), Davies 2020 Nat Med
     kH     <- k               #dispersion/shape parameter - hospitalisation counts
     kDH    <- k               #dispersion/shape parameter - deaths in hospital counts
-    kDO    <- k               #dispersion/shape parameter - eaths outside hospital counts
+    kDO    <- k               #dispersion/shape parameter - deaths outside hospital counts
+    sdH    <- 1               #scaling factor of sd for H across age groups
     cmdim1 <- na
     cmdim2 <- na
     cmdim3 <- 52

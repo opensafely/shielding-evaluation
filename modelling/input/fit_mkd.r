@@ -247,10 +247,12 @@ if(pset$iplatform==2){
 
 ####### -Counts into NB need be integer
 #######  => round()
-## zdiw, wdiw, vdiw i=4:9 or 6:9
+## zd4w-zd9w, wd6w-wd9w, vd6w-vd9w i=4:9 or 6:9
 for (i in (9-ndH+1):9){ #weekly incidence of hospitalisations
-  values =  round( eval(parse(text = paste0("zd",eval(i))))*weightz_m[i], 0)
-  assign(paste0("zd",eval(i),"w"),values) }
+  values = eval(parse(text = paste0("zd",eval(i))))*weightz_m[i]
+  assign(paste0("zd",eval(i),"w"),round(values, 0))
+  assign(paste0("sd",eval(i),"w"),sd(values))       #sd4w-sd9w
+  }
 for (i in (9-ndDH+1):9){ #weekly incidence of deaths in hospital
   values =  round( eval(parse(text = paste0("wd",eval(i))))*weightw_m[i], 0)
   assign(paste0("wd",eval(i),"w"),values) }
@@ -261,8 +263,11 @@ for (i in (9-ndDO+1):9){ #weekly incidence of deaths in hospital
 
 
 ### Parameter bounds
-pkMin  = 0.1  #1/k^2, NB likelihood and data
-pkMax  = 5    #Assume: same kD for DH and DO
+pkMin    = 0.1  #1/k^2, NB likelihood and data
+pkMax    = 5    #Assume: same kD for DH and DO
+
+sdHMin   = 0
+sdHMax   = 5 #multiplicative factor of the sd across the age-glrups fitted
 
 tMax     = 20 #10
 tMax2    = 50 #30
@@ -305,7 +310,8 @@ LogLikelihood <- function(theta){
   Arseed   =      theta[5]
   hA       =      theta[6] #hAMin+theta[]*(hAMax-hAMin)
   pars$ad  =      theta[7] #adMin+theta[]*(adMax-adMin)
-  kH       = 1/(  theta[8]*theta[8])    # pk = theta = 1/sqrt(k) => k = 1/pk^2
+  sdH      =      theta[8]
+  #kH     = 1/(  theta[8]*theta[8])    # pk = theta = 1/sqrt(k) => k = 1/pk^2
   kDH      = 1/(  theta[9]*theta[9])
   kDO      = kDH
   #kDO      = 1/(  theta[3]*theta[3])
@@ -316,7 +322,7 @@ LogLikelihood <- function(theta){
   pars$Sa0   = pars$Na0 - pars$Ea0 - pars$Ia0 - pars$Ua0 - pars$Ha0 - pars$Oa0 - pars$Ra0 - pars$Da0   
   pars$beta  = BETA(pars) 
 
-  ### Model outputs (from Rcpp, given the proposed parameters)
+  ### Model outputs (from Rcpp, given the above proposed parameters)
   m <- model(pars)
 
   #Model merged ageg - #NB: no ageons weighing: Ha (Da) are proportional to ageg (via Na)
@@ -352,24 +358,30 @@ LogLikelihood <- function(theta){
   #Likelihood of data
   #product over: datasets (H,DH,DO), age-groups, and weeks
   link = 1 #pars$pdm
-  #Negative binomial likelihood 
-
-  ll = sum(dnbinom(x = zd4w, size = kH, mu = MeanH4, log = T)) +
-       sum(dnbinom(x = zd5w, size = kH, mu = MeanH5, log = T)) +
-       sum(dnbinom(x = zd6w, size = kH, mu = MeanH6, log = T)) +
-       sum(dnbinom(x = zd7w, size = kH, mu = MeanH7, log = T)) +
-       sum(dnbinom(x = zd8w, size = kH, mu = MeanH8, log = T)) +
-       sum(dnbinom(x = zd9w, size = kH, mu = MeanH9, log = T)) +
+  #Negative binomial likelihood or
+  #Normal likelihood
+  #ll = sum(dnbinom(x = zd4w, size = kH, mu = MeanH4, log = T)) +
+       #sum(dnbinom(x = zd5w, size = kH, mu = MeanH5, log = T)) +
+       #sum(dnbinom(x = zd6w, size = kH, mu = MeanH6, log = T)) +
+       #sum(dnbinom(x = zd7w, size = kH, mu = MeanH7, log = T)) +
+       #sum(dnbinom(x = zd8w, size = kH, mu = MeanH8, log = T)) +
+       #sum(dnbinom(x = zd9w, size = kH, mu = MeanH9, log = T)) +
+  ll = sum(  dnorm(x = zd4w, sd = sdH*sd4w, mean = MeanH4, log = T)) +
+       sum(  dnorm(x = zd5w, sd = sdH*sd5w, mean = MeanH5, log = T)) +
+       sum(  dnorm(x = zd6w, sd = sdH*sd6w, mean = MeanH6, log = T)) +
+       sum(  dnorm(x = zd7w, sd = sdH*sd7w, mean = MeanH7, log = T)) +
+       sum(  dnorm(x = zd8w, sd = sdH*sd8w, mean = MeanH8, log = T)) +
+       sum(  dnorm(x = zd9w, sd = sdH*sd9w, mean = MeanH9, log = T)) +
        ###
-       sum(dnbinom(x = wd6w, size = kDH, mu = MeanDH6*link, log = T)) +
-       sum(dnbinom(x = wd7w, size = kDH, mu = MeanDH7*link, log = T)) +
-       sum(dnbinom(x = wd8w, size = kDH, mu = MeanDH8*link, log = T)) +
-       sum(dnbinom(x = wd9w, size = kDH, mu = MeanDH9*link, log = T)) +
+       sum(dnbinom(x = wd6w, size = kDH,    mu = MeanDH6*link, log = T)) +
+       sum(dnbinom(x = wd7w, size = kDH,    mu = MeanDH7*link, log = T)) +
+       sum(dnbinom(x = wd8w, size = kDH,    mu = MeanDH8*link, log = T)) +
+       sum(dnbinom(x = wd9w, size = kDH,    mu = MeanDH9*link, log = T)) +
        ###
-       sum(dnbinom(x = vd6w, size = kDO, mu = MeanDO6*link, log = T)) +
-       sum(dnbinom(x = vd7w, size = kDO, mu = MeanDO7*link, log = T)) +
-       sum(dnbinom(x = vd8w, size = kDO, mu = MeanDO8*link, log = T)) +
-       sum(dnbinom(x = vd9w, size = kDO, mu = MeanDO9*link, log = T))
+       sum(dnbinom(x = vd6w, size = kDO,    mu = MeanDO6*link, log = T)) +
+       sum(dnbinom(x = vd7w, size = kDO,    mu = MeanDO7*link, log = T)) +
+       sum(dnbinom(x = vd8w, size = kDO,    mu = MeanDO8*link, log = T)) +
+       sum(dnbinom(x = vd9w, size = kDO,    mu = MeanDO9*link, log = T))
     
     return(ll)
 } #Likelihood
@@ -380,14 +392,10 @@ LogLikelihood <- function(theta){
 ## Likelihood definition, parameter ranges  ####################################
 niter = 30000#6000##3000
 if (pset$iplatform==2){niter=120000} #200000
-#LOWER = c(rep(0,2),               0,          0,                  0,                
-#          pkLower, pkLower2, rep(0,7)); #kDO
-#UPPER = c(rep(log(hMax/hMin),2),  log(R0Max), log(pE0Max/pE0Min), log(adMax/adMin), 
-#          pkUpper, pkUpper2, rep(log(hMax/hMin),7));
 
-          #kH,     kD,       rEI,    rID,     Arseed,    R0,           pE0,     ad,     hA
-LOWER = c(1/tMax, 1/tMax2, sqrt(R0Min),  pE0Min,  ArseedMin, hAMin, adMin,  pkMin, pkMin);
-UPPER = c(1,      1,       sqrt(R0Max),  pE0Max,  ArseedMax, hAMax, adMax,  pkMax, pkMax);
+          #rEI,    rID,     R0,          pE0,     Arseed,    hA,    ad,     sdH,   kD
+LOWER = c(1/tMax, 1/tMax2, sqrt(R0Min),  pE0Min,  ArseedMin, hAMin, adMin,  sdHMin, pkMin);
+UPPER = c(1,      1,       sqrt(R0Max),  pE0Max,  ArseedMax, hAMax, adMax,  sdHMax, pkMax);
 
 #Uniform priors
   #PARSTART = 0.5*UPPER
@@ -448,7 +456,8 @@ parsE$pE0 <-      as.vector(MAPE$parametersMAP[4])
 ArseedE   <-      as.vector(MAPE$parametersMAP[5])
 hAE       <-      as.vector(MAPE$parametersMAP[6])
 parsE$ad  <-      as.vector(MAPE$parametersMAP[7])
-parsE$kH  <- 1/(  as.vector(MAPE$parametersMAP[8]^2)) #1/pk^2
+#parsE$kH  <- 1/(  as.vector(MAPE$parametersMAP[8]^2)) #1/pk^2
+parsE$sdH <-      as.vector(MAPE$parametersMAP[8])
 parsE$kDH <- 1/(  as.vector(MAPE$parametersMAP[9]^2))
 parsE$kDO <- parsE$kDH
 #Dependent parameters
@@ -494,7 +503,7 @@ parsES  = pars #parsE
 ###         MAP      parsE$, 
 ###         sample   parsES$
 for(i in 1:nsample){
-  #kH,     kD,       rEI,    rID,     Arseed,         R0,         pE0,    #ad, h4-h9
+  #rEI,     rID,     R0,     pE0,     Arseed,     hA,     ad,     sdH,     kD
   parsES$rEI <- 1/(  as.vector(psample[i,1])*tMax)
   parsES$rID <- 1/(  as.vector(psample[i,2])*tMax2)
   parsES$R0  <-      as.vector(psample[i,3])^2
@@ -536,7 +545,7 @@ for(it in 1:ntimes){
 nsampleR0 = min(750,nsample) #300#100
 R0weeksample = matrix(0,ntimes,nsampleR0)
 for(i in 1:nsampleR0){
-  #rEI,   rID,    R0,   pE0,    Arseed,  hA,    ad,   kH,   kD       
+  #rEI,     rID,     R0,     pE0,     Arseed,     hA,     ad,     sdH,     kD
   parsES$rEI <- 1/(  as.vector(psample[i,1])*tMax)
   parsES$rID <- 1/(  as.vector(psample[i,2])*tMax2)
   parsES$R0  <-      as.vector(psample[i,3])^2
@@ -582,19 +591,20 @@ print(paste0("Time used (sec): ", round(tout1[[3]],3)))
 cat("\n")
 ### UPDATE: @@
 #Expected parameters
-thetaTrue = c(pars$rEI, pars$rID, pars$R0, pars$pE0, pars$rseed, pars$ad, sum(pars$h), pars$kH, pars$kDH) #pars$h[1:9]);
+thetaTrue = c(pars$rEI, pars$rID, pars$R0, pars$pE0, pars$rseed, sum(pars$h), pars$ad, pars$sdH, pars$kDH) #pars$h[1:9]);
 ## MAP Estimates
-print(paste0("kH    MAP: ", round(parsE$kH,    3), ". Expected/start: ", round(  pars$kH,      3))) #kH
-print(paste0("kDH,kDO MAP: ", round(parsE$kDH, 3), ". Expected/start: ", round(  pars$kDH,     3))) #kD
-print(paste0("1/rEI MAP: ", round(1/parsE$rEI, 3), ". Expected/start: ", round(1/pars$rEI,     3))) #rEI
-print(paste0("1/rID MAP: ", round(1/parsE$rID, 3), ". Expected/start: ", round(1/pars$rID,     3))) #rID
-print(paste0("R0    MAP: ", round(parsE$R0,    3), ". Expected/start: ", round(  pars$R0,      3))) #R0
-print(paste0("pE0   MAP: ", round(parsE$pE0,   4), ". Expected/start: ", round(  pars$pE0,     3))) #pE0
-print(paste0("rseed MAP: ", round(sum(parsE$rseed), 0), ". Expected/start: ", round(sum(pars$rseed), 0) )) #rseed
-print(paste0("hA   MAP: ",  round(parsE$h[9]/pars$h[9], 4), ". Expected/start: ")) #hA
-print(paste0("ad    MAP: ", round(parsE$ad,    4), ". Expected/start: ", round(  pars$ad,      3))) #ad
+#print(paste0("kH    MAP: ", round(parsE$kH,    3), ". Expected: ", round(  pars$kH,      3))) #kH
+print(paste0("sdH   MAP: ", round(parsE$sdH,   3),    ". Expected: ", round(  pars$sdH,     3))) #sdH
+print(paste0("kDH,kDO MAP:",round(parsE$kDH,   3),    ". Expected: ", round(  pars$kDH,     3))) #kD
+print(paste0("1/rEI MAP: ", round(1/parsE$rEI, 3),    ". Expected: ", round(1/pars$rEI,     3))) #rEI
+print(paste0("1/rID MAP: ", round(1/parsE$rID, 3),    ". Expected: ", round(1/pars$rID,     3))) #rID
+print(paste0("R0    MAP: ", round(parsE$R0,    3),    ". Expected: ", round(  pars$R0,      3))) #R0
+print(paste0("pE0   MAP: ", round(parsE$pE0,   4),    ". Expected: ", round(  pars$pE0,     3))) #pE0
+print(paste0("rseed MAP: ", round(sum(parsE$rseed), 0), ". Expected: ", round(sum(pars$rseed), 0) )) #rseed
+print(paste0("hA   MAP: ",  round(parsE$h[9]/pars$h[9], 4), ". Expected: ")) #hA
+print(paste0("ad    MAP: ", round(parsE$ad,    4),    ". Expected: ", round(  pars$ad,      3))) #ad
 print(paste0("beta  dep: ", round(parsE$beta,     5) ))
-print(paste0("E0    dep: ", round(sum(parsE$Ea0), 0), ". Expected/start: ", round(sum(pars$Na0*pars$pE0)) ))
+print(paste0("E0    dep: ", round(sum(parsE$Ea0), 0), ". Expected: ", round(sum(pars$Na0*pars$pE0)) ))
 print(paste0("Estimated proportion deaths outside hospital = ", round(parsE$ad/(1+parsE$ad),3)))
 cat("\n");
 print(summary(out)); 
