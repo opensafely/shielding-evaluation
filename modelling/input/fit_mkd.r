@@ -274,6 +274,8 @@ tMax2    = 50 #30
 tMin     = 1  #implicit in LOWER and par resacaling
 tMin2    = 1  #implicit in UPPER and par resacaling
 
+yAMax    = 2
+yAMin    = 0.01
 
 ArseedMin = 0
 ArseedMax = (2*84)*2 #sum(pars$rseed)*2
@@ -307,7 +309,8 @@ LogLikelihood <- function(theta){
   pars$rID = 1/(  theta[2]*tMax2)
   pars$R0  =  exp(theta[3]) #^2
   pars$pE0 =      theta[4]
-  Arseed   =      theta[5]
+  #Arseed   =      theta[5]
+  yA       =      theta[5]
   hA       =      theta[6] #hAMin+theta[]*(hAMax-hAMin)
   pars$ad  =      theta[7] #adMin+theta[]*(adMax-adMin)
   sdH      =      theta[8]
@@ -317,7 +320,8 @@ LogLikelihood <- function(theta){
   #kDO      = 1/(  theta[3]*theta[3])
   #Dependent parameters
   pars$h     = hA*pars$h
-  pars$rseed = Arseed*pars$ageons
+  pars$y     = yA*pars$y
+  #pars$rseed = Arseed*pars$ageons
   pars$Ea0   = pars$Na0*pars$pE0
   pars$Sa0   = pars$Na0 - pars$Ea0 - pars$Ia0 - pars$Ua0 - pars$Ha0 - pars$Oa0 - pars$Ra0 - pars$Da0   
   pars$beta  = BETA(pars) 
@@ -393,9 +397,9 @@ LogLikelihood <- function(theta){
 niter = 30000#6000##3000
 if (pset$iplatform==2){niter=120000} #200000
 
-          #rEI,    rID,     R0,          pE0,     Arseed,    hA,    ad,     sdH,   kD
-LOWER = c(1/tMax, 1/tMax2, log(R0Min),  pE0Min,  ArseedMin, hAMin, adMin,  sdHMin, pkMin);
-UPPER = c(1,      1,       log(R0Max),  pE0Max,  ArseedMax, hAMax, adMax,  sdHMax, pkMax);
+          #rEI,    rID,     R0,          pE0,    yA/Arseed,    hA,    ad,     sdH,   kD
+LOWER = c(1/tMax, 1/tMax2, log(R0Min),  pE0Min,  yAMin, hAMin, adMin,  sdHMin, pkMin);
+UPPER = c(1,      1,       log(R0Max),  pE0Max,  yAMax, hAMax, adMax,  sdHMax, pkMax);
 
 #Uniform priors
   #PARSTART = 0.5*UPPER
@@ -448,12 +452,13 @@ MAPE      <- MAP(out) #pasr estimated
 ###         proposal pars$
 ###         MAP      parsE$, 
 ###         sample   parsES$
-#kH,     kD,       rEI,    rID,     Arseed,         R0,         pE0,    #ad, h4-h9
+#kH,     kD,       rEI,    rID,     yA/Arseed,         R0,         pE0,    #ad, h4-h9
 parsE$rEI <- 1/(  as.vector(MAPE$parametersMAP[1]*tMax))
 parsE$rID <- 1/(  as.vector(MAPE$parametersMAP[2]*tMax2))
 parsE$R0  <-  exp(as.vector(MAPE$parametersMAP[3])) #^2)
 parsE$pE0 <-      as.vector(MAPE$parametersMAP[4])
-ArseedE   <-      as.vector(MAPE$parametersMAP[5])
+#ArseedE   <-      as.vector(MAPE$parametersMAP[5])
+yAE       <-      as.vector(MAPE$parametersMAP[5])
 hAE       <-      as.vector(MAPE$parametersMAP[6])
 parsE$ad  <-      as.vector(MAPE$parametersMAP[7])
 #parsE$kH  <- 1/(  as.vector(MAPE$parametersMAP[8]^2)) #1/pk^2
@@ -461,8 +466,9 @@ parsE$sdH <-      as.vector(MAPE$parametersMAP[8])
 parsE$kDH <- 1/(  as.vector(MAPE$parametersMAP[9]^2))
 parsE$kDO <- parsE$kDH
 #Dependent parameters
-parsE$h     =       hAE*parsE$h
-parsE$rseed =   ArseedE*pars$ageons
+parsE$h     = hAE*pars$h #parsE$h
+parsE$y     = yAE*pars$y
+#parsE$rseed =   ArseedE*pars$ageons
 parsE$Ea0   = parsE$Na0*parsE$pE0
 parsE$Sa0   = parsE$Na0 - parsE$Ea0 - parsE$Ia0 - parsE$Ua0 - parsE$Ha0 - parsE$Oa0 - parsE$Ra0 - parsE$Da0   
 parsE$beta  = BETA(parsE)
@@ -503,17 +509,19 @@ parsES  = pars #parsE
 ###         MAP      parsE$, 
 ###         sample   parsES$
 for(i in 1:nsample){
-  #rEI,     rID,     R0,     pE0,     Arseed,     hA,     ad,     sdH,     kD
+  #rEI,     rID,     R0,     pE0,     yA/Arseed,     hA,     ad,     sdH,     kD
   parsES$rEI <- 1/(  as.vector(psample[i,1])*tMax)
   parsES$rID <- 1/(  as.vector(psample[i,2])*tMax2)
   parsES$R0  <-  exp(as.vector(psample[i,3])) #^2
   parsES$pE0 <-      as.vector(psample[i,4])
-  ArseedES   <-      as.vector(psample[i,5])
+  #ArseedES   <-      as.vector(psample[i,5])
+  yAES       <-      as.vector(psample[i,5])
   hAES       <-      as.vector(psample[i,6])
   parsES$ad  <-      as.vector(psample[i,7])
   #Dependent parameters
   parsES$h    =       hAES*pars$h #parsES$h
-  parsES$rseed=   ArseedES*pars$ageons
+  parsES$y    =       yAES*pars$y
+  #parsES$rseed=   ArseedES*pars$ageons
   parsES$Ea0  = parsES$Na0*parsES$pE0
   parsES$Sa0  = parsES$Na0 - parsES$Ea0 - parsES$Ia0 - parsES$Ua0 - parsES$Ha0 - parsES$Oa0 - parsES$Ra0 - parsES$Da0 
   parsES$beta = BETA(parsES)
@@ -545,17 +553,19 @@ for(it in 1:ntimes){
 nsampleR0 = min(750,nsample) #300#100
 R0weeksample = matrix(0,ntimes,nsampleR0)
 for(i in 1:nsampleR0){
-  #rEI,     rID,     R0,     pE0,     Arseed,     hA,     ad,     sdH,     kD
+  #rEI,     rID,     R0,     pE0,     yA/Arseed,     hA,     ad,     sdH,     kD
   parsES$rEI <- 1/(  as.vector(psample[i,1])*tMax)
   parsES$rID <- 1/(  as.vector(psample[i,2])*tMax2)
   parsES$R0  <-  exp(as.vector(psample[i,3])) #^2
   parsES$pE0 <-      as.vector(psample[i,4])
-  ArseedES   <-      as.vector(psample[i,5])
+  #ArseedES   <-      as.vector(psample[i,5])
+  yAES       <-      as.vector(psample[i,5])
   hAES       <-      as.vector(psample[i,6])
   parsES$ad  <-      as.vector(psample[i,7])
   #Dependent parameters
   parsES$h    =       hAES*pars$h #parsES$h
-  parsES$rseed=   ArseedES*pars$ageons
+  parsES$y    =       yAES*pars$y
+  #parsES$rseed=   ArseedES*pars$ageons
   parsES$Ea0  = parsES$Na0*parsES$pE0
   parsES$Sa0  = parsES$Na0 - parsES$Ea0 - parsES$Ia0 - parsES$Ua0 - parsES$Ha0 - parsES$Oa0 - parsES$Ra0 - parsES$Da0 
   parsES$beta = BETA(parsES)
@@ -591,7 +601,7 @@ print(paste0("Time used (sec): ", round(tout1[[3]],3)))
 cat("\n")
 ### UPDATE: @@
 #Expected parameters
-thetaTrue = c(pars$rEI, pars$rID, pars$R0, pars$pE0, pars$rseed, sum(pars$h), pars$ad, pars$sdH, pars$kDH) #pars$h[1:9]);
+thetaTrue = c(pars$rEI, pars$rID, pars$R0, pars$pE0, 1, 1, pars$ad, pars$sdH, pars$kDH) #pars$h[1:9]);
 ## MAP Estimates
 #print(paste0("kH    MAP: ", round(parsE$kH,    3), ". Expected: ", round(  pars$kH,      3))) #kH
 print(paste0("sdH   MAP: ", round(parsE$sdH,   3),    ". Expected: ", round(  pars$sdH,     3))) #sdH
@@ -600,8 +610,9 @@ print(paste0("1/rEI MAP: ", round(1/parsE$rEI, 3),    ". Expected: ", round(1/pa
 print(paste0("1/rID MAP: ", round(1/parsE$rID, 3),    ". Expected: ", round(1/pars$rID,     3))) #rID
 print(paste0("R0    MAP: ", round(parsE$R0,    3),    ". Expected: ", round(  pars$R0,      3))) #R0
 print(paste0("pE0   MAP: ", round(parsE$pE0,   4),    ". Expected: ", round(  pars$pE0,     3))) #pE0
-print(paste0("rseed MAP: ", round(sum(parsE$rseed), 0), ". Expected: ", round(sum(pars$rseed), 0) )) #rseed
-print(paste0("hA   MAP: ",  round(parsE$h[9]/pars$h[9], 4), ". Expected: ")) #hA
+#print(paste0("rseed MAP: ", round(sum(parsE$rseed), 0), ". Expected: ", round(sum(pars$rseed), 0) )) #rseed
+print(paste0("yA    MAP: ", round(parsE$y[9]/pars$y[9], 4), ". Expected: ")) #yA
+print(paste0("hA    MAP: ", round(parsE$h[9]/pars$h[9], 4), ". Expected: ")) #hA
 print(paste0("ad    MAP: ", round(parsE$ad,    4),    ". Expected: ", round(  pars$ad,      3))) #ad
 print(paste0("beta  dep: ", round(parsE$beta,     5) ))
 print(paste0("E0    dep: ", round(sum(parsE$Ea0), 0), ". Expected: ", round(sum(pars$Na0*pars$pE0)) ))
