@@ -274,7 +274,7 @@ tMax2    = 50 #30
 tMin     = 1  #implicit in LOWER and par resacaling
 tMin2    = 1  #implicit in UPPER and par resacaling
 
-yAMax    = 2
+yAMax    = 1.4 #min(1/pars$y) [1] 1.449275, so that y(a)=<1 for all a
 yAMin    = 0.01
 
 ArseedMin = 0
@@ -289,7 +289,7 @@ pE0Min   = 0.00001   #pop = 565.5
 adMax    = 0.99
 adMin    = 0.0099
 
-hAMax    = 2 #1
+hAMax    = 2 #min(1/pars$y) [1] 2.103049, so that h(a)=<1 for all a
 hAMin    = 0.01
 
 hMax    = 0.99
