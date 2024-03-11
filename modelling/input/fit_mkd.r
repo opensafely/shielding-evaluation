@@ -277,6 +277,9 @@ tMin2    = 1  #implicit in UPPER and par resacaling
 yAMax    = 1.4 #min(1/pars$y) [1] 1.449275, so that y(a)=<1 for all a
 yAMin    = 0.01
 
+fuMax    = 1
+fuMin    = 0
+
 ArseedMin = 0
 ArseedMax = (2*84)*2 #sum(pars$rseed)*2
 
@@ -305,12 +308,13 @@ LogLikelihood <- function(theta){
   ###         MAP      parsE$, 
   ###         sample   parsES$
   ### Proposed parameters
-  pars$rEI = 1/(  theta[1]*tMax)
-  pars$rID = 1/(  theta[2]*tMax2)
+  pars$rEI = 1/(  theta[1])#*tMax)
+  pars$rID = 1/(  theta[2])#*tMax2)
   pars$R0  =  exp(theta[3]) #^2
   pars$pE0 =      theta[4]
   #Arseed   =      theta[5]
-  yA       =      theta[5]
+  #yA       =      theta[5]
+  pars$fu  =      theta[5]
   hA       =      theta[6] #hAMin+theta[]*(hAMax-hAMin)
   pars$ad  =      theta[7] #adMin+theta[]*(adMax-adMin)
   sdH      =      theta[8]
@@ -320,7 +324,7 @@ LogLikelihood <- function(theta){
   #kDO      = 1/(  theta[3]*theta[3])
   #Dependent parameters
   pars$h     = hA*pars$h
-  pars$y     = yA*pars$y
+  #pars$y     = yA*pars$y
   #pars$rseed = Arseed*pars$ageons
   pars$Ea0   = pars$Na0*pars$pE0
   pars$Sa0   = pars$Na0 - pars$Ea0 - pars$Ia0 - pars$Ua0 - pars$Ha0 - pars$Oa0 - pars$Ra0 - pars$Da0   
@@ -397,9 +401,9 @@ LogLikelihood <- function(theta){
 niter = 30000#6000##3000
 if (pset$iplatform==2){niter=120000} #200000
 
-          #rEI,    rID,     R0,          pE0,    yA/Arseed,    hA,    ad,     sdH,   kD
-LOWER = c(1/tMax, 1/tMax2, log(R0Min),  pE0Min,  yAMin, hAMin, adMin,  sdHMin, pkMin);
-UPPER = c(1,      1,       log(R0Max),  pE0Max,  yAMax, hAMax, adMax,  sdHMax, pkMax);
+          #rEI,    rID,     R0,          pE0,    fu/yA/Arseed,    hA,    ad,     sdH,   kD
+LOWER = c(1,       1,       log(R0Min),  pE0Min,  fuMin, hAMin, adMin,  sdHMin, pkMin);
+UPPER = c(tMax,   tMax2,    log(R0Max),  pE0Max,  fuMax, hAMax, adMax,  sdHMax, pkMax);
 
 #Uniform priors
   #PARSTART = 0.5*UPPER
@@ -452,13 +456,14 @@ MAPE      <- MAP(out) #pasr estimated
 ###         proposal pars$
 ###         MAP      parsE$, 
 ###         sample   parsES$
-#kH,     kD,       rEI,    rID,     yA/Arseed,         R0,         pE0,    #ad, h4-h9
-parsE$rEI <- 1/(  as.vector(MAPE$parametersMAP[1]*tMax))
-parsE$rID <- 1/(  as.vector(MAPE$parametersMAP[2]*tMax2))
+#kH,     kD,       rEI,    rID,     fuyA/Arseed,         R0,         pE0,    #ad, h4-h9
+parsE$rEI <- 1/(  as.vector(MAPE$parametersMAP[1]))#*tMax))
+parsE$rID <- 1/(  as.vector(MAPE$parametersMAP[2]))#*tMax2))
 parsE$R0  <-  exp(as.vector(MAPE$parametersMAP[3])) #^2)
 parsE$pE0 <-      as.vector(MAPE$parametersMAP[4])
 #ArseedE   <-      as.vector(MAPE$parametersMAP[5])
-yAE       <-      as.vector(MAPE$parametersMAP[5])
+#yAE       <-      as.vector(MAPE$parametersMAP[5])
+parsE$fu  <-      as.vector(MAPE$parametersMAP[5])
 hAE       <-      as.vector(MAPE$parametersMAP[6])
 parsE$ad  <-      as.vector(MAPE$parametersMAP[7])
 #parsE$kH  <- 1/(  as.vector(MAPE$parametersMAP[8]^2)) #1/pk^2
@@ -467,7 +472,7 @@ parsE$kDH <- 1/(  as.vector(MAPE$parametersMAP[9]^2))
 parsE$kDO <- parsE$kDH
 #Dependent parameters
 parsE$h     = hAE*pars$h #parsE$h
-parsE$y     = yAE*pars$y
+#parsE$y     = yAE*pars$y
 #parsE$rseed =   ArseedE*pars$ageons
 parsE$Ea0   = parsE$Na0*parsE$pE0
 parsE$Sa0   = parsE$Na0 - parsE$Ea0 - parsE$Ia0 - parsE$Ua0 - parsE$Ha0 - parsE$Oa0 - parsE$Ra0 - parsE$Da0   
@@ -479,6 +484,9 @@ source(file = paste0(input_dir,"/R0.r"))
 ntimes = length(imodelH)
 r0 = R0(parsE, GetBeta=0, GetOutput=1, Sampling=1, nt=ntimes)
 R0_weekE = r0[[2]]$R0_week
+#Prevalence using MAP-parameters
+#see datap
+
 #Note: R0(parsE, GetBeta=0, GetOutput=1, Sampling=1, nt=ntimes)[[1]]$R0 - same as parsE$R0
 
 
@@ -486,15 +494,15 @@ R0_weekE = r0[[2]]$R0_week
 ## Sample the chains
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
 print("Sampling..."); cat("\n")
-  
+
+oN = 1/pars$Npop
 npar = length(LOWER)
 Thin=4#2#4
 Chains=3
 StartSampChainPostBurn = 1
 LengtMcmcChainPostBurn = floor((niter-Burnin+1)/Chains)
 LengtSampChainPostBurn = LengtMcmcChainPostBurn - StartSampChainPostBurn + 1
-#nsample = 100#3000#500#1000#;
-nsample = Chains*LengtMcmcChainPostBurn/Thin
+nsample = Chains*LengtMcmcChainPostBurn/Thin #nsample = 100#3000#500#1000#;
 #start-end - for each chain
 #Note: parametersOnly = F = gives extra: Lposterior Llikelihood     Lprior
 psample = getSample(out, parametersOnly = T, start=StartSampChainPostBurn, end= LengtSampChainPostBurn, thin=Thin)
@@ -503,24 +511,26 @@ psample = getSample(out, parametersOnly = T, start=StartSampChainPostBurn, end= 
 zsample = matrix(0,ntimes,nsample)
 wsample = matrix(0,ntimes,nsample)
 vsample = matrix(0,ntimes,nsample)
+csample = matrix(0,ntimes,nsample)
 parsES  = pars #parsE
 ### UPDATE: @@
 ###         proposal pars$
 ###         MAP      parsE$, 
 ###         sample   parsES$
 for(i in 1:nsample){
-  #rEI,     rID,     R0,     pE0,     yA/Arseed,     hA,     ad,     sdH,     kD
-  parsES$rEI <- 1/(  as.vector(psample[i,1])*tMax)
-  parsES$rID <- 1/(  as.vector(psample[i,2])*tMax2)
+  #rEI,     rID,     R0,     pE0,     fu/yA/Arseed,     hA,     ad,     sdH,     kD
+  parsES$rEI <- 1/(  as.vector(psample[i,1]))#*tMax)
+  parsES$rID <- 1/(  as.vector(psample[i,2]))#*tMax2)
   parsES$R0  <-  exp(as.vector(psample[i,3])) #^2
   parsES$pE0 <-      as.vector(psample[i,4])
   #ArseedES   <-      as.vector(psample[i,5])
-  yAES       <-      as.vector(psample[i,5])
+  #yAES       <-      as.vector(psample[i,5])
+  parsES$fu  <-      as.vector(psample[i,5])
   hAES       <-      as.vector(psample[i,6])
   parsES$ad  <-      as.vector(psample[i,7])
   #Dependent parameters
   parsES$h    =       hAES*pars$h #parsES$h
-  parsES$y    =       yAES*pars$y
+  #parsES$y    =       yAES*pars$y
   #parsES$rseed=   ArseedES*pars$ageons
   parsES$Ea0  = parsES$Na0*parsES$pE0
   parsES$Sa0  = parsES$Na0 - parsES$Ea0 - parsES$Ia0 - parsES$Ua0 - parsES$Ha0 - parsES$Oa0 - parsES$Ra0 - parsES$Da0 
@@ -529,6 +539,7 @@ for(i in 1:nsample){
   zsample[,i] = outs$byw$Hw[imodelH]
   wsample[,i] = outs$byw$DHw[imodelH]
   vsample[,i] = outs$byw$DOw[imodelH]  
+  csample[,i] = (outs$byw$It[imodelH] + outs$byw$Ut[imodelH])*oN #LATER: outs$byw$Ct
 } 
 Weekssample = 1 + outs$byw$time[imodelH]/7 + Week_shift_model
 Datessample = as.Date(paste(Weekssample, "2020", 'Mon'), '%U %Y %a') #Checked: "Mon" consistent with weeks/dates def throughout 
@@ -536,6 +547,7 @@ Datessample = as.Date(paste(Weekssample, "2020", 'Mon'), '%U %Y %a') #Checked: "
 zsample95 = matrix(0,ntimes,2)
 wsample95 = matrix(0,ntimes,2)
 vsample95 = matrix(0,ntimes,2)
+csample95 = matrix(0,ntimes,2)
 q1=0.01 #0.05
 q2=0.99 #0.95
 for(it in 1:ntimes){
@@ -548,28 +560,32 @@ for(it in 1:ntimes){
   samp_it <- vsample[it,]
   vsample95[it,1] = quantile(samp_it,q1)[[1]]
   vsample95[it,2] = quantile(samp_it,q2)[[1]]
+  samp_it <- csample[it,]
+  csample95[it,1] = quantile(samp_it,q1)[[1]]
+  csample95[it,2] = quantile(samp_it,q2)[[1]]
 }
 ## R0_week
 nsampleR0 = min(750,nsample) #300#100
 R0weeksample = matrix(0,ntimes,nsampleR0)
 for(i in 1:nsampleR0){
-  #rEI,     rID,     R0,     pE0,     yA/Arseed,     hA,     ad,     sdH,     kD
-  parsES$rEI <- 1/(  as.vector(psample[i,1])*tMax)
-  parsES$rID <- 1/(  as.vector(psample[i,2])*tMax2)
+  #rEI,     rID,     R0,     pE0,     fu/yA/Arseed,     hA,     ad,     sdH,     kD
+  parsES$rEI <- 1/(  as.vector(psample[i,1]))#*tMax)
+  parsES$rID <- 1/(  as.vector(psample[i,2]))#*tMax2)
   parsES$R0  <-  exp(as.vector(psample[i,3])) #^2
   parsES$pE0 <-      as.vector(psample[i,4])
   #ArseedES   <-      as.vector(psample[i,5])
-  yAES       <-      as.vector(psample[i,5])
+  #yAES       <-      as.vector(psample[i,5])
+  parsES$fu  <-      as.vector(psample[i,5])
   hAES       <-      as.vector(psample[i,6])
   parsES$ad  <-      as.vector(psample[i,7])
   #Dependent parameters
   parsES$h    =       hAES*pars$h #parsES$h
-  parsES$y    =       yAES*pars$y
+  #parsES$y    =       yAES*pars$y
   #parsES$rseed=   ArseedES*pars$ageons
   parsES$Ea0  = parsES$Na0*parsES$pE0
   parsES$Sa0  = parsES$Na0 - parsES$Ea0 - parsES$Ia0 - parsES$Ua0 - parsES$Ha0 - parsES$Oa0 - parsES$Ra0 - parsES$Da0 
   parsES$beta = BETA(parsES)
-  outs        = model(as.vector(parsES))
+  #outs        = model(as.vector(parsES))
   R0weeksample[,i] = R0(parsES, GetBeta=0, GetOutput=1, Sampling=1, nt=ntimes)[[2]]$R0_week 
 }
 R0weeksample95 = matrix(0,length(imodelH),2)
@@ -601,7 +617,7 @@ print(paste0("Time used (sec): ", round(tout1[[3]],3)))
 cat("\n")
 ### UPDATE: @@
 #Expected parameters
-thetaTrue = c(pars$rEI, pars$rID, pars$R0, pars$pE0, 1, 1, pars$ad, pars$sdH, pars$kDH) #pars$h[1:9]);
+thetaTrue = c(pars$rEI, pars$rID, pars$R0, pars$pE0, 0.5, 1, pars$ad, pars$sdH, pars$kDH) #pars$h[1:9]);
 ## MAP Estimates
 #print(paste0("kH    MAP: ", round(parsE$kH,    3), ". Expected: ", round(  pars$kH,      3))) #kH
 print(paste0("sdH   MAP: ", round(parsE$sdH,   3),    ". Expected: ", round(  pars$sdH,     3))) #sdH
@@ -611,8 +627,8 @@ print(paste0("1/rID MAP: ", round(1/parsE$rID, 3),    ". Expected: ", round(1/pa
 print(paste0("R0    MAP: ", round(parsE$R0,    3),    ". Expected: ", round(  pars$R0,      3))) #R0
 print(paste0("pE0   MAP: ", round(parsE$pE0,   4),    ". Expected: ", round(  pars$pE0,     3))) #pE0
 #print(paste0("rseed MAP: ", round(sum(parsE$rseed), 0), ". Expected: ", round(sum(pars$rseed), 0) )) #rseed
-print(paste0("yA    MAP: ", round(parsE$y[9]/pars$y[9], 4), ". Expected: ")) #yA
-print(paste0("hA    MAP: ", round(parsE$h[9]/pars$h[9], 4), ". Expected: ")) #hA
+print(paste0("fu    MAP: ", round(parsE$fu,    4),    ". Expected: ", round(  pars$fu,      3))) #pE0 #fu #yA
+print(paste0("hA    MAP: ", round(parsE$h[9]/pars$h[9], 4), ". Expected: ", round(1,        3))) #hA
 print(paste0("ad    MAP: ", round(parsE$ad,    4),    ". Expected: ", round(  pars$ad,      3))) #ad
 print(paste0("beta  dep: ", round(parsE$beta,     5) ))
 print(paste0("E0    dep: ", round(sum(parsE$Ea0), 0), ". Expected: ", round(sum(pars$Na0*pars$pE0)) ))
@@ -643,8 +659,11 @@ print(names(out[[2]]))
 cat("\n")
 #print("Priors")
 print(out$setup$prior)
-cat("\n"); 
 cat("\n")
+print("Parameters (doesn't aply to those estimated)"); cat("\n")
+print(pars[-1]) #"cm"
+cat("\n"); 
+cat("\n"); 
 sink()
 
 
@@ -653,7 +672,18 @@ sink()
 print("Data frames..."); cat("\n")
 N  = pars$Npop
 Nc = pars$Npopcoh
+
+
+#--
+#p1  <- ggplot(datM, aes(x = Weeks)) +
+#        geom_line (aes(y = PInf,     color = 'Pinf')) +
+#--
+
 if(pset$iplatform<2) {weight=1} else {weight=N/Nc}
+
+datp <- tibble(Weeks  = 1 + mE$byw$time[imodelH]/7 + Week_shift_model,
+               Dates  = as.Date(paste(Weeks, "2020", 'Mon'), '%U %Y %a'),
+               Prev   = (mE$byw$It[imodelH] + mE$byw$Ut[imodelH])*oN )
 
 datH <- tibble(Weeks  = 1 + mE$byw$time[imodelH]/7 + Week_shift_model,    #model time 0 <> week1 + (Week1_Model-1) = 1 + (4-1) = week4
                Dates  = as.Date(paste(Weeks, "2020", 'Mon'), '%U %Y %a'), #Checked: "Mon" consistent with weeks/dates def throughout 
@@ -877,7 +907,7 @@ colors <- c("Data" = 1,  "MAP" = 2, "95% CrI" = "grey70", "95% perc" = "grey70")
 zMAX = rep(range(zsample)[2],length(Datessample))
 #H
 dzsample <- tibble(Date=Datessample, zsample05=zsample95[,1], zsample95=zsample95[,2],
-                   zMAP=outs$byw$Hw[imodelH], Datez=datH$Datesz, zdw=datH$zdw, yLIM=zMAX )
+                   zMAP=mE$byw$Hw[imodelH], Datez=datH$Datesz, zdw=datH$zdw, yLIM=zMAX )
 p1 <- ggplot(dzsample, aes(x=Date)) + 
       geom_ribbon(aes(ymin = zsample05, ymax = zsample95), fill = "grey70") +
       geom_point(aes(x=Datez, y = zdw,       color="Data")) +
@@ -894,7 +924,7 @@ p1 <- ggplot(dzsample, aes(x=Date)) +
 
 #DH
 dwsample <- tibble(Date=Datessample, wsample05=wsample95[,1], wsample95=wsample95[,2],
-                   wMAP=outs$byw$DHw[imodelDH], Datew=datD$Datesw, wdw=datD$wdw, yLIM=zMAX ) 
+                   wMAP=mE$byw$DHw[imodelDH], Datew=datD$Datesw, wdw=datD$wdw, yLIM=zMAX ) 
 p2 <- ggplot(dwsample, aes(x=Date)) + 
       geom_ribbon(aes(ymin = wsample05, ymax = wsample95), fill = "grey70") +
       geom_point(aes(x=Datew, y = wdw,       color="Data")) +
@@ -906,7 +936,7 @@ p2 <- ggplot(dwsample, aes(x=Date)) +
 
 #DO
 dvsample <- tibble(Date=Datessample, vsample05=vsample95[,1], vsample95=vsample95[,2],
-                   vMAP=outs$byw$DOw[imodelDO], Datev=datD$Datesv, vdw=datD$vdw, yLIM=zMAX ) 
+                   vMAP=mE$byw$DOw[imodelDO], Datev=datD$Datesv, vdw=datD$vdw, yLIM=zMAX ) 
 p3 <- ggplot(dvsample, aes(x=Date)) + 
       geom_ribbon(aes(ymin = vsample05, ymax = vsample95), fill = "grey70") +
       geom_point(aes(x=Datev, y = vdw,       color="Data")) +
@@ -916,14 +946,23 @@ p3 <- ggplot(dvsample, aes(x=Date)) +
       scale_color_manual(values = colors) +
       theme(axis.title = element_text(size = 12, face = "bold"))
 
+
+gridExtra::grid.arrange(p1, p2, p3, nrow = 3)
+
+svglite(paste0(filenamepath,".svg")); 
+gridExtra::grid.arrange(p1, p2, p3, nrow = 3)
+invisible(dev.off())
+
+
 ### Plot R0 over time
-#filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_PosteriorSampleR0")
+filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_PosteriorSample_Prev_R0")
+
 colors <- c("Contact mtx" = 1,  "MAP" = 2, "95% CrI" = "grey70", "95% perc" = "grey70")
 zMAX = rep(range(R0weeksample)[2],length(Datessample))
-#H
-dzsample <- tibble(Date=Datessample, R0sample05=R0weeksample95[,1], R0sample95=R0weeksample95[,2],
+#R0
+drsample <- tibble(Date=Datessample, R0sample05=R0weeksample95[,1], R0sample95=R0weeksample95[,2],
                    R0MAP=datH$R0_week, R0xcmMEV=r0[[2]]$R0xcmMEV, yLIM=zMAX )
-pR0 <-ggplot(dzsample, aes(x=Date)) + 
+pR0 <-ggplot(drsample, aes(x=Date)) + 
       geom_ribbon(aes(ymin = R0sample05, ymax = R0sample95), fill = "grey70") +
       geom_point(aes(x=Date, y = R0xcmMEV,   color="Contact mtx")) +
       geom_line (aes(x=Date, y = R0MAP,      color="MAP")) +
@@ -932,10 +971,25 @@ pR0 <-ggplot(dzsample, aes(x=Date)) +
       scale_color_manual(values = colors) +
       theme(axis.title = element_text(size = 12, face = "bold"))
 
-gridExtra::grid.arrange(p1, p2, p3, pR0, nrow = 4)
+
+### Plot prevalence
+zMAX = rep(range(csample)[2],length(Datessample))
+#Prev
+dcsample <- tibble(Date=Datessample, c05=csample95[,1], c95=csample95[,2], 
+                   cMAP = datp$Prev, yLIM=zMAX )
+pp <-ggplot(dcsample, aes(x=Date)) + 
+  geom_ribbon(aes(ymin = c05, ymax = c95), fill = "grey70") +
+  #geom_point(aes(x=Date, y = PREV DATA cwd?,   color="Data")) +
+  geom_line (aes(x=Date, y = cMAP,    color="MAP")) +
+  geom_line (aes(x=Date, y = c05,     color="95% CrI")) +
+  labs(x = 'Date', y = 'Prevalence estimate', color = "") + 
+  scale_color_manual(values = colors) +
+  theme(axis.title = element_text(size = 12, face = "bold"))
+
+gridExtra::grid.arrange(pp, pR0, nrow = 2)
 
 svglite(paste0(filenamepath,".svg")); 
-gridExtra::grid.arrange(p1, p2, p3, pR0, nrow = 4)
+gridExtra::grid.arrange(pp, pR0, nrow = 2)
 invisible(dev.off())
 
 }
