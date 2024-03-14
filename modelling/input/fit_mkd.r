@@ -166,21 +166,18 @@ if (pset$iplatform==0) {
 } #iplatform
 
 ##Prevalence data
-cis<-read.csv("CIS_ONS_England_03May-12Dec-2020_Positivity.csv")
+cis<-read.csv("./CIS_ONS_England_03May-12Dec-2020_Positivity.csv")
 posi_av_perc = 100*cis$Pos.average.prop
 #[1] 0.27 0.25 0.24 0.10 0.06 0.06 0.09 0.04 0.03 0.04 0.05 0.07 0.05 0.05 0.05 0.05 0.05 0.07 0.11 0.19 0.21 0.41 0.62
 #[24] 0.79 1.04 1.13 1.20 1.22 1.16 0.96 0.88 1.04 1.18
 posi_sd_perc = 100*(cis$Pos.U95CI.prop-cis$Pos.L95CI.prop)/1.96
 #round((100*(cis$Pos.U95CI.prop-cis$Pos.L95CI.prop))/1.96,2)
-#[1] 0.12 0.11 0.18 0.07 0.05 0.06 0.08 0.03 0.03 0.02 0.02 0.03 0.02 0.02 0.02 0.02 0.02 0.03 0.03 0.04 0.03 0.04 0.05
-#[24] 0.05 0.06 0.07 0.07 0.07 0.07 0.06 0.06 0.06 0.07
 ##Truncate sd to avoid negative variable range
-posi_sd_percT = posi_sd_perc/2
+posi_sd_percT = posi_sd_perc/2     #range(posi_sd_percT)  #[1] 0.007653061 0.089285714
 #plot(pos_av_perc)
 #lines(posi_av_perc+1.96*posi_sd_percT)
 #lines(posi_av_perc-1.96*posi_sd_percT)
 posi_sd_percT_mean = mean(posi_sd_percT) #0.02566481
-#range(posi_sd_percT)                   #[1] 0.007653061 0.089285714
 ##Absolute weeks CIS Positivity: 18-50
 ##Absolute weeks Model:           4-48 = 4-17 + 18-48
 ##=> fit index imodel = 15-45
