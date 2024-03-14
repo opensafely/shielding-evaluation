@@ -53,13 +53,14 @@ pars <- within(pars, {
     rHR    <- 1/12.00 #1/8.6  #recovery rate in hospital - updated 30jan from full reporting in cohort
     rHD    <- 1/13.91 #rHR    #death rate in hospital    - updated 30jan from full reporting in cohort	
     #rHD    <- rHR            #death rate in hospital, Roz - varied during pandemic; 7d in Davies Lancet PH
-    rID    <- 1/(1/rIH+1/rHD)#1/(2/rIH+1/rHD) #death outside hospital - assumed here
-    #rOD    <- rHD #1/(1/rIH+1/rHD) #delay in death outside hospital vs death since infection via hospital
+    #rID    <- 1/(1/rIH+1/rHD)#death outside hospital - assumed here
+    rIO    <- rIH             #death outside hospital - assumed here
+    rOD    <- rHD             #delay in death outside hospital vs death since infection via hospital
     rRS    <- 0
     rC     <- 1/8.5           #rate of loss of positivity, Davies Lancet ID
     R0     <- 2.23 #3         #2020-wild-type basic reproduction rate, Knock et al 2021
     fu     <- 0.5             #relative transmission of U group
-    beta   <- 1 #R0/(mean(u*y)/(rIR*(1-mean(h))+rHR*(mean(h)) + fu*mean(u*(1-y))/rUR ))# 1# 
+    beta   <- 1               #transmission rate between two given individuals
     Npopcoh<- 24.02*1e6       #cohort size - updated 30jan
     Npop   <- 56.55*1e6       #ONS-England population size mid 2020 - updated 30jan - ukpopestimatesmid2020on2021geography_JF_ENGdemography.xls
     pE0    <- 0.0030          #0.015 #Initial proportion of population in E state (sum of age groups)

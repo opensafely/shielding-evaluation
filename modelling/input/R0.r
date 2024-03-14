@@ -27,8 +27,8 @@ for (i in 1:ntcontact) { #1:52
 ## NGM MEV
 if (pset$imodel==2){
   rIH = pars$rIH
-  rIO = 6*pars$rID  #tIO = 1/rIO = (1/6)*(1/rID)
-  rOD = (1/5)*rIO   #tOD = 1/rOD = (5/6)*(1/rID), corresponds to 5 out of 6 compartments
+  rIO = pars$rIO
+  rOD = pars$rOD
   orOD= 1/rOD
   rUR = pars$rUR
   fu  = pars$fu
