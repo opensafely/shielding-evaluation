@@ -165,6 +165,34 @@ if (pset$iplatform==0) {
 
 } #iplatform
 
+##Prevalence data
+cis<-read.csv("CIS_ONS_England_03May-12Dec-2020_Positivity.csv")
+posi_av_perc = 100*cis$Pos.average.prop
+#[1] 0.27 0.25 0.24 0.10 0.06 0.06 0.09 0.04 0.03 0.04 0.05 0.07 0.05 0.05 0.05 0.05 0.05 0.07 0.11 0.19 0.21 0.41 0.62
+#[24] 0.79 1.04 1.13 1.20 1.22 1.16 0.96 0.88 1.04 1.18
+posi_sd_perc = 100*(cis$Pos.U95CI.prop-cis$Pos.L95CI.prop)/1.96
+#round((100*(cis$Pos.U95CI.prop-cis$Pos.L95CI.prop))/1.96,2)
+#[1] 0.12 0.11 0.18 0.07 0.05 0.06 0.08 0.03 0.03 0.02 0.02 0.03 0.02 0.02 0.02 0.02 0.02 0.03 0.03 0.04 0.03 0.04 0.05
+#[24] 0.05 0.06 0.07 0.07 0.07 0.07 0.06 0.06 0.06 0.07
+##Truncate sd to avoid negative variable range
+posi_sd_percT = posi_sd_perc/2
+#plot(pos_av_perc)
+#lines(posi_av_perc+1.96*posi_sd_percT)
+#lines(posi_av_perc-1.96*posi_sd_percT)
+posi_sd_percT_mean = mean(posi_sd_percT) #0.02566481
+#range(posi_sd_percT)                   #[1] 0.007653061 0.089285714
+##Absolute weeks CIS Positivity: 18-50
+##Absolute weeks Model:           4-48 = 4-17 + 18-48
+##=> fit index imodel = 15-45
+imodel_posi=15:45
+idata_posi = 1:31 #range(cis$Date[1:31]) [1] "2020-05-03" "2020-11-29" #
+if (pset$iplatform==0){
+  posi_d_to_m = max( 100*(mout$byw$Ct[imodel_posi]/pars$Npop) )/ 
+                max(posi_av_perc[idata_posi])  #[1] 0.007730766
+} else { 
+  posi_d_to_m=1 }
+##data to be fittted
+posi_data_perc = posi_av_perc[idata_posi]
 
 
 ######## Fitting ###############################################################
@@ -301,6 +329,9 @@ hMin    = 0.00001
 mAMax    = 2 #min(1/pars$m) [1] 2.43309, so that m(a)=<1 for all a
 mAMin    = 0.01
 
+oN = 1/pars$Npop
+
+
 ### LIKELIHOOD FUNCTION
 
 source(file = paste0(input_dir,"/BETA.r")) #Used within Likelihood
@@ -338,6 +369,9 @@ LogLikelihood <- function(theta){
 
   ### Model outputs (from Rcpp, given the above proposed parameters)
   m <- model(pars)
+  
+  #Model positivity
+  MeanPosi_perc = m$byw$Ct[imodel_posi]*oN*100
 
   #Model merged ageg - #NB: no ageons weighing: Ha (Da) are proportional to ageg (via Na)
   MeanH4  = rep(0,times=length(imodelH))
@@ -395,7 +429,10 @@ LogLikelihood <- function(theta){
        sum(dnbinom(x = vd6w, size = kDO,    mu = MeanDO6*link, log = T)) +
        sum(dnbinom(x = vd7w, size = kDO,    mu = MeanDO7*link, log = T)) +
        sum(dnbinom(x = vd8w, size = kDO,    mu = MeanDO8*link, log = T)) +
-       sum(dnbinom(x = vd9w, size = kDO,    mu = MeanDO9*link, log = T))
+       sum(dnbinom(x = vd9w, size = kDO,    mu = MeanDO9*link, log = T)) +
+       ###
+       sum(  dnorm(x = posi_data_perc*posi_d_to_m, sd = pos_sd_percT*posi_d_to_m, mean = MeanPosi_perc, log = T))
+  
     
     return(ll)
 } #Likelihood
@@ -493,6 +530,7 @@ source(file = paste0(input_dir,"/R0.r"))
 ntimes = length(imodelH)
 r0 = R0(parsE, GetBeta=0, GetOutput=1, Sampling=1, nt=ntimes)
 R0_weekE = r0[[2]]$R0_week
+PositivE = (mE$byw$Ct[imodelH])*oN
 #Prevalence using MAP-parameters
 #see datap
 
@@ -999,14 +1037,18 @@ pp <-ggplot(dcsample, aes(x=Date)) +
   scale_color_manual(values = colors) +
   theme(axis.title = element_text(size = 12, face = "bold"))
 
-### Plot positiveness
-dcsample <- tibble(Date=Datessample, c05=csample95[,1], c95=csample95[,2], cMAP = datp$Posi)
+### Plot positivity
+posi_data_plot = 0*datp$Posi #same length as model
+posi_data_plot[idata_posi] = (posi_data_perc/100)*posi_d_to_m #data*factor to which model fitted 
+
+dcsample <- tibble(Date=Datessample, c05=csample95[,1], c95=csample95[,2], 
+                   cMAP = datp$Posi, cdata=posi_data_plot)
 pc <-ggplot(dcsample, aes(x=Date)) + 
   geom_ribbon(aes(ymin = c05, ymax = c95), fill = "grey70") +
-  #geom_point(aes(x=Date, y = PREV DATA cwd?,   color="Data")) +
+  geom_point(aes(x=Date, y = cdata,   color="Data")) +
   geom_line (aes(x=Date, y = cMAP,    color="MAP")) +
   geom_line (aes(x=Date, y = c05,     color="95% CrI")) +
-  labs(x = 'Date', y = 'Positiveness estimate', color = "") + 
+  labs(x = 'Date', y = 'Positivity estimate', color = "") + 
   scale_color_manual(values = colors) +
   theme(axis.title = element_text(size = 12, face = "bold"))
 
