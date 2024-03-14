@@ -129,7 +129,8 @@ List SEIUHRD(List pars){
     const double rEI  = pars["rEI"];
     const double rEU  = pars["rEU"];
     const double rIR  = pars["rIR"];
-    const double rID  = pars["rID"];
+    const double rIO  = pars["rIO"];
+    const double rOD  = pars["rOD"];
     const double rUR  = pars["rUR"];
     const double rIH  = pars["rIH"];
     const double rHR  = pars["rHR"];
@@ -138,7 +139,7 @@ List SEIUHRD(List pars){
     const double rC   = pars["rC"];
     const double rCi  = 5*rC;
     const double rHi  = 5*rHD;
-    const double rOi  = 6*rID;
+    const double rOi  = 5*rOD;
     const double dt   = pars["dt"];
     
     // age group and population states initialised
@@ -230,7 +231,7 @@ List SEIUHRD(List pars){
         // state update for next timestep
         double dS  = dt*(-lambda*Sat       + rRS*Rat - rseeda);
         double dE  = dt*( lambda*Sat       - (rEU*(1-ya)+rEI*ya)*Eat  +  rseeda); //early seeding, no effect later
-        double dI  = dt*( rEI*ya*Eat       - (rIR*(1-ha-da)+rIH*ha+rOi*da)*Iat);
+        double dI  = dt*( rEI*ya*Eat       - (rIR*(1-ha-da)+rIH*ha+rIO*da)*Iat);
         double dU  = dt*( rEU*(1-ya)*Eat   - rUR*Uat);
 
         double dC1 = dt*( lambda*Sat - rCi*C1at);
@@ -240,7 +241,7 @@ List SEIUHRD(List pars){
         double dC5 = dt*( rCi*C4at   - rCi*C5at);
 //DO
 //Outside hospital delay to death
-        double dOin= dt*rOi*da*Iat;
+        double dOin= dt*rIO*da*Iat;
         double dO1 = dOin       - dt*( rOi*O1at);
         double dO2 = dt*( rOi*O1at   - rOi*O2at);
         double dO3 = dt*( rOi*O2at   - rOi*O3at);

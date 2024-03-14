@@ -8,8 +8,8 @@ fu   = pars$fu
 ad   = pars$ad  #est
 rIR  = pars$rIR #est
 rIH  = pars$rIH
-rIO  = 6*pars$rID  #tIO = 1/rIO = (1/6)*(1/rID)
-rOD  = (1/5)*rIO   #tOD = 1/rOD = (5/6)*(1/rID), corresponds to 5 out of 6 compartments
+rIO  = pars$rIO
+rOD  = pars$rOD
 orOD = 1/rOD
 rUR  = pars$rUR
 for (k in 1:9){ h_k = pars$h[k]; y_k = pars$y[k]; d_k=pars$d[k]*ad; for (j in 1:9) {

@@ -72,7 +72,7 @@ sd3  = round(0.05*mean(vm))  #for normal data
 dev0 = sd #1/sqrt(par$k)     #noise parameter
 
 #### Simulated Data each week
-set.seed(7)                  ###reproducibility
+set.seed(77)#7)                  ###reproducibility
 
 #Normal noise
 #zd = zm + rnorm(n=nd,mean=0,sd=sd)
