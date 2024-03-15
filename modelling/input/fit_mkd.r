@@ -174,7 +174,7 @@ posi_sd_perc = 100*(cis$Pos.U95CI.prop-cis$Pos.L95CI.prop)/1.96
 #round((100*(cis$Pos.U95CI.prop-cis$Pos.L95CI.prop))/1.96,2)
 ##Truncate sd to avoid negative variable range
 posi_sd_percT = posi_sd_perc/2     #range(posi_sd_percT)  #[1] 0.007653061 0.089285714
-#plot(pos_av_perc)
+#plot(posi_av_perc)
 #lines(posi_av_perc+1.96*posi_sd_percT)
 #lines(posi_av_perc-1.96*posi_sd_percT)
 posi_sd_percT_mean = mean(posi_sd_percT) #0.02566481
@@ -428,7 +428,7 @@ LogLikelihood <- function(theta){
        sum(dnbinom(x = vd8w, size = kDO,    mu = MeanDO8*link, log = T)) +
        sum(dnbinom(x = vd9w, size = kDO,    mu = MeanDO9*link, log = T)) +
        ###
-       sum(  dnorm(x = posi_data_perc*posi_d_to_m, sd = pos_sd_percT*posi_d_to_m, mean = MeanPosi_perc, log = T))
+       sum(  dnorm(x = posi_data_perc*posi_d_to_m, sd = posi_sd_percT*posi_d_to_m, mean = MeanPosi_perc, log = T))
   
     
     return(ll)
