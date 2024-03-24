@@ -6,6 +6,7 @@ pars <- within(pars, {
     y <- c(0.29, 0.27, 0.21, 0.26, 0.33, 0.40, 0.49, 0.63, 0.69) #critical fraction - derived from Davies Nat Med
     #Hospitalisation fraction among critically infected
     h <- c(0.0000, 0.0023, 0.0080, 0.0080, 0.0100, 0.0190, 0.0540, 0.1510, 0.4755) #derived from Davies 2020 Lancet
+    h[1]= 0.001722388 #ya_ha_curves_24mar24.r #intercept in log lin regression, ya_ha_curves_01mar24.r
 
     #cohort age-prob of hospitalised (not odds of hosp if given age) - disregards odds of infection (exposure & susc)
     hcoh <- c(0.0040, 0.0046, 0.0076, 0.0397, 0.0604, 0.0887, 0.1478, 0.1637, 0.4835) #sum(hcoh)=1
@@ -21,6 +22,7 @@ pars <- within(pars, {
     #m <- c(0.0000, 0.1125, 0.1125, 0.1229, 0.1200, 0.1211, 0.1259, 0.1238, 0.1243) #derived from Davies 2020 Lancet
 	          #m - mort prop - Davies assumes 1/m ~ 8.04 => variation seen within not very meaningful
     m <- c(0.0000, 0.004, 0.005, 0.006, 0.018, 0.048, 0.094, 0.193, 0.411) #from full reporting in cohort
+    m[1]= 0.002067481 #ya_ha_curves_24mar24.r
             #sum(m)=0.779 not meaningful, the fraction applies within ageg only
             #close to h: m/h = NaN 1.739 0.625 0.750 1.800 2.526 1.741 1.278 0.864
     ##England population age distribution based on Census 2021, GOV.uk, CoMix age-bands 
