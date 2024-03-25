@@ -62,9 +62,9 @@ if (pset$iplatform==0) {
 ## Merge age groups, as for real data
   nmH  = 4  #data "4" merges 1:4
   nmD  = 6  #data "6" merges 1:6
-  zdm4 = rep(0,times=length(imodelH))
-  wdm6 = rep(0,times=length(imodelDH))
-  vdm6 = rep(0,times=length(imodelDO))
+  zdm4 = rep(0,times=length(idataH))
+  wdm6 = rep(0,times=length(idataDH))
+  vdm6 = rep(0,times=length(idataDO))
   for (i in 1:nmH){ zdm4 = zdm4 + datM[paste0("Dataz",i)][[1]] } #[[1]] numeric part
   for (i in 1:nmD){ wdm6 = wdm6 + datM[paste0("Dataw",i)][[1]] } #[[1]] numeric part
   for (i in 1:nmD){ vdm6 = vdm6 + datM[paste0("Datav",i)][[1]] } #[[1]] numeric part
@@ -121,9 +121,9 @@ for (i in 1:9){
 ## (do merging here rather than read datDHa_m_l, etc)
   nmH  = 4  #data "4" merges 1:4
   nmD  = 6  #data "6" merges 1:6
-  zdm4 = rep(0,times=length(imodelH))
-  wdm6 = rep(0,times=length(imodelDH))
-  vdm6 = rep(0,times=length(imodelDO))
+  zdm4 = rep(0,times=length(idataH))
+  wdm6 = rep(0,times=length(idataDH))
+  vdm6 = rep(0,times=length(idataDO))
   for (i in 1:nmH){ zdm4 = zdm4 + eval(parse(text = paste0("zd",eval(i)))) } 
   for (i in 1:nmD){ wdm6 = wdm6 + eval(parse(text = paste0("wd",eval(i)))) } 
   for (i in 1:nmD){ vdm6 = vdm6 + eval(parse(text = paste0("vd",eval(i)))) } 
@@ -205,9 +205,9 @@ if(pset$iplatform==2){ #Different demography between model (England) and data (t
     assign(paste0("Twd",eval(i),"w"), sum(eval(parse(text = paste0("wd",eval(i),"w")))) ) #Twd1w-Twd9w
     assign(paste0("Tvd",eval(i),"w"), sum(eval(parse(text = paste0("vd",eval(i),"w")))) ) #Tvd1w-Tvd9w
 	#standard deviation for normal likelihood
-    assign(paste0("sdTzd",eval(i),"w"), eval(parse(text = paste0("sdzd",eval(i),"w")))/sqrt(length(4:48)) ) #sdTzd4w-sdTzd9w #45=no. time points
-    assign(paste0("sdTwd",eval(i),"w"), eval(parse(text = paste0("sdwd",eval(i),"w")))/sqrt(length(4:48)) ) #sdTwd4w-sdTwd9w #45=no. time points
-    assign(paste0("sdTvd",eval(i),"w"), eval(parse(text = paste0("sdvd",eval(i),"w")))/sqrt(length(4:48)) ) #sdTvd4w-sdTvd9w #45=no. time points
+    assign(paste0("sdTzd",eval(i),"w"), eval(parse(text = paste0("sdzd",eval(i),"w")))*sqrt(length(4:48)) ) #sdTzd4w-sdTzd9w #45=no. time points
+    assign(paste0("sdTwd",eval(i),"w"), eval(parse(text = paste0("sdwd",eval(i),"w")))*sqrt(length(4:48)) ) #sdTwd4w-sdTwd9w #45=no. time points
+    assign(paste0("sdTvd",eval(i),"w"), eval(parse(text = paste0("sdvd",eval(i),"w")))*sqrt(length(4:48)) ) #sdTvd4w-sdTvd9w #45=no. time points
   }
 
 # sdz=c(sdzd1w,sdzd2w,sdzd3w,sdzd4w,sdzd5w,sdzd6w,sdzd7w,sdzd8w,sdzd9w)
@@ -816,6 +816,7 @@ Nc = pars$Npopcoh
 
 
 if(pset$iplatform<2) {weight=1} else {weight=N/Nc}
+if(pset$iplatform==1){Weekssample = 1 + mE$byw$time[imodelH]/7 + Week_shift_model}
 
 datp <- tibble(Weeks  = 1 + mE$byw$time[imodelH]/7 + Week_shift_model,
                Dates  = lubridate::ymd( "2020-01-06" ) + lubridate::weeks(Weekssample - 1), #"2020-01-06" Mon
@@ -890,7 +891,7 @@ if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
     valuesDO = eval(parse(text = paste0("vd",eval(i),"w")))                        #DOid <= datDOa_l$Freq[idataDOi]*weightv[i]  
 	} else {               #simulated (actually, true model, as data too noisy)
     valuesH  = eval(parse(text = paste0("datM$H_mod", eval(i), "[imodelH]")))      #Hid  <= datM$H_modi
-	valuesDH = eval(parse(text = paste0("datM$DH_mod",eval(i),"[imodelDH]")))      #DHid <= datM$DH_modi 
+	  valuesDH = eval(parse(text = paste0("datM$DH_mod",eval(i),"[imodelDH]")))      #DHid <= datM$DH_modi 
     valuesDO = eval(parse(text = paste0("datM$DO_mod",eval(i),"[imodelDO]")))      #DOid <= datM$DO_modi
     }
     assign(paste0("H", eval(i),"d"), YLOG(valuesH, LOG))
