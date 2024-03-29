@@ -50,7 +50,7 @@ shielding_data <- shielding_cohort %>%
                 covid_primary_cat, 
                 test_positive_cat,
                 test_total_cat,
-                appts_1yr_before, 
+                #appts_1yr_before, 
                 allhosp_1yr_before) %>% 
   # calculate year of study enrollment
   dplyr::mutate(pt_start_year = factor(year(pt_start_date))) %>% 
@@ -83,7 +83,7 @@ var_labels <- list(
   test_positive_cat ~ "COVID-19 positive tests (n)",
   test_total_cat ~ "COVID-19 tests (n)",
   vaccine_schedule_detail ~ "Vaccination schedule received",
-  appts_1yr_before ~ "Healthcare use: appointments 1 year before study entry (n)",
+  #appts_1yr_before ~ "Healthcare use: appointments 1 year before study entry (n)",
   allhosp_1yr_before ~ "Healthcare use: hospital admissions 1 year before study entry (n)"
 )
 
