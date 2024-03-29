@@ -108,9 +108,9 @@ if (pset$iplatform==0) {
   vd      = datDO_l$Freq[idataDO]
 ## Age-Incidence data
 for (i in 1:9){
-  ivaluesz = which(  datHa_l$ageg==i & Week1_Fit_H  <=  datHa_l$Week  &  datHa_l$Week <= Week2_Fit_H)  #dates relative to "2020-01-01
-  ivaluesw = which( datDHa_l$ageg==i & Week1_Fit_DH <= datDHa_l$Week  & datDHa_l$Week <= Week2_Fit_DH)
-  ivaluesv = which( datDOa_l$ageg==i & Week1_Fit_DO <= datDOa_l$Week  & datDOa_l$Week <= Week2_Fit_DO)
+  ivaluesz = which( !is.na(datHa_l$Week)  &  datHa_l$ageg==i  & Week1_Fit_H  <=  datHa_l$Week  &  datHa_l$Week <= Week2_Fit_H)  #dates relative to "2020-01-01
+  ivaluesw = which( !is.na(datDHa_l$Week) &  datDHa_l$ageg==i & Week1_Fit_DH <= datDHa_l$Week  & datDHa_l$Week <= Week2_Fit_DH)
+  ivaluesv = which( !is.na(datDOa_l$Week) &  datDOa_l$ageg==i & Week1_Fit_DO <= datDOa_l$Week  & datDOa_l$Week <= Week2_Fit_DO)
   assign(paste0("idataH", eval(i)),ivaluesz)             #idataH1-idataH9   - hospital admissions
   assign(paste0("idataDH",eval(i)),ivaluesw)             #idataDH1-idataDH9 - deaths in hospital
   assign(paste0("idataDO",eval(i)),ivaluesv)             #idataDO1-idataDO9 - deaths outside hospital
@@ -658,20 +658,20 @@ q1=0.01 #0.05
 q2=0.99 #0.95
 for(it in 1:ntimes){
   samp_it <- zsample[it,]
-  zsample95[it,1] = quantile(samp_it,q1)[[1]]
-  zsample95[it,2] = quantile(samp_it,q2)[[1]]
+  zsample95[it,1] = quantile(samp_it,q1,na.rm=T)[[1]]
+  zsample95[it,2] = quantile(samp_it,q2,na.rm=T)[[1]]
   samp_it <- wsample[it,]
-  wsample95[it,1] = quantile(samp_it,q1)[[1]]
-  wsample95[it,2] = quantile(samp_it,q2)[[1]]
+  wsample95[it,1] = quantile(samp_it,q1,na.rm=T)[[1]]
+  wsample95[it,2] = quantile(samp_it,q2,na.rm=T)[[1]]
   samp_it <- vsample[it,]
-  vsample95[it,1] = quantile(samp_it,q1)[[1]]
-  vsample95[it,2] = quantile(samp_it,q2)[[1]]
+  vsample95[it,1] = quantile(samp_it,q1,na.rm=T)[[1]]
+  vsample95[it,2] = quantile(samp_it,q2,na.rm=T)[[1]]
   samp_it <- Psample[it,]
-  Psample95[it,1] = quantile(samp_it,q1)[[1]]
-  Psample95[it,2] = quantile(samp_it,q2)[[1]]
+  Psample95[it,1] = quantile(samp_it,q1,na.rm=T)[[1]]
+  Psample95[it,2] = quantile(samp_it,q2,na.rm=T)[[1]]
   samp_it <- csample[it,]
-  csample95[it,1] = quantile(samp_it,q1)[[1]]
-  csample95[it,2] = quantile(samp_it,q2)[[1]]
+  csample95[it,1] = quantile(samp_it,q1,na.rm=T)[[1]]
+  csample95[it,2] = quantile(samp_it,q2,na.rm=T)[[1]]
 }
 ## R0_week
 nsampleR0 = min(750,nsample) #300#100
@@ -713,8 +713,8 @@ for(i in 1:nsampleR0){
 R0weeksample95 = matrix(0,length(imodelH),2)
 for(it in 1:ntimes) {
   samp_it <- R0weeksample[it,]
-  R0weeksample95[it,1] = quantile(samp_it,0.01)[[1]] #min(samp_it) #quantile(samp_it,q1)[[1]]
-  R0weeksample95[it,2] = quantile(samp_it,0.99)[[1]] #max(samp_it) #quantile(samp_it,q2)[[1]]
+  R0weeksample95[it,1] = quantile(samp_it,0.01,na.rm=T)[[1]] #min(samp_it) #quantile(samp_it,q1)[[1]]
+  R0weeksample95[it,2] = quantile(samp_it,0.99,na.rm=T)[[1]] #max(samp_it) #quantile(samp_it,q2)[[1]]
 }
 
 
