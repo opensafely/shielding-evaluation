@@ -91,12 +91,12 @@ if (pset$iplatform==0) {
   Week1_Model  = lubridate::week("2020-01-27")    #  4 #start of "contact" data
   Week2_Study  = lubridate::week("2020-12-01")    # 48 #start of vacc & alpha
   Week2_Model  = Week1_Model + (pars$nw-1)        # 55 #model set to run 52=pars$nw weeks 
-  Week1_Fit_H  = max( c(min( datHa_m_l$Week), Week1_Model), na.rm=T)              #  4 #max(c(min(1:48),4))
-  Week1_Fit_DH = max( c(min(datDHa_m_l$Week), Week1_Model), na.rm=T)              #  4 #max(c(min(1:48),4))
-  Week1_Fit_DO = max( c(min(datDOa_m_l$Week), Week1_Model), na.rm=T)              #  4 #max(c(min(1:48),4))
-  Week2_Fit_H  = min( c(max( datHa_m_l$Week), Week2_Model, Week2_Study), na.rm=T) # 48 #min(c(max(1:48),55,48))
-  Week2_Fit_DH = min( c(max(datDHa_m_l$Week), Week2_Model, Week2_Study), na.rm=T) # 48 #min(c(max(1:48),55,48))
-  Week2_Fit_DO = min( c(max(datDOa_m_l$Week), Week2_Model, Week2_Study), na.rm=T) # 48 #min(c(max(1:48),55,48))
+  Week1_Fit_H  = max( c(min( datHa_l$Week), Week1_Model), na.rm=T)              #  4 #max(c(min(1:48),4))
+  Week1_Fit_DH = max( c(min(datDHa_l$Week), Week1_Model), na.rm=T)              #  4 #max(c(min(1:48),4))
+  Week1_Fit_DO = max( c(min(datDOa_l$Week), Week1_Model), na.rm=T)              #  4 #max(c(min(1:48),4))
+  Week2_Fit_H  = min( c(max( datHa_l$Week), Week2_Model, Week2_Study), na.rm=T) # 48 #min(c(max(1:48),55,48))
+  Week2_Fit_DH = min( c(max(datDHa_l$Week), Week2_Model, Week2_Study), na.rm=T) # 48 #min(c(max(1:48),55,48))
+  Week2_Fit_DO = min( c(max(datDOa_l$Week), Week2_Model, Week2_Study), na.rm=T) # 48 #min(c(max(1:48),55,48))
 
 ## Temporal-Incidence data
 ## - long data (every week)
@@ -118,7 +118,7 @@ for (i in 1:9){
   assign(paste0("wd",eval(i)), datDHa_l$Freq[ivaluesw])  #wd1-wd9
   assign(paste0("vd",eval(i)), datDHa_l$Freq[ivaluesw]) }#vd1-vd9
 ## Merge age groups, as for real data
-## (do merging here rather than read datDHa_m_l, etc)
+## (do merging here rather than read merged dfs)
   nmH  = 4  #data "4" merges 1:4
   nmD  = 6  #data "6" merges 1:6
   zdm4 = rep(0,times=length(idataH))
@@ -964,7 +964,10 @@ par(mar = c(0,0,0,0)) #par(mar = c(2, 2, 1, 1))
 #p<-correlationPlot(out); print(p)  #Error in plot.new() : figure margins too large  (16 par)
 #dev.off()
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_correlationPlot")
-svglite(paste0(filenamepath,".svg")); correlationPlot(out); invisible(dev.off())
+if(length(UPPER)<12){
+svglite(paste0(filenamepath,".svg")); correlationPlot(out); invisible(dev.off()) } else {
+svglite(paste0(filenamepath,".svg")); plot(1:10); invisible(dev.off())
+}
 
 
 ### Results
