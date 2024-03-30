@@ -108,15 +108,16 @@ if (pset$iplatform==0) {
   vd      = datDO_l$Freq[idataDO]
 ## Age-Incidence data
 for (i in 1:9){
-  ivaluesz = which( !is.na(datHa_l$Week)  &  datHa_l$ageg==i  & Week1_Fit_H  <=  datHa_l$Week  &  datHa_l$Week <= Week2_Fit_H)  #dates relative to "2020-01-01
-  ivaluesw = which( !is.na(datDHa_l$Week) &  datDHa_l$ageg==i & Week1_Fit_DH <= datDHa_l$Week  & datDHa_l$Week <= Week2_Fit_DH)
-  ivaluesv = which( !is.na(datDOa_l$Week) &  datDOa_l$ageg==i & Week1_Fit_DO <= datDOa_l$Week  & datDOa_l$Week <= Week2_Fit_DO)
+  ivaluesz = which( !is.na(datHa_l$Week)  &  datHa_l$Ageg==i  & Week1_Fit_H  <=  datHa_l$Week  &  datHa_l$Week <= Week2_Fit_H)  #dates relative to "2020-01-01
+  ivaluesw = which( !is.na(datDHa_l$Week) &  datDHa_l$Ageg==i & Week1_Fit_DH <= datDHa_l$Week  & datDHa_l$Week <= Week2_Fit_DH)
+  ivaluesv = which( !is.na(datDOa_l$Week) &  datDOa_l$Ageg==i & Week1_Fit_DO <= datDOa_l$Week  & datDOa_l$Week <= Week2_Fit_DO)
   assign(paste0("idataH", eval(i)),ivaluesz)             #idataH1-idataH9   - hospital admissions
   assign(paste0("idataDH",eval(i)),ivaluesw)             #idataDH1-idataDH9 - deaths in hospital
   assign(paste0("idataDO",eval(i)),ivaluesv)             #idataDO1-idataDO9 - deaths outside hospital
   assign(paste0("zd",eval(i)), datHa_l$Freq[ivaluesz])   #zd1-zd9
   assign(paste0("wd",eval(i)), datDHa_l$Freq[ivaluesw])  #wd1-wd9
   assign(paste0("vd",eval(i)), datDHa_l$Freq[ivaluesw]) }#vd1-vd9
+
 ## Merge age groups, as for real data
 ## (do merging here rather than read merged dfs)
   nmH  = 4  #data "4" merges 1:4
@@ -204,18 +205,11 @@ if(pset$iplatform==2){ #Different demography between model (England) and data (t
     assign(paste0("Tzd",eval(i),"w"), sum(eval(parse(text = paste0("zd",eval(i),"w")))) ) #Tzd1w-Tzd9w
     assign(paste0("Twd",eval(i),"w"), sum(eval(parse(text = paste0("wd",eval(i),"w")))) ) #Twd1w-Twd9w
     assign(paste0("Tvd",eval(i),"w"), sum(eval(parse(text = paste0("vd",eval(i),"w")))) ) #Tvd1w-Tvd9w
-	#standard deviation for normal likelihood
+    #standard deviation for normal likelihood
     assign(paste0("sdTzd",eval(i),"w"), eval(parse(text = paste0("sdzd",eval(i),"w")))*sqrt(length(4:48)) ) #sdTzd4w-sdTzd9w #45=no. time points
     assign(paste0("sdTwd",eval(i),"w"), eval(parse(text = paste0("sdwd",eval(i),"w")))*sqrt(length(4:48)) ) #sdTwd4w-sdTwd9w #45=no. time points
     assign(paste0("sdTvd",eval(i),"w"), eval(parse(text = paste0("sdvd",eval(i),"w")))*sqrt(length(4:48)) ) #sdTvd4w-sdTvd9w #45=no. time points
   }
-
-# sdz=c(sdzd1w,sdzd2w,sdzd3w,sdzd4w,sdzd5w,sdzd6w,sdzd7w,sdzd8w,sdzd9w)
-# sdw=c(sdwd1w,sdwd2w,sdwd3w,sdwd4w,sdwd5w,sdwd6w,sdwd7w,sdwd8w,sdwd9w)
-# sdv=c(sdvd1w,sdvd2w,sdvd3w,sdvd4w,sdvd5w,sdvd6w,sdvd7w,sdvd8w,sdvd9w)
-#sdz [1]     0.0000   122.3673   139.2270   447.0298   506.8490   887.5871  2267.3817  6861.4285 31548.7909
-#sdw [1] 0.000000e+00 1.941839e-01 3.340866e-01 4.736655e-01 7.891492e+00 4.798584e+01 1.628613e+02 7.584641e+02 1.249282e+04
-#sdv [1]    0.0000000 0.1386750    0.0000000    0.3340866    2.0677623    4.2587413   52.2316564  289.8272409 5743.7379553
 
 
 ######## Prevalence data #######################################################
@@ -385,34 +379,34 @@ LogLikelihood <- function(theta){
   MeanDOm6 = rep(0,times=length(imodelDO))
   for (i in 1:nmH) { #nTH=4
     valuesH  = eval(parse(text = paste0("m$byw_age$H", eval(i),"w[imodelH]"))) 
-    assign(paste0("TMeanH",eval(i)), sum(valuesH))    #TMeanH1-4
-	MeanHm4  = MeanHm4 + valuesH                      # MeanHm4
+    assign(paste0("TMeanH",eval(i)), sum(valuesH))                  # TMeanH1-4
+	MeanHm4  = MeanHm4 + valuesH                                      # MeanHm4
 	MeanHm4[1]= max(MeanHm4[1],1) } #avoid 0 mean and NAs in likelihood
   for (i in 1:nmD) { #nmD=6
     valuesDH  = eval(parse(text = paste0("m$byw_aHO$DH", eval(i),"w[imodelDH]"))) 
     valuesDO  = eval(parse(text = paste0("m$byw_aHO$DO", eval(i),"w[imodelDO]"))) 
-    assign(paste0("TMeanDH",eval(i)), sum(valuesDH))   #TMeanDH1-6
-    assign(paste0("TMeanDO",eval(i)), sum(valuesDO))   #TMeanDO1-6
-	MeanDHm6  = MeanDHm6 + valuesDH                    # MeanDHm6
-	MeanDOm6  = MeanDOm6 + valuesDO                    # MeanDOm6
+    assign(paste0("TMeanDH",eval(i)), sum(valuesDH))                # TMeanDH1-6
+    assign(paste0("TMeanDO",eval(i)), sum(valuesDO))                # TMeanDO1-6
+	MeanDHm6  = MeanDHm6 + valuesDH                                   # MeanDHm6
+	MeanDOm6  = MeanDOm6 + valuesDO                                   # MeanDOm6
 	MeanDHm6[1]= max(MeanDHm6[1],1)
 	MeanDOm6[1]= max(MeanDOm6[1],1) } #avoid 0 mean and NAs in likelihood  
   #Other groups
-  for (i in nmH:9) {
+  for (i in 1:9) { #nmH:9) {
     valuesH  = eval(parse(text = paste0("m$byw_age$H", eval(i),"w[imodelH]"))) 
     valuesH[1] = max(valuesH[1],1);
-    assign(paste0("MeanH",eval(i)), valuesH) }         # MeanH4-9
-  for (i in nmD:9) {
+    assign(paste0("MeanH",eval(i)), valuesH) }                      # MeanH4-9
+  for (i in 1:9) { #{nmD:9) {
     valuesDH = eval(parse(text = paste0("m$byw_aHO$DH",eval(i),"w[imodelDH]")))
     valuesDO = eval(parse(text = paste0("m$byw_aHO$DO",eval(i),"w[imodelDO]")))
     valuesDH[1]= max(valuesDH[1],1);
     valuesDO[1]= max(valuesDO[1],1);
-    assign(paste0("MeanDH",eval(i)), valuesDH)         # MeanDH6-9
-    assign(paste0("MeanDO",eval(i)), valuesDO) }       # MeanDO6-9
-  
+    assign(paste0("MeanDH",eval(i)), valuesDH)                      # MeanDH6-9
+    assign(paste0("MeanDO",eval(i)), valuesDO) }                    # MeanDO6-9
+
   #Likelihood of data
   #product over: 1) datasets (H,DH,DO), 2) age-groups, and 3) weeks
-  #Negative binomial likelihood or Normal likelihood
+  #Negative binomial or Normal likelihood
 
   #kHT =kH*45; 
   #kDHT=kDH*45; 
@@ -428,39 +422,52 @@ LogLikelihood <- function(theta){
           #(  dnbinom(x = Tzd3w, size = kHT,    mu = TMeanH3, log = T)) +
           #(  dnbinom(x = Tzd4w, size = kHT,    mu = TMeanH4, log = T)) +
        sum(  dnorm(x = zdm4w, sd =  sdH*sdzdm4w,mean =  MeanHm4, log = T)) +    #Merged - Normal
-       #sum(  dnorm(x =  zd4w, sd =  sdH*sdzd4w, mean =  MeanH4, log = T)) +    #Non-merged - Normal
+      #sum(  dnorm(x =  zd1w, sd =  sdH*sdzd1w, mean =  MeanH1, log = T)) +     #Non-merged - Normal
+      #sum(  dnorm(x =  zd2w, sd =  sdH*sdzd2w, mean =  MeanH2, log = T)) +
+      #sum(  dnorm(x =  zd3w, sd =  sdH*sdzd3w, mean =  MeanH3, log = T)) +
+      #sum(  dnorm(x =  zd4w, sd =  sdH*sdzd4w, mean =  MeanH4, log = T)) +     
        sum(  dnorm(x =  zd5w, sd =  sdH*sdzd5w, mean =  MeanH5, log = T)) +     #Other - Normal
        sum(  dnorm(x =  zd6w, sd =  sdH*sdzd6w, mean =  MeanH6, log = T)) +
        sum(  dnorm(x =  zd7w, sd =  sdH*sdzd7w, mean =  MeanH7, log = T)) +
        sum(  dnorm(x =  zd8w, sd =  sdH*sdzd8w, mean =  MeanH8, log = T)) +
        sum(  dnorm(x =  zd9w, sd =  sdH*sdzd9w, mean =  MeanH9, log = T)) +
-       #sum(  dnbinom(x = zdm4w, size = kHm,    mu = MeanHm4, log = T)) +        #Merged - NB
-       #sum(  dnbinom(x = zd5w,  size = kH,     mu = MeanH5,  log = T)) +        #Other - NB
-       #sum(  dnbinom(x = zd6w,  size = kH,     mu = MeanH6,  log = T)) +
-       #sum(  dnbinom(x = zd7w,  size = kH,     mu = MeanH7,  log = T)) +
-       #sum(  dnbinom(x = zd8w,  size = kH,     mu = MeanH8,  log = T)) +
-       #sum(  dnbinom(x = zd9w,  size = kH,     mu = MeanH9,  log = T)) +
+      #sum(  dnbinom(x = zdm4w, size = kHm,    mu = MeanHm4, log = T)) +        #Merged - NB
+      #sum(  dnbinom(x = zd5w,  size = kH,     mu = MeanH5,  log = T)) +        #Other - NB
+      #sum(  dnbinom(x = zd6w,  size = kH,     mu = MeanH6,  log = T)) +
+      #sum(  dnbinom(x = zd7w,  size = kH,     mu = MeanH7,  log = T)) +
+      #sum(  dnbinom(x = zd8w,  size = kH,     mu = MeanH8,  log = T)) +
+      #sum(  dnbinom(x = zd9w,  size = kH,     mu = MeanH9,  log = T)) +
        ###DH
-          #(  dnbinom(x = Twd1w, size = kDHT,    mu = TMeanDH1, log = T)) +      #Totals
-          #(  dnbinom(x = Twd2w, size = kDHT,    mu = TMeanDH2, log = T)) +
-          #(  dnbinom(x = Twd3w, size = kDHT,    mu = TMeanDH3, log = T)) +
-          #(  dnbinom(x = Twd4w, size = kDHT,    mu = TMeanDH4, log = T)) +
-          #(  dnbinom(x = Twd5w, size = kDHT,    mu = TMeanDH5, log = T)) +
-          #(  dnbinom(x = Twd6w, size = kDHT,    mu = TMeanDH6, log = T)) +
+         #(  dnbinom(x = Twd1w, size = kDHT,    mu = TMeanDH1, log = T)) +     #Totals
+         #(  dnbinom(x = Twd2w, size = kDHT,    mu = TMeanDH2, log = T)) +
+         #(  dnbinom(x = Twd3w, size = kDHT,    mu = TMeanDH3, log = T)) +
+         #(  dnbinom(x = Twd4w, size = kDHT,    mu = TMeanDH4, log = T)) +
+         #(  dnbinom(x = Twd5w, size = kDHT,    mu = TMeanDH5, log = T)) +
+         #(  dnbinom(x = Twd6w, size = kDHT,    mu = TMeanDH6, log = T)) +
        sum(  dnbinom(x = wdm6w, size = kDHm,    mu =  MeanDHm6, log = T)) +     #Merged
-       #sum(  dnbinom(x =  wd6w, size = kDH,     mu =  MeanDH6, log = T)) +      #Non-merged
+      #sum(  dnbinom(x =  wd1w, size = kDH,     mu =  MeanDH1, log = T)) +      #Non-merged
+      #sum(  dnbinom(x =  wd2w, size = kDH,     mu =  MeanDH2, log = T)) +      #Non-merged
+      #sum(  dnbinom(x =  wd3w, size = kDH,     mu =  MeanDH3, log = T)) +      #Non-merged
+      #sum(  dnbinom(x =  wd4w, size = kDH,     mu =  MeanDH4, log = T)) +      #Non-merged
+      #sum(  dnbinom(x =  wd5w, size = kDH,     mu =  MeanDH5, log = T)) +      #Non-merged
+      #sum(  dnbinom(x =  wd6w, size = kDH,     mu =  MeanDH6, log = T)) +      #Non-merged
        sum(  dnbinom(x =  wd7w, size = kDH,     mu =  MeanDH7, log = T)) +      #Other
        sum(  dnbinom(x =  wd8w, size = kDH,     mu =  MeanDH8, log = T)) +
        sum(  dnbinom(x =  wd9w, size = kDH,     mu =  MeanDH9, log = T)) +
        ###DO
-         #(  dnbinom(x = Tvd1w, size = kDOT,     mu = TMeanDO1, log = T)) +       #Totals
-         #(  dnbinom(x = Tvd2w, size = kDOT,     mu = TMeanDO2, log = T)) +
-         #(  dnbinom(x = Tvd3w, size = kDOT,     mu = TMeanDO3, log = T)) +
-         #(  dnbinom(x = Tvd4w, size = kDOT,     mu = TMeanDO4, log = T)) +
-         #(  dnbinom(x = Tvd5w, size = kDOT,     mu = TMeanDO5, log = T)) +
-         #(  dnbinom(x = Tvd6w, size = kDOT,     mu = TMeanDO6, log = T)) +
+       #(   dnbinom(x = Tvd1w, size = kDOT,     mu = TMeanDO1, log = T)) +     #Totals
+       #(   dnbinom(x = Tvd2w, size = kDOT,     mu = TMeanDO2, log = T)) +
+       #(   dnbinom(x = Tvd3w, size = kDOT,     mu = TMeanDO3, log = T)) +
+       #(   dnbinom(x = Tvd4w, size = kDOT,     mu = TMeanDO4, log = T)) +
+       #(   dnbinom(x = Tvd5w, size = kDOT,     mu = TMeanDO5, log = T)) +
+       #(   dnbinom(x = Tvd6w, size = kDOT,     mu = TMeanDO6, log = T)) +
        sum( dnbinom(x = vdm6w, size = kDOm,     mu =  MeanDOm6, log = T)) +     #Merged
-       #sum( dnbinom(x =  vd6w, size = kDO,      mu =  MeanDO6, log = T)) +      #Non-merged
+      #sum( dnbinom(x =  vd1w, size = kDO,      mu =  MeanDO1, log = T)) +      #Non-merged
+      #sum( dnbinom(x =  vd2w, size = kDO,      mu =  MeanDO2, log = T)) +      #Non-merged
+      #sum( dnbinom(x =  vd3w, size = kDO,      mu =  MeanDO3, log = T)) +      #Non-merged
+      #sum( dnbinom(x =  vd4w, size = kDO,      mu =  MeanDO4, log = T)) +      #Non-merged
+      #sum( dnbinom(x =  vd5w, size = kDO,      mu =  MeanDO5, log = T)) +      #Non-merged    
+      #sum( dnbinom(x =  vd6w, size = kDO,      mu =  MeanDO6, log = T)) +      #Non-merged
        sum( dnbinom(x =  vd7w, size = kDO,      mu =  MeanDO7, log = T)) +      #Other
        sum( dnbinom(x =  vd8w, size = kDO,      mu =  MeanDO8, log = T)) +
        sum( dnbinom(x =  vd9w, size = kDO,      mu =  MeanDO9, log = T)) #+	   
@@ -757,6 +764,8 @@ print(paste0("yR0   MAP: ", round((parsE$y[1]  - parsE$y[2])/(age[2]-age1),    4
 print(paste0("yM1   MAP: ", round( parsE$y[9],  4),   ". Expected: ", round(  pars$y[9],    3))) #y9
 print(paste0("yR1   MAP: ", round((log(parsE$y[4]/parsE$y[3]))/(age[4]-age3),  4),  ". Expected: "))
 print(paste0("yM0   MAP: ", round( parsE$y[3],  4),    ". Expected: ", round( pars$y[3],    3))) #y3
+print(paste0("beta  dep: ", round(parsE$beta,     5) ))
+print(paste0("E0    dep: ", round(sum(parsE$Ea0), 0), ". Expected: ", round(sum(pars$Na0*pars$pE0)) ))
 print(paste0("Estimated proportion deaths outside hospital = ", round(parsE$ad/(1+parsE$ad),3)))
 
 cat("\n");
@@ -842,13 +851,13 @@ if (pset$iplatform>0) {
 datH <- tibble(datH,
                Weeksz = datH_l$Weeks[idataH],
                Datesz = Dates)            #datH_l$Dates[idataH]) 
-               #Justification:datX_l$Dates (X=DH, DO) has NA (dummy & OS) 
-               #while datX_l$Weeks datX_l$Freq (zd, wd, vd) has no NA (by _l construction)
+               #Justification:datX_l$Dates (X=DH, DO) has NA (both dummy & OS) 
+               #while         datX_l$Weeks anddatX_l$Freq (zd, wd, vd) have no NA (by _l construction)
 datD <- tibble(datD,
                Weeksw = datDH_l$Weeks[idataDH],
                Weeksv = datDO_l$Weeks[idataDO],
-               Datesw = Dates,           #datDH_l$Dates[idataDH],
-               Datesv = Dates)  } else { #datDO_l$Dates[idataDO])  } else {
+               Datesw = Dates,                          #datDH_l$Dates[idataDH],
+               Datesv = Dates)  } else { #iplatform=0   #datDO_l$Dates[idataDO])  } else {
 datH <- tibble(datH,
                H_mod  = datM$H_mod[imodelH],
                Weeksz = Weeks,
@@ -863,9 +872,6 @@ datD <- tibble(datD,
 
 
 ###### Plots - Age-profile dataframes (NOT MERGED) #############################
-##OS:   datHa_l  or datHa   (l = long pivot, all 48*9 pts)
-##OS:  datDHa_l  or datDHa
-##OS:  datDOa_l  or datDOa
 
 #y axis log transformation - default: linear
 YLOG <- function(y,LOG=0){ if (LOG==1) {z=log10(y+1)} else {z=y}; return(z) }
@@ -889,7 +895,7 @@ if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
     valuesH  = eval(parse(text = paste0("zd",eval(i),"w")))                        #Hid  <=  datHa_l$Freq[idataHi] *weightz[i]   
     valuesDH = eval(parse(text = paste0("wd",eval(i),"w")))                        #DHid <= datDHa_l$Freq[idataDHi]*weightw[i]  
     valuesDO = eval(parse(text = paste0("vd",eval(i),"w")))                        #DOid <= datDOa_l$Freq[idataDOi]*weightv[i]  
-	} else {               #simulated (actually, true model, as data too noisy)
+	} else {  #iplatform=0  #simulated (actually, true model, as data too noisy)
     valuesH  = eval(parse(text = paste0("datM$H_mod", eval(i), "[imodelH]")))      #Hid  <= datM$H_modi
 	  valuesDH = eval(parse(text = paste0("datM$DH_mod",eval(i),"[imodelDH]")))      #DHid <= datM$DH_modi 
     valuesDO = eval(parse(text = paste0("datM$DO_mod",eval(i),"[imodelDO]")))      #DOid <= datM$DO_modi
