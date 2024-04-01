@@ -29,7 +29,7 @@ fs::dir_create(output_dir_HD)
 
 
 ### Replacement for low count ##################################################
-Freq_cutoff = 8 #NA #replaces 0:7
+Freq_cutoff = 8 #"[REDACTED]" #replaces 0:7
 ### Print and save plots #######################################################
 Option_Printout=0 #0, 1
 ### Save dataframes ############################################################

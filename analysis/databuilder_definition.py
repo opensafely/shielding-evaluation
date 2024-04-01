@@ -61,11 +61,11 @@ def covid_on_deathcert(cause_of_death):
 
 
 # Function codes for extracting monthly GP visit from `appointments` table
-def add_visits(from_date, to_date):
-    # Number of GP visits between `from_date` and `to_date`
-    return appointments \
-        .where(appointments.start_date.is_between_but_not_on(from_date, to_date)) \
-        .count_for_patient()
+#def add_visits(from_date, to_date):
+#    # Number of GP visits between `from_date` and `to_date`
+#    return appointments \
+#        .where(appointments.start_date.is_between_but_not_on(from_date, to_date)) \
+#        .count_for_patient()
 
 
 def add_hospitalisations(from_date, to_date):
@@ -277,8 +277,8 @@ dataset.care_home_nursing = address_as_of(dataset.pt_start_date) \
     .care_home_requires_nursing.if_null_then(False)
 
 # Measure of healtchare utilisation - appointments
-dataset.appts_in_study = add_visits(dataset.pt_start_date, dataset.pt_end_date)
-dataset.appts_1yr_before = add_visits(dataset.pt_start_date - years(1), dataset.pt_start_date)
+#dataset.appts_in_study = add_visits(dataset.pt_start_date, dataset.pt_end_date)
+#dataset.appts_1yr_before = add_visits(dataset.pt_start_date - years(1), dataset.pt_start_date)
 dataset.allhosp_in_study = add_hospitalisations(dataset.pt_start_date, dataset.pt_end_date)
 dataset.allhosp_1yr_before = add_hospitalisations(dataset.pt_start_date - years(1), dataset.pt_start_date)
 

@@ -12,7 +12,6 @@
 
 #TODO: extend to shielding: idataH40-90 or 60-90, and 41-91 or 61-91 <= idataH4-9 or 6-9
 
-#TODO: mcmc - revise parameters used
 
 
 ###### Output settings and parameters
