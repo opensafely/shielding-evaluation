@@ -116,7 +116,7 @@ for (i in 1:9){
   assign(paste0("idataDO",eval(i)),ivaluesv)             #idataDO1-idataDO9 - deaths outside hospital
   assign(paste0("zd",eval(i)), datHa_l$Freq[ivaluesz])   #zd1-zd9
   assign(paste0("wd",eval(i)), datDHa_l$Freq[ivaluesw])  #wd1-wd9
-  assign(paste0("vd",eval(i)), datDHa_l$Freq[ivaluesw]) }#vd1-vd9
+  assign(paste0("vd",eval(i)), datDOa_l$Freq[ivaluesv]) }#vd1-vd9
 
 ## Merge age groups, as for real data
 ## (do merging here rather than read merged dfs)
@@ -202,13 +202,13 @@ if(pset$iplatform==2){ #Different demography between model (England) and data (t
     assign(paste0("sdvd",eval(i),"w"),  sd( eval(parse(text = paste0("vd",eval(i))))*weightv[i]) )    #sdvd4w-sdvd9w
 
     ## WEIGHTED TIME-TOTALS
-    assign(paste0("Tzd",eval(i),"w"), sum(eval(parse(text = paste0("zd",eval(i),"w")))) ) #Tzd1w-Tzd9w
-    assign(paste0("Twd",eval(i),"w"), sum(eval(parse(text = paste0("wd",eval(i),"w")))) ) #Twd1w-Twd9w
-    assign(paste0("Tvd",eval(i),"w"), sum(eval(parse(text = paste0("vd",eval(i),"w")))) ) #Tvd1w-Tvd9w
+    assign(paste0("Tzd",eval(i),"w"),  sum( eval(parse(text = paste0("zd",eval(i),"w")))) ) #Tzd1w-Tzd9w
+    assign(paste0("Twd",eval(i),"w"),  sum( eval(parse(text = paste0("wd",eval(i),"w")))) ) #Twd1w-Twd9w
+    assign(paste0("Tvd",eval(i),"w"),  sum( eval(parse(text = paste0("vd",eval(i),"w")))) ) #Tvd1w-Tvd9w
     #standard deviation for normal likelihood
-    assign(paste0("sdTzd",eval(i),"w"), eval(parse(text = paste0("sdzd",eval(i),"w")))*sqrt(length(4:48)) ) #sdTzd4w-sdTzd9w #45=no. time points
-    assign(paste0("sdTwd",eval(i),"w"), eval(parse(text = paste0("sdwd",eval(i),"w")))*sqrt(length(4:48)) ) #sdTwd4w-sdTwd9w #45=no. time points
-    assign(paste0("sdTvd",eval(i),"w"), eval(parse(text = paste0("sdvd",eval(i),"w")))*sqrt(length(4:48)) ) #sdTvd4w-sdTvd9w #45=no. time points
+    assign(paste0("sdTzd",eval(i),"w"),     eval(parse(text = paste0("sdzd",eval(i),"w")))*sqrt(length(4:48)) ) #sdTzd4w-sdTzd9w #45=no. time points
+    assign(paste0("sdTwd",eval(i),"w"),     eval(parse(text = paste0("sdwd",eval(i),"w")))*sqrt(length(4:48)) ) #sdTwd4w-sdTwd9w #45=no. time points
+    assign(paste0("sdTvd",eval(i),"w"),     eval(parse(text = paste0("sdvd",eval(i),"w")))*sqrt(length(4:48)) ) #sdTvd4w-sdTvd9w #45=no. time points
   }
 
 
@@ -480,7 +480,7 @@ LogLikelihood <- function(theta){
 
 ## Likelihood definition, parameter ranges  ####################################
 niter = 60000#30000#6000##3000
-if (pset$iplatform==2){niter=150000} #120000} #200000
+if (pset$iplatform==2){niter=90000} #150000} #120000} #200000
 
         #rIR,       rOD,        R0,         pE0,        fu          hM,         1/hR,      dM,         1/dR,
 LOWER = c(1,        1,          gs(R0Min),  gs(pE0Min), gs(fuMin),  gs(hMMin),  (hTMin),  gs(hMMin),   (hTMin),
@@ -897,7 +897,7 @@ if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
     valuesDO = eval(parse(text = paste0("vd",eval(i),"w")))                        #DOid <= datDOa_l$Freq[idataDOi]*weightv[i]  
 	} else {  #iplatform=0  #simulated (actually, true model, as data too noisy)
     valuesH  = eval(parse(text = paste0("datM$H_mod", eval(i), "[imodelH]")))      #Hid  <= datM$H_modi
-	  valuesDH = eval(parse(text = paste0("datM$DH_mod",eval(i),"[imodelDH]")))      #DHid <= datM$DH_modi 
+    valuesDH = eval(parse(text = paste0("datM$DH_mod",eval(i),"[imodelDH]")))      #DHid <= datM$DH_modi 
     valuesDO = eval(parse(text = paste0("datM$DO_mod",eval(i),"[imodelDO]")))      #DOid <= datM$DO_modi
     }
     assign(paste0("H", eval(i),"d"), YLOG(valuesH, LOG))
