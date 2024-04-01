@@ -3,7 +3,7 @@ pset <- within(pset, {
     TODAY <- format(Sys.Date(), "%d-%m-%Y")
     TIME  <- format(Sys.time(),'%H.%M.%S_%d-%m-%Y')
     ## Job no.
-    Job="J5nHbDhmdy2_" #J1=lm, J2=fit-simul, J3=SEIR_fit, J4...=SEIUHRD fits, J5 - age model
+    Job="J5nHbDfitP2_" #J1=lm, J2=fit-simul, J3=SEIR_fit, J4...=SEIUHRD fits, J5 - age model
 
     ## Model choice
     MODEL    <- c("SEIR", "SEIUHRD");
@@ -11,7 +11,7 @@ pset <- within(pset, {
 
     ### OpenSafely
     PLATFORM <- c("Simulate", "Fit dummy data", "OpenSafely"); #0, 1, 2
-    iplatform<- 2#1#0#
+    iplatform<- 2#0#1#
     
     ### model fitting
     DOfit    <- 1; #(0=Dont fit, 1=simulated or OS data)
@@ -28,10 +28,8 @@ pset <- within(pset, {
    
     ### input file names
     File_model_choice    <- paste0(MODEL[imodel],"aout_model.cpp")
-    File_modelas_choice  <- paste0(MODEL[imodel],"as_model.cpp")
     #File_model_choice    <- paste0(MODEL[imodel],"_model.cpp")
     File_parameters      <- paste0(MODEL[imodel],"_parameters.r")
-    File_parametersas    <- paste0(MODEL[imodel],"as_parameters.r")
     File_contact_data    <- "Contact_matrix_year-from-27Jan20_vector-lenght-9x9x52_norm=maxEV1.csv"
 
     ### output file names

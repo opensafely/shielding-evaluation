@@ -38,8 +38,8 @@ filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_AgeProfiles")
 svglite(paste0(filenamepath,".svg")); print(plot(1:10,1:10)); invisible(dev.off())
 ##
 #if (!is.element(pset$iplatform,1)){
-filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_plots_probs")
-svglite(paste0(filenamepath,".svg")); print(plot(1:10,1:10)); invisible(dev.off())
+#filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_plots_probs")
+#svglite(paste0(filenamepath,".svg")); print(plot(1:10,1:10)); invisible(dev.off())
 ##
 filenamepath = paste0(output_dir,"/",pset$File_fit_summary0,"_1")
 svglite(paste0(filenamepath,".svg")); print(plot(1:10,1:10)); invisible(dev.off())
