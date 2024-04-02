@@ -3,8 +3,8 @@ pset <- within(pset, {
     TODAY <- format(Sys.Date(), "%d-%m-%Y")
     TIME  <- format(Sys.time(),'%H.%M.%S_%d-%m-%Y')
     ## Job no.
-    Job="J5nHbDfitP2_" #J1=lm, J2=fit-simul, J3=SEIR_fit, J4...=SEIUHRD fits, J5 - age model
-
+    Job="J5nHbDfitP3_" #J1=lm, J2=fit-simul, J3=SEIR_fit, J4...=SEIUHRD fits, J5 - age model
+    
     ## Model choice
     MODEL    <- c("SEIR", "SEIUHRD");
     imodel   <- 2#1; #2
@@ -28,10 +28,15 @@ pset <- within(pset, {
    
     ### input file names
     File_model_choice    <- paste0(MODEL[imodel],"aout_model.cpp")
+    File_modelas_choice  <- paste0(MODEL[imodel],"as_model.cpp")
     #File_model_choice    <- paste0(MODEL[imodel],"_model.cpp")
     File_parameters      <- paste0(MODEL[imodel],"_parameters.r")
+    File_parametersas    <- paste0(MODEL[imodel],"as_parameters.r")
     File_contact_data    <- "Contact_matrix_year-from-27Jan20_vector-lenght-9x9x52_norm=maxEV1.csv"
-
+    File_contact_data_0  <- "Contact_matrix_year-from-27Jan20_vector-lenght-9x9x52_norm=maxEV1_0.csv"
+    File_contact_data_1  <- "Contact_matrix_year-from-27Jan20_vector-lenght-9x9x52_norm=maxEV1_1.csv"
+    File_contact_datax3  <- "Contact_matrix_year-from-27Jan20_vector-lenght-9x9x52_norm=maxEV1_x3.csv"
+    
     ### output file names
     File_run             <- paste0(Job,"Simul_run.txt")
     File_contact_summary <- paste0(Job,"Contact_matrix_year-start-27Jan20_stats.txt")

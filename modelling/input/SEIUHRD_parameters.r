@@ -45,7 +45,7 @@ pars <- within(pars, {
     iw1    <- 1+(0:(nw-1))*7/dt  ##vector indices at start of each week (starts at 1, for R, apply "-1" for c++)
     rseed  <- 0*ageons #(0.45)*2*84*ageons #mean(l, l2, nHbD) # 5*ageons  #external infections, each age group, 2/county/day, 84 counties (regardless of internal contact matrix)
                               #[1]  7.912914 14.823979 11.767488 25.465660 22.702932 21.361472 22.940659 17.965372 23.059523
-    rEI    <- 1/2             #1/3 #latency, Davies Nat Med
+    rEI    <- 1/2#1/10#1/3 #1/10#1/4 #1/3   #latency, Davies Nat Med
     rEU    <- rEI             #latency
     rIR    <- 1/3 #J5h3 est ##1/7#1/5         #recovery, Davies Nat Med
     rUR    <- rIR             #recovery
