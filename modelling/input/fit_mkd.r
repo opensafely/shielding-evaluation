@@ -411,8 +411,8 @@ LogLikelihood <- function(theta){
   #kDOT = kDO*45; 
   ## Merged  - sum of 4 or 6 variables
   #kHm  = kH;  #kHm  = kH*4;   
-  #kDHm = kDH; #kDHm = kDH*6;
-  #kDOm = kDO; #kDOm = kDO*6; 
+  kDHm = kDH; #kDHm = kDH*6;
+  kDOm = kDO; #kDOm = kDO*6; 
 
   ll =
   ###H 
