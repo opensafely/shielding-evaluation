@@ -31,13 +31,13 @@ Freq_cutoff = 8 #"[REDACTED]" #replaces 0:7
 ### Print and save svg plots ###################################################
 Option_PrintFig=0     #0, 1
 ### Save csv UNDERLIE and REDACTED (if low counts) #############################
-Option_WriteOutC_all=0 #0, 1 #no strata
-Option_WriteOutC_age=0 #0, 1 #by age group
+Option_WriteOutC_all=1 #0, 1 #no strata
+Option_WriteOutC_age=1 #0, 1 #by age group
 Option_WriteOutC_shi=0 #0, 1 #by shielding
-Option_WriteOutC_sag=0 #0, 1 #by shielding and age
-Option_ForceExclusion=0#0, 1 #overrides the other option - use for HRdata
+Option_WriteOutC_sag=1 #0, 1 #by shielding and age
+Option_ForceExclusion=1#0, 1 #overrides the other option - use for HRdata
 ### Save csv of long dataset (inc zeros for unreported events) #################
-Option_WriteLong_all=0 #0, 1 #no strata
+Option_WriteLong_all=1 #0, 1 #no strata
 Option_WriteLong_age=1 #0, 1 #by age group
 Option_WriteLong_shi=0 #0, 1 #by shielding
 Option_WriteLong_sag=1 #0, 1 #by shielding and age
