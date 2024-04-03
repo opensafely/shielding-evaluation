@@ -406,9 +406,9 @@ LogLikelihood <- function(theta){
   #Negative binomial or Normal likelihood
 
   ## Totals - sum of 45 NB,s - but note: many are added (non-reported) zeros
-  #kHT  = kH*45; 
-  #kDHT = kDH*45; 
-  #kDOT = kDO*45; 
+  kHT  = kH*10  #45; 
+  kDHT = kDH*10 #*45; 
+  kDOT = kDO*10 #*45; 
   ## Merged  - sum of 4 or 6 variables
   #kHm  = kH;  #kHm  = kH*4;   
   kDHm = kDH; #kDHm = kDH*6;
@@ -416,11 +416,11 @@ LogLikelihood <- function(theta){
 
   ll =
   ###H 
-   #(     dnbinom(x= Tzd1w, size = kHT,        mu   = TMeanH1,  log = T)) +     #1 Totals - NB (below counts)
-   #(     dnbinom(x= Tzd2w, size = kHT,        mu   = TMeanH2,  log = T)) +
-   #(     dnbinom(x= Tzd3w, size = kHT,        mu   = TMeanH3,  log = T)) +
-   #(     dnbinom(x= Tzd4w, size = kHT,        mu   = TMeanH4,  log = T)) +
-    sum(  dnorm(x =  zdm4w, sd =   sdH*sdzdm4w,mean = MeanHm4,  log = T)) +     #2 Merged - Normal
+    (     dnbinom(x= Tzd1w, size = kHT,        mu   = TMeanH1,  log = T)) +     #1 Totals - NB (below counts)
+    (     dnbinom(x= Tzd2w, size = kHT,        mu   = TMeanH2,  log = T)) +
+    (     dnbinom(x= Tzd3w, size = kHT,        mu   = TMeanH3,  log = T)) +
+    (     dnbinom(x= Tzd4w, size = kHT,        mu   = TMeanH4,  log = T)) +
+   #sum(  dnorm(x =  zdm4w, sd =   sdH*sdzdm4w,mean = MeanHm4,  log = T)) +     #2 Merged - Normal
    #sum(  dnorm(x =  zd1w,  sd =   sdH*sdzd1w, mean = MeanH1,   log = T)) +     #3 Non-merged - Normal
    #sum(  dnorm(x =  zd2w,  sd =   sdH*sdzd2w, mean = MeanH2,   log = T)) +
    #sum(  dnorm(x =  zd3w,  sd =   sdH*sdzd3w, mean = MeanH3,   log = T)) +
@@ -437,13 +437,13 @@ LogLikelihood <- function(theta){
    #sum(  dnbinom(x= zd8w,  size = kH,         mu   = MeanH8,   log = T)) +
    #sum(  dnbinom(x =zd9w,  size = kH,         mu   = MeanH9,   log = T)) +    
   ###DH
-   #(     dnbinom(x= Twd1w, size = kDHT,       mu   = TMeanDH1, log = T)) +     #1 Totals - NB (below counts)
-   #(     dnbinom(x= Twd2w, size = kDHT,       mu   = TMeanDH2, log = T)) +
-   #(     dnbinom(x= Twd3w, size = kDHT,       mu   = TMeanDH3, log = T)) +
-   #(     dnbinom(x= Twd4w, size = kDHT,       mu   = TMeanDH4, log = T)) +
-   #(     dnbinom(x= Twd5w, size = kDHT,       mu   = TMeanDH5, log = T)) +
-   #(     dnbinom(x= Twd6w, size = kDHT,       mu   = TMeanDH6, log = T)) +
-    sum(  dnbinom(x= wdm6w, size = kDHm,       mu   = MeanDHm6, log = T)) +     #2 Merged - NB
+    (     dnbinom(x= Twd1w, size = kDHT,       mu   = TMeanDH1, log = T)) +     #1 Totals - NB (below counts)
+    (     dnbinom(x= Twd2w, size = kDHT,       mu   = TMeanDH2, log = T)) +
+    (     dnbinom(x= Twd3w, size = kDHT,       mu   = TMeanDH3, log = T)) +
+    (     dnbinom(x= Twd4w, size = kDHT,       mu   = TMeanDH4, log = T)) +
+    (     dnbinom(x= Twd5w, size = kDHT,       mu   = TMeanDH5, log = T)) +
+    (     dnbinom(x= Twd6w, size = kDHT,       mu   = TMeanDH6, log = T)) +
+   #sum(  dnbinom(x= wdm6w, size = kDHm,       mu   = MeanDHm6, log = T)) +     #2 Merged - NB
    #sum(  dnbinom(x = wd1w, size = kDH,        mu   = MeanDH1,  log = T)) +     #3 Non-merged - NB
    #sum(  dnbinom(x = wd2w, size = kDH,        mu   = MeanDH2,  log = T)) +     
    #sum(  dnbinom(x = wd3w, size = kDH,        mu   = MeanDH3,  log = T)) +     
@@ -454,13 +454,13 @@ LogLikelihood <- function(theta){
     sum(  dnbinom(x = wd8w, size = kDH,        mu   = MeanDH8,  log = T)) +
     sum(  dnbinom(x = wd9w, size = kDH,        mu   = MeanDH9,  log = T)) +
   ###DO
-   #(     dnbinom(x= Tvd1w, size = kDOT,       mu   = TMeanDO1, log = T)) +     #1 Totals - NB (below counts)
-   #(     dnbinom(x= Tvd2w, size = kDOT,       mu   = TMeanDO2, log = T)) +
-   #(     dnbinom(x= Tvd3w, size = kDOT,       mu   = TMeanDO3, log = T)) +
-   #(     dnbinom(x= Tvd4w, size = kDOT,       mu   = TMeanDO4, log = T)) +
-   #(     dnbinom(x= Tvd5w, size = kDOT,       mu   = TMeanDO5, log = T)) +
-   #(     dnbinom(x= Tvd6w, size = kDOT,       mu   = TMeanDO6, log = T)) +
-    sum(  dnbinom(x= vdm6w, size = kDOm,       mu   = MeanDOm6, log = T)) +     #2 Merged - NB
+    (     dnbinom(x= Tvd1w, size = kDOT,       mu   = TMeanDO1, log = T)) +     #1 Totals - NB (below counts)
+    (     dnbinom(x= Tvd2w, size = kDOT,       mu   = TMeanDO2, log = T)) +
+    (     dnbinom(x= Tvd3w, size = kDOT,       mu   = TMeanDO3, log = T)) +
+    (     dnbinom(x= Tvd4w, size = kDOT,       mu   = TMeanDO4, log = T)) +
+    (     dnbinom(x= Tvd5w, size = kDOT,       mu   = TMeanDO5, log = T)) +
+    (     dnbinom(x= Tvd6w, size = kDOT,       mu   = TMeanDO6, log = T)) +
+   #sum(  dnbinom(x= vdm6w, size = kDOm,       mu   = MeanDOm6, log = T)) +     #2 Merged - NB
    #sum(  dnbinom(x = vd1w, size = kDO,        mu   = MeanDO1,  log = T)) +     #3 Non-merged - NB
    #sum(  dnbinom(x = vd2w, size = kDO,        mu   = MeanDO2,  log = T)) +     
    #sum(  dnbinom(x = vd3w, size = kDO,        mu   = MeanDO3,  log = T)) +     
