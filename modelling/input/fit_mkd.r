@@ -352,7 +352,7 @@ LogLikelihood <- function(theta){
   mA       =      theta[8]
   #sdH      =      theta[8]
   sdH      = pars$sdH #1
-  #kH       = pars$kH  #1 1/(  theta[8]*theta[8])    # pk = theta = 1/sqrt(k) => k = 1/pk^2
+  kH       = pars$kH  #1 1/(  theta[8]*theta[8])    # pk = theta = 1/sqrt(k) => k = 1/pk^2
   kDH      = 1/(  theta[9]*theta[9])
   kDO      = kDH
   #kDO      = 1/(  theta[3]*theta[3])
@@ -410,7 +410,7 @@ LogLikelihood <- function(theta){
   kDHT = kDH*10 #*45; 
   kDOT = kDO*10 #*45; 
   ## Merged  - sum of 4 or 6 variables
-  #kHm  = kH;  #kHm  = kH*4;   
+  kHm  = kH;  #kHm  = kH*4;   
   kDHm = kDH; #kDHm = kDH*6;
   kDOm = kDO; #kDOm = kDO*6; 
 
