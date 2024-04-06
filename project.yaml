@@ -48,68 +48,68 @@ actions:
     outputs:
       moderately_sensitive:
         #HDdata.R - only run if iplatform>0
-        #csv011: output/HDsynthesis/J5bHbDhmdy4_Hdata_by_age.csv
-        csv012: output/HDsynthesis/J5bHbDhmdy4_Hdata_by_age_long.csv
-        #csv013: output/HDsynthesis/J5bHbDhmdy4_Hdata_by_age_merged_long.csv
-        #csv013: output/HDsynthesis/J5bHbDhmdy4_Hdata_by_shi.csv
-        #csv014: output/HDsynthesis/J5bHbDhmdy4_Hdata_s_by_age.csv
-        csv015: output/HDsynthesis/J5bHbDhmdy4_Hdata_s_by_age_long.csv
-        csv016: output/HDsynthesis/J5bHbDhmdy4_Hdata_all_long.csv       
-        #csv021: output/HDsynthesis/J5bHbDhmdy4_DHdata_by_age.csv
-        csv022: output/HDsynthesis/J5bHbDhmdy4_DHdata_by_age_long.csv        
-        #csv023: output/HDsynthesis/J5bHbDhmdy4_DHdata_by_age_merged_long.csv
-        #csv023: output/HDsynthesis/J5bHbDhmdy4_DHdata_by_shi.csv
-        #csv024: output/HDsynthesis/J5bHbDhmdy4_DHdata_s_by_age.csv
-        csv025: output/HDsynthesis/J5bHbDhmdy4_DHdata_s_by_age_long.csv
-        csv026: output/HDsynthesis/J5bHbDhmdy4_DHdata_all_long.csv
-        #csv031: output/HDsynthesis/J5bHbDhmdy4_DOdata_by_age.csv
-        csv032: output/HDsynthesis/J5bHbDhmdy4_DOdata_by_age_long.csv
-        #csv033: output/HDsynthesis/J5bHbDhmdy4_DOdata_by_age_merged_long.csv
-        #csv033: output/HDsynthesis/J5bHbDhmdy4_DOdata_by_shi.csv
-        #csv034: output/HDsynthesis/J5bHbDhmdy4_DOdata_s_by_age.csv
-        csv035: output/HDsynthesis/J5bHbDhmdy4_DOdata_s_by_age_long.csv
-        csv036: output/HDsynthesis/J5bHbDhmdy4_DOdata_all_long.csv
+        #csv011: output/HDsynthesis/J5bHbDhmdy5_Hdata_by_age.csv
+        csv012: output/HDsynthesis/J5bHbDhmdy5_Hdata_by_age_long.csv
+        #csv013: output/HDsynthesis/J5bHbDhmdy5_Hdata_by_age_merged_long.csv
+        #csv013: output/HDsynthesis/J5bHbDhmdy5_Hdata_by_shi.csv
+        #csv014: output/HDsynthesis/J5bHbDhmdy5_Hdata_s_by_age.csv
+        csv015: output/HDsynthesis/J5bHbDhmdy5_Hdata_s_by_age_long.csv
+        csv016: output/HDsynthesis/J5bHbDhmdy5_Hdata_all_long.csv       
+        #csv021: output/HDsynthesis/J5bHbDhmdy5_DHdata_by_age.csv
+        csv022: output/HDsynthesis/J5bHbDhmdy5_DHdata_by_age_long.csv        
+        #csv023: output/HDsynthesis/J5bHbDhmdy5_DHdata_by_age_merged_long.csv
+        #csv023: output/HDsynthesis/J5bHbDhmdy5_DHdata_by_shi.csv
+        #csv024: output/HDsynthesis/J5bHbDhmdy5_DHdata_s_by_age.csv
+        csv025: output/HDsynthesis/J5bHbDhmdy5_DHdata_s_by_age_long.csv
+        csv026: output/HDsynthesis/J5bHbDhmdy5_DHdata_all_long.csv
+        #csv031: output/HDsynthesis/J5bHbDhmdy5_DOdata_by_age.csv
+        csv032: output/HDsynthesis/J5bHbDhmdy5_DOdata_by_age_long.csv
+        #csv033: output/HDsynthesis/J5bHbDhmdy5_DOdata_by_age_merged_long.csv
+        #csv033: output/HDsynthesis/J5bHbDhmdy5_DOdata_by_shi.csv
+        #csv034: output/HDsynthesis/J5bHbDhmdy5_DOdata_s_by_age.csv
+        csv035: output/HDsynthesis/J5bHbDhmdy5_DOdata_s_by_age_long.csv
+        csv036: output/HDsynthesis/J5bHbDhmdy5_DOdata_all_long.csv
         #REDACTION
-        csv701: output/HDsynthesis/J5bHbDhmdy4_Hdata_all_UNDERLIE.csv
-        csv702: output/HDsynthesis/J5bHbDhmdy4_Hdata_all_REDACTED.csv
-        csv703: output/HDsynthesis/J5bHbDhmdy4_Hdata_by_age_UNDERLIE.csv
-        csv704: output/HDsynthesis/J5bHbDhmdy4_Hdata_by_age_REDACTED.csv
-        csv705: output/HDsynthesis/J5bHbDhmdy4_Hdata_s_by_age_UNDERLIE.csv 
-        csv706: output/HDsynthesis/J5bHbDhmdy4_Hdata_s_by_age_REDACTED.csv
-        csv711: output/HDsynthesis/J5bHbDhmdy4_DHdata_all_UNDERLIE.csv
-        csv712: output/HDsynthesis/J5bHbDhmdy4_DHdata_all_REDACTED.csv
-        csv713: output/HDsynthesis/J5bHbDhmdy4_DHdata_by_age_UNDERLIE.csv
-        csv714: output/HDsynthesis/J5bHbDhmdy4_DHdata_by_age_REDACTED.csv
-        csv715: output/HDsynthesis/J5bHbDhmdy4_DHdata_s_by_age_UNDERLIE.csv
-        csv716: output/HDsynthesis/J5bHbDhmdy4_DHdata_s_by_age_REDACTED.csv       
-        csv721: output/HDsynthesis/J5bHbDhmdy4_DOdata_all_REDACTED.csv
-        csv722: output/HDsynthesis/J5bHbDhmdy4_DOdata_all_UNDERLIE.csv
-        csv723: output/HDsynthesis/J5bHbDhmdy4_DOdata_by_age_REDACTED.csv
-        csv724: output/HDsynthesis/J5bHbDhmdy4_DOdata_by_age_UNDERLIE.csv 
-        csv725: output/HDsynthesis/J5bHbDhmdy4_DOdata_s_by_age_UNDERLIE.csv
-        csv726: output/HDsynthesis/J5bHbDhmdy4_DOdata_s_by_age_REDACTED.csv
+        csv701: output/HDsynthesis/J5bHbDhmdy5_Hdata_all_UNDERLIE.csv
+        csv702: output/HDsynthesis/J5bHbDhmdy5_Hdata_all_REDACTED.csv
+        csv703: output/HDsynthesis/J5bHbDhmdy5_Hdata_by_age_UNDERLIE.csv
+        csv704: output/HDsynthesis/J5bHbDhmdy5_Hdata_by_age_REDACTED.csv
+        csv705: output/HDsynthesis/J5bHbDhmdy5_Hdata_s_by_age_UNDERLIE.csv 
+        csv706: output/HDsynthesis/J5bHbDhmdy5_Hdata_s_by_age_REDACTED.csv
+        csv711: output/HDsynthesis/J5bHbDhmdy5_DHdata_all_UNDERLIE.csv
+        csv712: output/HDsynthesis/J5bHbDhmdy5_DHdata_all_REDACTED.csv
+        csv713: output/HDsynthesis/J5bHbDhmdy5_DHdata_by_age_UNDERLIE.csv
+        csv714: output/HDsynthesis/J5bHbDhmdy5_DHdata_by_age_REDACTED.csv
+        csv715: output/HDsynthesis/J5bHbDhmdy5_DHdata_s_by_age_UNDERLIE.csv
+        csv716: output/HDsynthesis/J5bHbDhmdy5_DHdata_s_by_age_REDACTED.csv       
+        csv721: output/HDsynthesis/J5bHbDhmdy5_DOdata_all_REDACTED.csv
+        csv722: output/HDsynthesis/J5bHbDhmdy5_DOdata_all_UNDERLIE.csv
+        csv723: output/HDsynthesis/J5bHbDhmdy5_DOdata_by_age_REDACTED.csv
+        csv724: output/HDsynthesis/J5bHbDhmdy5_DOdata_by_age_UNDERLIE.csv 
+        csv725: output/HDsynthesis/J5bHbDhmdy5_DOdata_s_by_age_UNDERLIE.csv
+        csv726: output/HDsynthesis/J5bHbDhmdy5_DOdata_s_by_age_REDACTED.csv
         #contacts
-        txt010: output/modelling/J5bHbDhmdy4_Contact_matrix_year-start-27Jan20_stats.txt
+        txt010: output/modelling/J5bHbDhmdy5_Contact_matrix_year-start-27Jan20_stats.txt
         #R0
-        csv040: output/modelling/J5bHbDhmdy4_Simul_R0_by_week.csv
-        svg010: output/modelling/J5bHbDhmdy4_Simul_R0_by_week.csv.svg
+        csv040: output/modelling/J5bHbDhmdy5_Simul_R0_by_week.csv
+        svg010: output/modelling/J5bHbDhmdy5_Simul_R0_by_week.csv.svg
         #simulation - only run if iplatform==0
-        #svg011: output/modelling/J5bHbDhmdy4_Simul_Infected_and_R0.pdf_1-3.svg
-        #svg012: output/modelling/J5bHbDhmdy4_Simul_Infected_and_R0.pdf_4-6.svg
-        #txt020: output/modelling/J5bHbDhmdy4_Simul_run.txt
+        #svg011: output/modelling/J5bHbDhmdy5_Simul_Infected_and_R0.pdf_1-3.svg
+        #svg012: output/modelling/J5bHbDhmdy5_Simul_Infected_and_R0.pdf_4-6.svg
+        #txt020: output/modelling/J5bHbDhmdy5_Simul_run.txt
         #fit
         #txt000: output/modelling/screen.txt
-        html01: output/modelling/J5bHbDhmdy4_Main_Fit_Report.html
-        txt021: output/modelling/J5bHbDhmdy4_Fit_summary_1.txt
-        txt022: output/modelling/J5bHbDhmdy4_Fit_summary_2.txt  
-        svg031: output/modelling/J5bHbDhmdy4_Fit_MCMC_marginalPlot.svg
-        #svg032: output/modelling/J5bHbDhmdy4_Fit_MCMC_plotout_lastPage.svg
-        svg033: output/modelling/J5bHbDhmdy4_Fit_MCMC_correlationPlot.svg
-        svg034: output/modelling/J5bHbDhmdy4_Fit_MCMC_Overall.svg
-        svg035: output/modelling/J5bHbDhmdy4_Fit_MCMC_PosteriorSample.svg
-        svg037: output/modelling/J5bHbDhmdy4_Fit_MCMC_PosteriorSample_Prev_R0.svg
-        svg036: output/modelling/J5bHbDhmdy4_Fit_MCMC_AgeProfiles.svg
-        svg038: output/modelling/J5bHbDhmdy4_Fit_MCMC_plots_probs.svg
+        html01: output/modelling/J5bHbDhmdy5_Main_Fit_Report.html
+        txt021: output/modelling/J5bHbDhmdy5_Fit_summary_1.txt
+        txt022: output/modelling/J5bHbDhmdy5_Fit_summary_2.txt  
+        svg031: output/modelling/J5bHbDhmdy5_Fit_MCMC_marginalPlot.svg
+        #svg032: output/modelling/J5bHbDhmdy5_Fit_MCMC_plotout_lastPage.svg
+        svg033: output/modelling/J5bHbDhmdy5_Fit_MCMC_correlationPlot.svg
+        svg034: output/modelling/J5bHbDhmdy5_Fit_MCMC_Overall.svg
+        svg035: output/modelling/J5bHbDhmdy5_Fit_MCMC_PosteriorSample.svg
+        svg037: output/modelling/J5bHbDhmdy5_Fit_MCMC_PosteriorSample_Prev_R0.svg
+        svg036: output/modelling/J5bHbDhmdy5_Fit_MCMC_AgeProfiles.svg
+        svg038: output/modelling/J5bHbDhmdy5_Fit_MCMC_plots_probs.svg
  
   
   HD_data_questions:
