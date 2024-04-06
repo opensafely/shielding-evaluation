@@ -3,7 +3,7 @@ pset <- within(pset, {
     TODAY <- format(Sys.Date(), "%d-%m-%Y")
     TIME  <- format(Sys.time(),'%H.%M.%S_%d-%m-%Y')
     ## Job no.
-    Job="J5bHbDhmdy4_" #J1=lm, J2=fit-simul, J3=SEIR_fit, J4...=SEIUHRD fits, J5 - age model
+    Job="J5bHbDhmdy5_" #J1=lm, J2=fit-simul, J3=SEIR_fit, J4...=SEIUHRD fits, J5 - age model
     
     ## Model choice
     MODEL    <- c("SEIR", "SEIUHRD");
