@@ -659,7 +659,7 @@ LogLikelihood <- function(theta){
 
 
 ## Likelihood definition, parameter ranges  ####################################
-niter = 30000#60000#6000##3000
+niter = 3000#30000#60000#6000##3000
 if (pset$iplatform==2){niter=150000} #120000} #200000
 
         #rIR,       rOD,        R0,         pE0,        fu          hM,                     1/hR,
@@ -1359,7 +1359,7 @@ filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_PosteriorSample")
 par(mfrow = c(4,1))
 par(mar = c(2, 2, 1, 1)) #bottom, left, top, right
 colors <- c("Data" = 1,  "MAP" = 2, "95% CrI" = "grey70", "95% perc" = "grey70", "MAP prev" = 2, "MAP posi" = 2)
-zMAX = rep(range(zsample)[2],length(Datessample))
+zMAX = rep(range(c(zsample_0,zsample_1))[2],length(Datessample))
 
 #H
 dzsample_0<- tibble(Date=Datessample, Datez=datH$Datesz, zsample05=zsample95_0[,1],
