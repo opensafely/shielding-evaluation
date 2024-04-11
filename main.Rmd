@@ -47,8 +47,6 @@ Fit: Select parameters, run mcmc, see outputs.
 # 0-SET UP
 TIME  = format(Sys.time(),'%H.%M.%S_%d-%m-%Y')
 
-#jobno = "J5k_" - use pset$Job
-
 #wd=repo
 input_dir  <- paste0(getwd(),"/modelling/input")
 output_dir <- paste0(getwd(),"/output/modelling")
@@ -83,22 +81,26 @@ if (pset$iplatform>0) {
 ```
 
 ```{r model, echo=FALSE}
-# 2-MODEL contacts, parameters & R0 (for fitting or simulation)
-# 2-1-Contacts
-### Return:  cm, Week1_Model = "2020-02-24", Week2_Model = "2021-02-15"
-### Input:  "Contact_matrix_year-from-24Feb20_vector-lenght-9x9x52_norm=maxEV1.csv"
-### Output: "Contact_matrix_year-start-24Feb20_stats.txt"
+# 2-MODEL (for fitting or simulation)
+## Contact matrix
+### return: cm, cm_0, cm_1
+### csv: Contact_matrix_year-from-27Jan20_vector-lenght-9x9x52_norm=maxEV1_x3
+### txt: ontact_matrix_year-from-27Jan20_vector-lenght-9x9x52_norm=maxEV1_stats
 source(file = paste0(input_dir,"/contacts.r"), local = knitr::knit_global())
 print("Main.Rmd: sourced contacts.r")
 
-# 2-2-Parameters and initial condition
-### Return: pars$
-source(file = paste0(input_dir,"/",pset$File_parameters), local = knitr::knit_global())
+# Parameters and initial condition
+#source(file = paste0(input_dir,"/",pset$File_parameters), local = knitr::knit_global())
+source(file = paste0(input_dir,"/",pset$File_parametersas), local = knitr::knit_global())
 pars$cm  <- as.vector(cm)
 print("Main.Rmd: sourced parameters.r")
+#insert contacts into parameters
+pars$cm    <- as.vector(cm)
+pars$cm_0  <- as.vector(cm_0)
+pars$cm_1  <- as.vector(cm_1)
 
-# 2-3-Output settings and parameters
-### Output: screen
+
+# Output settings and parameters
 #sink(file = paste0(output_dir,"/",pset$File_run), append=TRUE, split=FALSE)
   cat(" \n")
   print(format(Sys.time(),'%H.%M.%S_%d-%m-%Y'))
@@ -116,41 +118,31 @@ print("Main.Rmd: sourced parameters.r")
   cat("\n \n")
 #sink()
 
-# 2-4-R0 by week
-### Return: pars$beta
+# R0 by week
 ### Output: Simul_R0_by_week.csv
-source(file = paste0(input_dir,"/R0.r"), local = knitr::knit_global())
-r0 = R0(pars=pars,GetBeta=1,GetOutput=1)
+source(file = paste0(input_dir,"/R0_0.r"), local = knitr::knit_global())
+r0 = R0_0(pars=pars,GetBeta=1,GetOutput=1)
 print("Main.Rmd: sourced R0.r")
 
 ```
 
 ```{r simulation, echo=FALSE}
-# 3-Simulation
-## Return:  mout, datM: ("", 1-9): Dataz , Dataw, Datav, H_mod, DH_mod, DO_mod
-## Input:   SEIUHRDaout_model.cpp
-## Output: "Simul_run.txt"; "Simul_Infected_and_R0_1-3.svg", "...,4-6.svg"
-## plots:   as svg; and Simulated & true incidence
 if (pset$iplatform==0) {
-  source(file = paste0(input_dir,"/simulation.r"), local = knitr::knit_global()) 
+  #source(file = paste0(input_dir,"/simulation.r"), local = knitr::knit_global()) 
+  source(file = paste0(input_dir,"/simulation_as.r"), local = knitr::knit_global()) 
   print("Main.Rmd: sourced simulation.r") }
 
 ```
 
 ```{r fit, echo=FALSE}
 ##, eval = F}
-
-# 4-Fitting - H, DH, DO incidence
-## Input: SEIUHRDaout_model.cpp, BETA.r (return: beta)
-## Output: "Simul_run.txt", txt, svg, html
-## Return: datH, datD, datHa, datDHa, datDOa
 if (pset$DOfit==1) {
 if (pset$iplatform<2) {
-  source(file=paste0(input_dir,"/fit_mkd.r"), local = knitr::knit_global()) } else {
+  source(file=paste0(input_dir,"/fit_mkd_as.r"), local = knitr::knit_global()) } else {
   if (dim_sc[1]>1000) {
-  source(file=paste0(input_dir,"/fit_mkd.r"), local = knitr::knit_global()) } else {
+  source(file=paste0(input_dir,"/fit_mkd_as.r"), local = knitr::knit_global()) } else {
   source(file=paste0(input_dir,"/fit_(skip-fit-iplatform=2).r"), local = knitr::knit_global()) }      }
-  print("Main.Rmd: sourced fit_mkd.r")
+  print("Main.Rmd: sourced fit_mkd_as.r")
 }
   
 
