@@ -120,9 +120,9 @@ pars$cm_1  <- as.vector(cm_1)
 
 # R0 by week
 ### Output: Simul_R0_by_week.csv
-#source(file = paste0(input_dir,"/R0.r"), local = knitr::knit_global())
-#r0 = R0(pars=pars,GetBeta=1,GetOutput=1)
-#print("Main.Rmd: sourced R0.r")
+source(file = paste0(input_dir,"/R0_0.r"), local = knitr::knit_global())
+r0 = R0_0(pars=pars,GetBeta=1,GetOutput=1)
+print("Main.Rmd: sourced R0.r")
 
 ```
 

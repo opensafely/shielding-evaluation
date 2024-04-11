@@ -48,44 +48,52 @@ actions:
     outputs:
       moderately_sensitive:
         #HDdata.R - only run if iplatform>0
+        #H
+        csv010: output/HDsynthesis/J6bHbDhmdyTot_Hdata_all_long.csv       
         #csv011: output/HDsynthesis/J6bHbDhmdyTot_Hdata_by_age.csv
-        csv012: output/HDsynthesis/J6bHbDhmdyTot_Hdata_by_age_long.csv
+        #csv012: output/HDsynthesis/J6bHbDhmdyTot_Hdata_by_age_long.csv
         #csv013: output/HDsynthesis/J6bHbDhmdyTot_Hdata_by_age_merged_long.csv
-        #csv013: output/HDsynthesis/J6bHbDhmdyTot_Hdata_by_shi.csv
-        #csv014: output/HDsynthesis/J6bHbDhmdyTot_Hdata_s_by_age.csv
-        csv015: output/HDsynthesis/J6bHbDhmdyTot_Hdata_s_by_age_long.csv
-        csv016: output/HDsynthesis/J6bHbDhmdyTot_Hdata_all_long.csv       
+        #csv014: output/HDsynthesis/J6bHbDhmdyTot_Hdata_by_shi.csv
+        csv015: output/HDsynthesis/J6bHbDhmdyTot_Hdata_by_shi_long.csv
+        #csv016: output/HDsynthesis/J6bHbDhmdyTot_Hdata_s_by_age.csv
+        csv017: output/HDsynthesis/J6bHbDhmdyTot_Hdata_s_by_age_long.csv
+        #DH
+        csv020: output/HDsynthesis/J6bHbDhmdyTot_DHdata_all_long.csv
         #csv021: output/HDsynthesis/J6bHbDhmdyTot_DHdata_by_age.csv
-        csv022: output/HDsynthesis/J6bHbDhmdyTot_DHdata_by_age_long.csv        
+        #csv022: output/HDsynthesis/J6bHbDhmdyTot_DHdata_by_age_long.csv        
         #csv023: output/HDsynthesis/J6bHbDhmdyTot_DHdata_by_age_merged_long.csv
-        #csv023: output/HDsynthesis/J6bHbDhmdyTot_DHdata_by_shi.csv
-        #csv024: output/HDsynthesis/J6bHbDhmdyTot_DHdata_s_by_age.csv
-        csv025: output/HDsynthesis/J6bHbDhmdyTot_DHdata_s_by_age_long.csv
-        csv026: output/HDsynthesis/J6bHbDhmdyTot_DHdata_all_long.csv
+        #csv024: output/HDsynthesis/J6bHbDhmdyTot_DHdata_by_shi.csv
+        csv025: output/HDsynthesis/J6bHbDhmdyTot_DHdata_by_shi_long.csv
+        #csv026: output/HDsynthesis/J6bHbDhmdyTot_DHdata_s_by_age.csv
+        csv027: output/HDsynthesis/J6bHbDhmdyTot_DHdata_s_by_age_long.csv
+        #DO
+        csv030: output/HDsynthesis/J6bHbDhmdyTot_DOdata_all_long.csv
         #csv031: output/HDsynthesis/J6bHbDhmdyTot_DOdata_by_age.csv
-        csv032: output/HDsynthesis/J6bHbDhmdyTot_DOdata_by_age_long.csv
+        #csv032: output/HDsynthesis/J6bHbDhmdyTot_DOdata_by_age_long.csv
         #csv033: output/HDsynthesis/J6bHbDhmdyTot_DOdata_by_age_merged_long.csv
-        #csv033: output/HDsynthesis/J6bHbDhmdyTot_DOdata_by_shi.csv
-        #csv034: output/HDsynthesis/J6bHbDhmdyTot_DOdata_s_by_age.csv
-        csv035: output/HDsynthesis/J6bHbDhmdyTot_DOdata_s_by_age_long.csv
-        csv036: output/HDsynthesis/J6bHbDhmdyTot_DOdata_all_long.csv
+        #csv034: output/HDsynthesis/J6bHbDhmdyTot_DOdata_by_shi.csv
+        csv035: output/HDsynthesis/J6bHbDhmdyTot_DOdata_by_shi_long.csv
+        #csv036: output/HDsynthesis/J6bHbDhmdyTot_DOdata_s_by_age.csv
+        csv037: output/HDsynthesis/J6bHbDhmdyTot_DOdata_s_by_age_long.csv
         #REDACTION
         csv701: output/HDsynthesis/J6bHbDhmdyTot_Hdata_all_UNDERLIE.csv
         csv702: output/HDsynthesis/J6bHbDhmdyTot_Hdata_all_REDACTED.csv
-        csv703: output/HDsynthesis/J6bHbDhmdyTot_Hdata_by_age_UNDERLIE.csv
-        csv704: output/HDsynthesis/J6bHbDhmdyTot_Hdata_by_age_REDACTED.csv
+        csv703: output/HDsynthesis/J6bHbDhmdyTot_Hdata_by_shi_UNDERLIE.csv
+        csv704: output/HDsynthesis/J6bHbDhmdyTot_Hdata_by_shi_REDACTED.csv
         csv705: output/HDsynthesis/J6bHbDhmdyTot_Hdata_s_by_age_UNDERLIE.csv 
         csv706: output/HDsynthesis/J6bHbDhmdyTot_Hdata_s_by_age_REDACTED.csv
+        #
         csv711: output/HDsynthesis/J6bHbDhmdyTot_DHdata_all_UNDERLIE.csv
         csv712: output/HDsynthesis/J6bHbDhmdyTot_DHdata_all_REDACTED.csv
-        csv713: output/HDsynthesis/J6bHbDhmdyTot_DHdata_by_age_UNDERLIE.csv
-        csv714: output/HDsynthesis/J6bHbDhmdyTot_DHdata_by_age_REDACTED.csv
+        csv713: output/HDsynthesis/J6bHbDhmdyTot_DHdata_by_shi_UNDERLIE.csv
+        csv714: output/HDsynthesis/J6bHbDhmdyTot_DHdata_by_shi_REDACTED.csv
         csv715: output/HDsynthesis/J6bHbDhmdyTot_DHdata_s_by_age_UNDERLIE.csv
-        csv716: output/HDsynthesis/J6bHbDhmdyTot_DHdata_s_by_age_REDACTED.csv       
+        csv716: output/HDsynthesis/J6bHbDhmdyTot_DHdata_s_by_age_REDACTED.csv
+        #        
         csv721: output/HDsynthesis/J6bHbDhmdyTot_DOdata_all_REDACTED.csv
         csv722: output/HDsynthesis/J6bHbDhmdyTot_DOdata_all_UNDERLIE.csv
-        csv723: output/HDsynthesis/J6bHbDhmdyTot_DOdata_by_age_REDACTED.csv
-        csv724: output/HDsynthesis/J6bHbDhmdyTot_DOdata_by_age_UNDERLIE.csv 
+        csv723: output/HDsynthesis/J6bHbDhmdyTot_DOdata_by_shi_REDACTED.csv
+        csv724: output/HDsynthesis/J6bHbDhmdyTot_DOdata_by_shi_UNDERLIE.csv 
         csv725: output/HDsynthesis/J6bHbDhmdyTot_DOdata_s_by_age_UNDERLIE.csv
         csv726: output/HDsynthesis/J6bHbDhmdyTot_DOdata_s_by_age_REDACTED.csv
         #contacts

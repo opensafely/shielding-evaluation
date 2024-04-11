@@ -38,8 +38,8 @@ Option_WriteOutC_sag=1 #0, 1 #by shielding and age
 Option_ForceExclusion=1#0, 1 #overrides the other option - use for HRdata
 ### Save csv of long dataset (inc zeros for unreported events) #################
 Option_WriteLong_all=1 #0, 1 #no strata
-Option_WriteLong_age=1 #0, 1 #by age group
-Option_WriteLong_shi=0 #0, 1 #by shielding
+Option_WriteLong_age=0 #0, 1 #by age group
+Option_WriteLong_shi=1 #0, 1 #by shielding
 Option_WriteLong_sag=1 #0, 1 #by shielding and age
 ### Merge agegroups ############################################################
 Option_Merge=0         #0, 1 #merge scarce-data age groups
