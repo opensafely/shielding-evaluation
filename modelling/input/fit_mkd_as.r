@@ -1265,8 +1265,8 @@ if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=
 par(mar=c(0.5, 1, 1, 1)) #shows axis scale better #par(mar =c(0,0,0,0)) # c(0.5, 1, 1, 1)) #Par(mar = c(2, 2, 1, 1))  #bottom, left, top, right
 #p<-marginalPlot(out); print(p)
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_marginalPlot")
-if (pset$iplatform<2){ 
-  pdf(paste0(filenamepath,".pdf")); marginalPlot(out); invisible(dev.off())    }
+#if (pset$iplatform<2){ 
+  pdf(paste0(filenamepath,".pdf")); marginalPlot(out); invisible(dev.off())    #}
 svglite(paste0(filenamepath,".svg")); marginalPlot(out); invisible(dev.off())
 
 #2-3 trace
