@@ -437,6 +437,7 @@ LogLikelihood <- function(theta){
   kDO =      kDH
   #kH =      fp(theta[8])    #pk = theta = 1/sqrt(k) => k = 1/pk^2
   #kDO =     fp(theta[3])
+  pars$rIH = fi(theta[25])
   
   #Dependent parameters
   #pars$h     = hA*pars$h
@@ -660,14 +661,14 @@ LogLikelihood <- function(theta){
 
 ## Likelihood definition, parameter ranges  ####################################
 niter = 3000#30000#60000#6000##3000
-if (pset$iplatform==2){niter=150000} #120000} #200000
+if (pset$iplatform==2){niter=200000} #150000} #120000} #200000
 
         #rIR,       rOD,        R0,         pE0,        fu          hM,                     1/hR,
 LOWER = c(1,        1,          gs(R0Min),  gs(pE0Min), gs(fuMin),  gs(hMMin),  gs(hMMin),  (hTMin),  (hTMin),  
         #dM,                    1/dR,                   #mM,                    1/mR,       
         gs(hMMin),  gs(hMMin),  (hTMin),    (hTMin),    gs(hMMin),  gs(hMMin),  (hTMin),    (hTMin),
         #1/yR0,                 yM1,                    1/yR1,                  kD  
-        (hTMin),    (hTMin),    gs(hMMin),   gs(hMMin), (hTMin),    (hTMin),    (pkMin));
+        (hTMin),    (hTMin),    gs(hMMin),   gs(hMMin), (hTMin),    (hTMin),    (pkMin),     1);
 
 
         #rIR,       rOD,        R0,         pE0,        fu          hM,                     1/hR,
@@ -675,7 +676,7 @@ UPPER = c(tMax,     tMax,       gs(R0Max),  gs(pE0Max), gs(fuMax),  gs(hMMax),  
         #dM,                    1/dR,                   #mM,                    1/mR,       
         gs(hMMax),  gs(hMMax),  (hTMax),    (hTMax),    gs(hMMax),  gs(hMMax),  (hTMax),    (hTMax),
         #1/yR0,                 yM1,                    1/yR1,                  kD  
-        (hTMax),    (hTMax),    gs(hMMax),   gs(hMMax), (hTMax),    (hTMax),    (pkMax));
+        (hTMax),    (hTMax),    gs(hMMax),   gs(hMMax), (hTMax),    (hTMax),    (pkMax),    (tMax2));
 
 #Uniform priors
   #PARSTART = 0.5*UPPER
@@ -759,6 +760,8 @@ yM0E_1    <- yM1E_1*exp((age3-age9)*yR1E_1)
 #kHE       <- pars$kH  #1
 parsE$kDH <- fp(as.vector(MAPE$parametersMAP[24]))
 parsE$kDO <- parsE$kDH
+parsE$rIH <- fi(as.vector(MAPE$parametersMAP[25]))
+
 #Dependent parameters
 parsE$h_0 = hME_0*exp((age-age9)*hRE_0)
 parsE$h_1 = hME_1*exp((age-age9)*hRE_1)
@@ -849,6 +852,7 @@ for(i in 1:nsample){
   #kHES       <- pars$kH  #1
   parsES$kDH <- fp(as.vector(psample[i,24]))
   parsES$kDO <- parsES$kDH
+  parsES$rIH <- fi(as.vector(psample[i,25]))
   #Dependent parameters
   parsES$h_0  = hMES_0*exp((age-age9)*hRES_0)
   parsES$h_1  = hMES_1*exp((age-age9)*hRES_1)
@@ -947,6 +951,7 @@ for(i in 1:nsampleR0){
   #kHES       <- pars$kH  #1
   parsES$kDH <- fp(as.vector(psample[i,24]))
   parsES$kDO <- parsES$kDH
+  parsES$rIH <- fi(as.vector(psample[i,25]))
   #Dependent parameters
   parsES$h_0  = hMES_0*exp((age-age9)*hRES_0)
   parsES$h_1  = hMES_1*exp((age-age9)*hRES_1)
@@ -978,10 +983,10 @@ for(it in 1:ntimes) {
 
 ##### Summary - txt output
 SCREEN=0
-if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=FALSE,split=FALSE)
-  cat("\n"); print(paste0(format(Sys.Date(), "%d-%m-%Y"), " - ", format(Sys.time(),'%H.%M.%S_%d-%m-%Y'))); cat("\n")
-  print("Summary 1..."); cat("\n")
-sink()}
+#if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=FALSE,split=FALSE)
+#  cat("\n"); print(paste0(format(Sys.Date(), "%d-%m-%Y"), " - ", format(Sys.time(),'%H.%M.%S_%d-%m-%Y'))); cat("\n")
+#  print("Summary 1..."); cat("\n")
+#sink()}
 
 sink(file = paste0(output_dir,"/",pset$File_fit_summary_1),append=FALSE,split=FALSE)
 print(paste0("Likelihood NB"))
@@ -997,6 +1002,7 @@ print(paste0("sdH Fixed: ", round(parsE$sdH,   3),    ". Expected: ", round(  pa
 print(paste0("kDH,kDO MAP:",round(parsE$kDH,   3),    ". Expected: ", round(  pars$kDH,     3), ", sdH=",pars$sdH)) #kD
 print(paste0("1/rIR MAP: ", round(1/parsE$rIR, 3),    ". Expected: ", round(1/pars$rIR,     3))) #rEI
 print(paste0("1/rOD MAP: ", round(1/parsE$rOD, 3),    ". Expected: ", round(1/pars$rOD,     3))) #rOD
+print(paste0("1/rIH MAP: ", round(1/parsE$rIH, 3),    ". Expected: ", round(1/pars$rIH,     3))) #rIH
 print(paste0("R0    MAP: ", round(parsE$R0,    3),    ". Expected: ", round(  pars$R0,      3))) #R0
 print(paste0("pE0   MAP: ", round(parsE$pE0,   4),    ". Expected: ", round(  pars$pE0,     3))) #pE0
 print(paste0("fu    MAP: ", round(parsE$fu,    4),    ". Expected: ", round(  pars$fu,      3))) #pE0 #fu #yA
@@ -1031,33 +1037,40 @@ print(paste0("Mean by chain and parameter:"))
 print(out$X)
 sink()
 
-
-## Probability-age plots 
+#0 Probability-age plots 
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_plots_probs")
 svglite(paste0(filenamepath,".svg")); 
 par(mfrow = c(4,2))
 par(mar = c(4, 4, 1, 4))  #bottom, left, top, right
 #h
-plot(pars$h_0, ylim=c(0,1),ylab="h_0",xlab="")
-  lines(parsE$h_0, col=2, lwd=2)
-plot(pars$h_1, ylim=c(0,1),ylab="h_1",xlab="")
-  lines(parsE$h_1, col=2, lwd=2)
+plot(pars$h_0, ylim=c(0,1),ylab="h_0",xlab=""); lines(parsE$h_0, col=2, lwd=2)
+plot(pars$h_1, ylim=c(0,1),ylab="h_1",xlab=""); lines(parsE$h_1, col=2, lwd=2)
 #y  
-plot(pars$y_0, ylim=c(0,1),ylab="y_0",xlab="")
-  lines(parsE$y_0, col=2, lwd=2)
-plot(pars$y_1, ylim=c(0,1),ylab="y_1",xlab="")
-  lines(parsE$y_1, col=2, lwd=2)
+plot(pars$y_0, ylim=c(0,1),ylab="y_0",xlab=""); lines(parsE$y_0, col=2, lwd=2)
+plot(pars$y_1, ylim=c(0,1),ylab="y_1",xlab=""); lines(parsE$y_1, col=2, lwd=2)
 #d
-plot(pars$d_0*pars$ad, ylim=c(0,1),ylab="d_0",xlab="")
-  lines(parsE$d_0*parsE$ad, col=2, lwd=2)  #parsE$ad=1 if parsE$d estimated
-plot(pars$d_1*pars$ad, ylim=c(0,1),ylab="d_1",xlab="")
-  lines(parsE$d_1*parsE$ad, col=2, lwd=2)  #parsE$ad=1 if parsE$d estimated
+plot(pars$d_0*pars$ad, ylim=c(0,1),ylab="d_0",xlab=""); lines(parsE$d_0*parsE$ad, col=2, lwd=2)  #parsE$ad=1 if parsE$d estimated
+plot(pars$d_1*pars$ad, ylim=c(0,1),ylab="d_1",xlab=""); lines(parsE$d_1*parsE$ad, col=2, lwd=2)  #parsE$ad=1 if parsE$d estimated
 #m
-plot(pars$m_0, ylim=c(0,1),ylab="m_0",xlab="age group")
-  lines(parsE$m_0, col=2, lwd=2)
-plot(pars$m_1, ylim=c(0,1),ylab="m_0",xlab="age group")
-  lines(parsE$m_1, col=2, lwd=2)
+plot(pars$m_0, ylim=c(0,1),ylab="m_0",xlab="age group"); lines(parsE$m_0, col=2, lwd=2)
+plot(pars$m_1, ylim=c(0,1),ylab="m_1",xlab="age group"); lines(parsE$m_1, col=2, lwd=2)
 invisible(dev.off())
+##screen
+par(mfrow = c(4,2))
+par(mar = c(4, 4, 1, 4))  #bottom, left, top, right
+#h
+plot(pars$h_0, ylim=c(0,1),ylab="h_0",xlab=""); lines(parsE$h_0, col=2, lwd=2)
+plot(pars$h_1, ylim=c(0,1),ylab="h_1",xlab=""); lines(parsE$h_1, col=2, lwd=2)
+#y  
+plot(pars$y_0, ylim=c(0,1),ylab="y_0",xlab=""); lines(parsE$y_0, col=2, lwd=2)
+plot(pars$y_1, ylim=c(0,1),ylab="y_1",xlab=""); lines(parsE$y_1, col=2, lwd=2)
+#d
+plot(pars$d_0*pars$ad, ylim=c(0,1),ylab="d_0",xlab=""); lines(parsE$d_0*parsE$ad, col=2, lwd=2)  #parsE$ad=1 if parsE$d estimated
+plot(pars$d_1*pars$ad, ylim=c(0,1),ylab="d_1",xlab=""); lines(parsE$d_1*parsE$ad, col=2, lwd=2)  #parsE$ad=1 if parsE$d estimated
+#m
+plot(pars$m_0, ylim=c(0,1),ylab="m_0",xlab="age group"); lines(parsE$m_0, col=2, lwd=2)
+plot(pars$m_1, ylim=c(0,1),ylab="m_1",xlab="age group"); lines(parsE$m_1, col=2, lwd=2)
+
 
 
 print("Summary 2..."); cat("\n")
@@ -1259,39 +1272,40 @@ datDOa_1<- tibble(datT,
 #### Diagnostics
 
 #1 marginal
-if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-  cat("\n"); print("Fig 1..."); cat("\n")
-  sink()}
+#if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+#  cat("\n"); print("Fig 1..."); cat("\n")
+#  sink()}
 par(mar=c(0.5, 1, 1, 1)) #shows axis scale better #par(mar =c(0,0,0,0)) # c(0.5, 1, 1, 1)) #Par(mar = c(2, 2, 1, 1))  #bottom, left, top, right
 #p<-marginalPlot(out); print(p)
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_marginalPlot")
 if (pset$iplatform<2){ 
-  pdf(paste0(filenamepath,".pdf")); marginalPlot(out); invisible(dev.off())    }
-svglite(paste0(filenamepath,".svg")); marginalPlot(out); invisible(dev.off())
+  pdf(paste0(filenamepath,".pdf")); marginalPlot(out); invisible(dev.off())     }
+if(length(UPPER)<17){
+  svglite(paste0(filenamepath,".svg")); marginalPlot(out); invisible(dev.off()) } else {
+  svglite(paste0(filenamepath,".svg")); plot(1:10); invisible(dev.off())        }
 
 #2-3 trace
-if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-  cat("\n"); print("Fig 2-3..."); cat("\n")
-  sink()}
+#if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+#  cat("\n"); print("Fig 2-3..."); cat("\n")
+#  sink()}
 par(mar = c(2, 2, 1, 1)) ##bottom, left, top, right
 p<-plot(out); print(p)
+filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_plotout_lastPage")
 if (pset$iplatform==0){
-  filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_plotout_lastPage")
-  svglite(paste0(filenamepath,".svg")); plot(out); invisible(dev.off()) }
+  svglite(paste0(filenamepath,".svg")); plot(out); invisible(dev.off())         }
 
 #4 correlations
-if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-  cat("\n"); print("Fig 4..."); cat("\n")
-  sink()}
+#if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+#  cat("\n"); print("Fig 4..."); cat("\n")
+#  sink()}
 par(mar = c(0,0,0,0)) #par(mar = c(2, 2, 1, 1))
 #pdf("corr.pdf")
 #p<-correlationPlot(out); print(p)  #Error in plot.new() : figure margins too large  (16 par)
 #dev.off()
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_correlationPlot")
 if(length(UPPER)<12){
-svglite(paste0(filenamepath,".svg")); correlationPlot(out); invisible(dev.off()) } else {
-svglite(paste0(filenamepath,".svg")); plot(1:10); invisible(dev.off())
-}
+  svglite(paste0(filenamepath,".svg")); correlationPlot(out); invisible(dev.off()) } else {
+  svglite(paste0(filenamepath,".svg")); plot(1:10); invisible(dev.off())        }
 
 
 ### Results
@@ -1299,9 +1313,9 @@ Title_0 = c("Other")
 Title_1 = c("Shielding")
 
 #5 overall
-if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-  cat("\n"); print("Fig 5..."); cat("\n")
-  sink()}
+#if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+#  cat("\n"); print("Fig 5..."); cat("\n")
+#  sink()}
 colors <- c(  "I_dat"  = "black",   "I_est" = "red",     "I_model" = "green",
              "H_datw"  = "black",   "H_est" = "red",     "H_model" = "pink",
             "DH_datw"  = "grey",   "DH_est" = "blue",   "DH_model" = "cyan",
@@ -1350,9 +1364,9 @@ svglite(paste0(filenamepath,".svg"),width=sc*6, height=sc*3); print(pO); invisib
 
 #6 Plot posterior samples
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
-if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-  cat("\n"); print("Fig 6..."); cat("\n")
-  sink()}
+#if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+#  cat("\n"); print("Fig 6..."); cat("\n")
+#  sink()}
 ##
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_PosteriorSample")
 ##
@@ -1500,9 +1514,9 @@ colors <- c("0-4" = 1, "05-11" = 2,  "12-17" = 3, "18-29" = 4, "30-39" = 5,
 Yname = c('Hospitalisations', 'Deaths in hospital', 'Deaths outside hospital')
 if (LOG==1) {Yname = c('log Hospitalisations', 'log Deaths in hospital', 'log Deaths outside hospital')}
 
-if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-  cat("\n"); print("Fig 7..."); cat("\n")
-  sink()}
+#if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+#  cat("\n"); print("Fig 7..."); cat("\n")
+#  sink()}
 #H
 pH_0 <- ggplot() +
     labs(x = "", y = Yname[1], color = "") + #Legend") + 
@@ -1550,9 +1564,9 @@ pH_1 <- ggplot() +
     geom_point(data=datHa_1, aes(x=Dates,y=H9d, color = "70+"))
 
 #DH
-if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-  cat("\n"); print("Fig 8..."); cat("\n")
-  sink()}
+#if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+#  cat("\n"); print("Fig 8..."); cat("\n")
+#  sink()}
 pDH_0 <- ggplot() +
     labs(x = "", y = Yname[2], color = "Age group") + #Legend") + 
     scale_color_manual(values = colors) +
@@ -1599,9 +1613,9 @@ pDH_1 <- ggplot() +
     geom_point(data=datDHa_1, aes(x=Dates,y=DH9d, color = "70+"))  
 
 #DO
-if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-  cat("\n"); print("Fig 9..."); cat("\n")
-  sink()}
+#if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
+#  cat("\n"); print("Fig 9..."); cat("\n")
+#  sink()}
 pDO_0 <- ggplot() +
     labs(x = 'Date', y = Yname[3], color = "") + #Legend") + 
     scale_color_manual(values = colors) +
