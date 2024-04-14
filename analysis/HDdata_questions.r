@@ -30,7 +30,7 @@ DAT  <- arrow::read_parquet(file = here::here("output/data_edited.gz.parquet"),
 ## Stats: raw data (no filters)
 nP_tot_raw  = dim(DAT)[1]
 nP_tot_raw_id  = sum(!is.na(DAT$patient_id), na.rm = T)
-nP_tot_raw_age = sum(!is.na(age_cat), na.rm = T)
+nP_tot_raw_age = sum(!is.na(DAT$age_cat), na.rm = T)
 #
 print(paste0("Raw data: "))
 print(paste0("Raw data: rows:     ", nP_tot_raw))
@@ -44,7 +44,7 @@ cat("\n")
 ## Define shielding status
 DAT <- DAT %>%
         ###age groups  # remove patients with missing 'age_cat'
-        filter(!is.na(age_cat))                                                   %>% 
+        filter(!is.na(DAT$age_cat))                                                   %>% 
         #shielding flag - up to 2020-12-01
         mutate(shieldA  = as.factor(ifelse(hirisk_codedate_1<"2020-12-02",1,0)))  %>% # date of first high risk flag
         mutate(shieldB  = as.factor(ifelse(highrisk_shield  <"2020-12-02",1,0)))  %>% # date of first high risk flag 
@@ -57,7 +57,7 @@ DAT <- DAT %>%
 ##- inc patients with covid H, D events during Dec-2020 - Sep-2021
 ##- inc CH
 nP_tot_f0     = dim(DAT)[1]
-nP_tot_f0_age = sum(!is.na(age_cat), na.rm = T)
+nP_tot_f0_age = sum(!is.na(DAT$age_cat), na.rm = T)
 nP_tot_f0_id  = sum(!is.na(DAT$patient_id), na.rm = T)
 nP_tot        = sum(!is.na(DAT$patient_id), na.rm = T)                               #used below with this name
 #
