@@ -24,8 +24,8 @@ pars <- within(pars, {
     y_1  <- y
     h_0  <- h
     h_1  <- h
-    d_0  <- d
-    d_1  <- d
+    d_0  <- 2*h_0*m_0
+    d_1  <- 2*h_1*m_1
     m_0  <- m_0
     m_1  <- m_1
     ##England demography, Census 2021, CoMix age-bands,  ukpopestimatesmid2020on2021geography....xls
@@ -65,8 +65,8 @@ pars <- within(pars, {
     rOD    <- rHD             #delay in death outside hospital in addition to usual time to hopitalisation
     rRS    <- 0
     rC     <- 1/8.5           #rate of loss of positivity, Davies Lancet ID
-    R0     <- 2.23            #3 #2020-wild-type basic reproduction rate, Knock et al 2021
-    fu     <- 0.5             #relative transmission of U group, Davies Lancet ID
+    R0     <- 1.8 #2.23            #3 #2020-wild-type basic reproduction rate, Knock et al 2021
+    fu     <- 0.7 #0.5             #relative transmission of U group, Davies Lancet ID
     beta   <- 1               #transmission rate between two given individuals
     Npopcoh<- 24.02*1e6       #cohort size
     Npop   <- 56.55*1e6       #ONS-England population size mid 2020, ukpopestimatesmid2020on2021geography....xls
@@ -82,7 +82,7 @@ pars <- within(pars, {
     Da0    <- Na0*0.00
     Sa0    <- Na0-Ea0-Ia0-Ua0-Ha0-Oa0-Ra0-Da0
     logPI0 <- log10((Ea0[2]+Ia0[2]+Ua0[2])/Na0[2]) #proportion of infection in age-group 2
-    k      <- 5#1               #dispersion/shape parameter of NB likelihood (and noise if simulating), Davies 2020 Nat Med
+    k      <- 1#5#1           #dispersion/shape parameter of NB likelihood (and noise if simulating), Davies 2020 Nat Med
     kH     <- k               #dispersion/shape parameter - hospitalisation counts
     kDH    <- k               #dispersion/shape parameter - deaths in hospital counts
     kDO    <- k               #dispersion/shape parameter - eaths outside hospital counts

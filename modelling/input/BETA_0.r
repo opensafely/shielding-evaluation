@@ -28,7 +28,7 @@ for (k in 1:9){
 
 #calculate beta based on proposed R0 and max ev of NGM in week 1, i.e. how must scale NGM to achieve this R0 
 #beta = pars$R0/max(eigen(ngm1[,])[[1]])
-beta_0 = pars$R0/max(c(eigen(ngm1[,])[[1]],0.1))
+beta_0 = pars$R0/max(c(Re(eigen(ngm1[,])[[1]]),0.1))
 
 return (beta_0)
 }
