@@ -12,22 +12,33 @@ nd = pset$nw
 if (pset$DOcmREAD==1 & pset$iplatform==0) {
 #m = mean of contacts over 250 MCMC samples
   #### file names with relevant weeks
-  #files <- list.files(path = "./m_9x9matrices_19feb24", pattern="Eng")
-  #files <- list.files(path = "./m_9x9matrices_07feb24", pattern="Eng")
+  imatrix=4
+  ##New output
+  if(imatrix==1) files <- list.files(path = "./m_9x9matrices_07feb24", pattern="Eng")
+  if(imatrix==2) files <- list.files(path = "./m_9x9matrices_19feb24", pattern="Eng")
+  if(imatrix==3) { 
   files   <- list.files(path = "./m_9x9matrices_08feb24", pattern="Eng")
   files_0 <- list.files(path = "./mn_9x9matrices_08feb24", pattern="Eng")
-  files_1 <- list.files(path = "./ms_9x9matrices_08feb24", pattern="Eng")
+  files_1 <- list.files(path = "./ms_9x9matrices_08feb24", pattern="Eng") }
+  if(imatrix==4) {
+  files   <- list.files(path = "./m_9x9matrices_22mar24", pattern="Eng")
+  files_0 <- list.files(path = "./mn_9x9matrices_22mar24", pattern="Eng")
+  files_1 <- list.files(path = "./ms_9x9matrices_22mar24", pattern="Eng") }
+  
   cdate <- sort(substring(files,8,17)) #8th to 17th character
   cdate <- cdate[1:nd] #### Select 52 weeks from 1st week (2020-01-27) to 2021-01-18") 
   cl   = list()
   cl_0 = list()
   cl_1 = list()
   for (i in seq_along(cdate)) {
-    #cl[[i]]=read.csv(paste0("./m_9x9matrices_19feb24/England",cdate[i],"all.csv"),header=T) }
-    #cl[[i]]=read.csv(paste0("./m_9x9matrices_07feb24/England",cdate[i],"all.csv"),header=T) }
-    cl[[i]]  =read.csv(paste0("./m_9x9matrices_08feb24/England",cdate[i],"all.csv"),header=T) 
-    cl_0[[i]]=read.csv(paste0("./mn_9x9matrices_08feb24/England",cdate[i],"all.csv"),header=T)
-    cl_1[[i]]=read.csv(paste0("./ms_9x9matrices_08feb24/England",cdate[i],"all.csv"),header=T)  }
+    if(imatrix==1) cl[[i]]=read.csv(paste0("./m_9x9matrices_07feb24/England",cdate[i],"all.csv"),header=T)
+    if(imatrix==2) cl[[i]]=read.csv(paste0("./m_9x9matrices_19feb24/England",cdate[i],"all.csv"),header=T)
+    if(imatrix==3){ cl[[i]]  =read.csv(paste0("./m_9x9matrices_08feb24/England",cdate[i],"all.csv"),header=T) 
+                    cl_0[[i]]=read.csv(paste0("./mn_9x9matrices_08feb24/England",cdate[i],"all.csv"),header=T)
+                    cl_1[[i]]=read.csv(paste0("./ms_9x9matrices_08feb24/England",cdate[i],"all.csv"),header=T)}
+    if(imatrix==4){ cl[[i]]  =read.csv(paste0("./m_9x9matrices_22mar24/England",cdate[i],"all.csv"),header=T) 
+                    cl_0[[i]]=read.csv(paste0("./mn_9x9matrices_22mar24/England",cdate[i],"all.csv"),header=T)
+                    cl_1[[i]]=read.csv(paste0("./ms_9x9matrices_22mar24/England",cdate[i],"all.csv"),header=T)}  }
 ## Transition to shielding policy
 ## Linear transition from n to s
 ## 27-01-2020                        i=1   - m_1=mn

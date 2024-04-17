@@ -380,10 +380,13 @@ pE0Min   = 10/pars$Npop #0.00001   #pop = 565.5
 fuMax    = 1
 fuMin    = 0.1 #0.001
 
-hTMax = 60 #100 #h, m, d, y-exp-part - yR1 ~1/52 from EXP fit lit y[3:9]
+hTMax = 80 #60 #100 #h, m, d, y-exp-part - yR1 ~1/52 from EXP fit lit y[3:9]
 hTMin = 1
 hMMax = 1
 hMMin = 0.01 #0.00001 #0.01
+
+adMax = 1
+adMin = 0
 
 sdHMin   = 0
 sdHMax   = 5 #multiplicative factor of the sd across the age-glrups fitted
@@ -405,27 +408,20 @@ LogLikelihood <- function(theta){
   ### Proposed parameters
   pars$rIR = fi(theta[1])
   pars$rOD = fi(theta[2])
-  pars$R0  = fs(theta[3])
+  pars$rIH = fi(theta[3])
   pars$pE0 = fs(theta[4])
-  pars$fu  = fs(theta[5])
-  hM_0=      fs(theta[6])  #0-1 
-  hM_1=      fs(theta[7])  #0-1 
-  hR_0=      fi(theta[8])  #100-1
-  hR_1=      fi(theta[9])  #100-1
-  dM_0=      fs(theta[10])  #0-1
-  dM_1=      fs(theta[11])  #0-1
-  dR_0=      fi(theta[12])  #100-1
-  dR_1=      fi(theta[13])  #100-1
-  mM_0=      fs(theta[14]) #0-1
-  mM_1=      fs(theta[15]) #0-1
-  mR_0=      fi(theta[16]) #100-1
-  mR_1=      fi(theta[17]) #100-1
-  yR0_0=     fi(theta[18]) #100-1
-  yR0_1=     fi(theta[19]) #100-1
-  yM1_0=     fs(theta[20]) #0-1
-  yM1_1=     fs(theta[21]) #0-1
-  yR1_0=     fi(theta[22]) #100-1
-  yR1_1=     fi(theta[23]) #100-1
+  hM_0=      fs(theta[5])  #0-1 
+  hM_1=      fs(theta[6])  #0-1 
+  hR_0=      fi(theta[7])  #100-1
+  hR_1=      fi(theta[8])  #100-1
+  pars$ad_0= fI(theta[9])  #0-1
+  pars$ad_1= fI(theta[10])  #0-1
+  yR0_0=     fi(theta[11]) #100-1
+  yR0_1=     fi(theta[12]) #100-1
+  yM1_0=     fs(theta[13]) #0-1
+  yM1_1=     fs(theta[14]) #0-1
+  yR1_0=     fi(theta[15]) #100-1
+  yR1_1=     fi(theta[16]) #100-1
   # liny = yM0 + yR0*(age3-age[1:3])
   # expy = yM1*exp((age[3:9]-age9)*yR1)
   # liny[3] = expy[1] =>
@@ -433,29 +429,41 @@ LogLikelihood <- function(theta){
   yM0_1=     yM1_1*exp((age3-age9)*yR1_1)
   sdH =      pars$sdH #0.67 #theta[8]
   kH  =      pars$kH  #1
-  kDH =      fp(theta[24])
+  kDH =      pars$kDH
   kDO =      kDH
-  #kH =      fp(theta[8])    #pk = theta = 1/sqrt(k) => k = 1/pk^2
-  #kDO =     fp(theta[3])
-  pars$rIH = fi(theta[25])
-  
   #Dependent parameters
-  #pars$h     = hA*pars$h
-  #pars$y     = yA*pars$y
-  #pars$m     = mA*pars$m
   pars$h_0 = hM_0*exp((age-age9)*hR_0)
   pars$h_1 = hM_1*exp((age-age9)*hR_1)
-  pars$d_0 = dM_0*exp((age-age9)*dR_0)
-  pars$d_1 = dM_1*exp((age-age9)*dR_1)
-  pars$m_0 = mM_0*exp((age-age9)*mR_0)
-  pars$m_1 = mM_1*exp((age-age9)*mR_1)
+  pars$d_0 = 2*pars$h_0*pars$m_0  
+  pars$d_1 = 2*pars$h_1*pars$m_1  
   pars$y_0 = c(yM0_0 + yR0_0*(age3-age[1:2]), yM1_0*exp((age[3:9]-age9)*yR1_0)) #pars$y = c(liny[1:2],expy[1:7])
   pars$y_1 = c(yM0_1 + yR0_1*(age3-age[1:2]), yM1_1*exp((age[3:9]-age9)*yR1_1)) #pars$y = c(liny[1:2],expy[1:7])
-  pars$ad  = 1 #not used if not d=2*h*m
   pars$Ea0   = pars$Na0*pars$pE0
   pars$Sa0   = pars$Na0 - pars$Ea0 - pars$Ia0 - pars$Ua0 - pars$Ha0 - pars$Oa0 - pars$Ra0 - pars$Da0   
   pars$beta  = BETA(pars) #BETA_0(pars)
 
+  #pars$R0  = fs(theta[3])
+  #pars$fu  = fs(theta[5])
+  #dM_0=      fs(theta[10])  #0-1
+  #dM_1=      fs(theta[11])  #0-1
+  #dR_0=      fi(theta[12])  #100-1
+  #dR_1=      fi(theta[13])  #100-1
+  #mM_0=      fs(theta[14]) #0-1
+  #mM_1=      fs(theta[15]) #0-1
+  #mR_0=      fi(theta[16]) #100-1
+  #mR_1=      fi(theta[17]) #100-1
+  #kH =       fp(theta[8])  #pk = theta = 1/sqrt(k) => k = 1/pk^2
+  #kDH =      fp(theta[24])
+  #kDO =      fp(theta[3])
+  #Dependent parameters
+  #pars$h     = hA*pars$h
+  #pars$y     = yA*pars$y
+  #pars$m     = mA*pars$m
+  #pars$m_0 = mM_0*exp((age-age9)*mR_0)
+  #pars$m_1 = mM_1*exp((age-age9)*mR_1)
+  #pars$d_0 = dM_0*exp((age-age9)*dR_0)
+  #pars$d_1 = dM_1*exp((age-age9)*dR_1)
+  
   ### Model outputs (from Rcpp, given the above proposed parameters)
   m <- model(pars)
   
@@ -515,7 +523,6 @@ LogLikelihood <- function(theta){
                    assign(paste0("MeanDH",eval(i),"_1"),valuesw_1)   #MeanDH1_1-9_1
                    assign(paste0("MeanDO",eval(i),"_1"),valuesv_1) } #MeanDO1_1-9_1
 
-  
   #Likelihood of data
   #product over: 1) datasets (H,DH,DO), 2) age-groups, and 3) weeks
   #Negative binomial or Normal likelihood
@@ -660,23 +667,19 @@ LogLikelihood <- function(theta){
 
 
 ## Likelihood definition, parameter ranges  ####################################
-niter = 3000#30000#60000#6000##3000
+niter = 6000#3000#30000#60000#6000##3000
 if (pset$iplatform==2){niter=200000} #150000} #120000} #200000
 
-        #rIR,       rOD,        R0,         pE0,        fu          hM,                     1/hR,
-LOWER = c(1,        1,          gs(R0Min),  gs(pE0Min), gs(fuMin),  gs(hMMin),  gs(hMMin),  (hTMin),  (hTMin),  
-        #dM,                    1/dR,                   #mM,                    1/mR,       
-        gs(hMMin),  gs(hMMin),  (hTMin),    (hTMin),    gs(hMMin),  gs(hMMin),  (hTMin),    (hTMin),
-        #1/yR0,                 yM1,                    1/yR1,                  kD  
-        (hTMin),    (hTMin),    gs(hMMin),   gs(hMMin), (hTMin),    (hTMin),    (pkMin),     1);
+        #1/rIR,      1/rOD,      1/rIH,      pE0,        hM,                     1/hR,                
+LOWER = c(1,         1,          tMin2,      gs(pE0Min), gs(hMMin),  gs(hMMin),  hTMin,   hTMin,
+        # ad_0       ad_1        1/yR0,                  yM1,                    1/yR1,
+        gI(adMin),   gI(adMin),  hTMin,      hTMin,      gs(hMMin),  gs(hMMin),  hTMin,   hTMin);
 
+        #1/rIR,     1/rOD,       1/rIH,      pE0,        hM,                     1/hR,                
+UPPER = c(tMax,     tMax,        tMax2,      gs(pE0Max), gs(hMMax),  gs(hMMax),  hTMax,   hTMax,
+        # ad_0      ad_1         1/yR0,                  yM1,                    1/yR1,
+        gI(adMax),  gI(adMax),   hTMax,      hTMax,      gs(hMMax),  gs(hMMax),  hTMax,   hTMax);
 
-        #rIR,       rOD,        R0,         pE0,        fu          hM,                     1/hR,
-UPPER = c(tMax,     tMax,       gs(R0Max),  gs(pE0Max), gs(fuMax),  gs(hMMax),  gs(hMMax),  (hTMax),  (hTMax),  
-        #dM,                    1/dR,                   #mM,                    1/mR,       
-        gs(hMMax),  gs(hMMax),  (hTMax),    (hTMax),    gs(hMMax),  gs(hMMax),  (hTMax),    (hTMax),
-        #1/yR0,                 yM1,                    1/yR1,                  kD  
-        (hTMax),    (hTMax),    gs(hMMax),   gs(hMMax), (hTMax),    (hTMax),    (pkMax),    (tMax2));
 
 #Uniform priors
   #PARSTART = 0.5*UPPER
@@ -733,45 +736,33 @@ MAPE      <- MAP(out) #pasr estimated
 #mM,     1/mR,   1/yR0,       yM1,     1/yR1,  kD  
 parsE$rIR <- fi(as.vector(MAPE$parametersMAP[1]))
 parsE$rOD <- fi(as.vector(MAPE$parametersMAP[2]))
-parsE$R0  <- fs(as.vector(MAPE$parametersMAP[3]))
+parsE$rIH <- fi(as.vector(MAPE$parametersMAP[3]))
 parsE$pE0 <- fs(as.vector(MAPE$parametersMAP[4]))
-parsE$fu  <- fs(as.vector(MAPE$parametersMAP[5]))
-hME_0     <- fs(as.vector(MAPE$parametersMAP[6]))  #0-1 
-hME_1     <- fs(as.vector(MAPE$parametersMAP[7]))  #0-1 
-hRE_0     <- fi(as.vector(MAPE$parametersMAP[8]))  #100-1
-hRE_1     <- fi(as.vector(MAPE$parametersMAP[9]))  #100-1
-dME_0     <- fs(as.vector(MAPE$parametersMAP[10]))  #0-1
-dME_1     <- fs(as.vector(MAPE$parametersMAP[11]))  #0-1
-dRE_0     <- fi(as.vector(MAPE$parametersMAP[12]))  #100-1
-dRE_1     <- fi(as.vector(MAPE$parametersMAP[13]))  #100-1
-mME_0     <- fs(as.vector(MAPE$parametersMAP[14])) #0-1
-mME_1     <- fs(as.vector(MAPE$parametersMAP[15])) #0-1
-mRE_0     <- fi(as.vector(MAPE$parametersMAP[16])) #100-1
-mRE_1     <- fi(as.vector(MAPE$parametersMAP[17])) #100-1
-yR0E_0    <- fi(as.vector(MAPE$parametersMAP[18])) #0-1
-yR0E_1    <- fi(as.vector(MAPE$parametersMAP[19])) #0-1
-yM1E_0    <- fs(as.vector(MAPE$parametersMAP[20])) #0-1
-yM1E_1    <- fs(as.vector(MAPE$parametersMAP[21])) #0-1
-yR1E_0    <- fi(as.vector(MAPE$parametersMAP[22])) #100-1
-yR1E_1    <- fi(as.vector(MAPE$parametersMAP[23])) #100-1
+hME_0     <- fs(as.vector(MAPE$parametersMAP[5]))  #0-1 
+hME_1     <- fs(as.vector(MAPE$parametersMAP[6]))  #0-1 
+hRE_0     <- fi(as.vector(MAPE$parametersMAP[7]))  #100-1
+hRE_1     <- fi(as.vector(MAPE$parametersMAP[8]))  #100-1
+parsE$ad_0<- fI(as.vector(MAPE$parametersMAP[9]))
+parsE$ad_1<- fI(as.vector(MAPE$parametersMAP[10]))
+yR0E_0    <- fi(as.vector(MAPE$parametersMAP[11])) #0-1
+yR0E_1    <- fi(as.vector(MAPE$parametersMAP[12])) #0-1
+yM1E_0    <- fs(as.vector(MAPE$parametersMAP[13])) #0-1
+yM1E_1    <- fs(as.vector(MAPE$parametersMAP[14])) #0-1
+yR1E_0    <- fi(as.vector(MAPE$parametersMAP[15])) #100-1
+yR1E_1    <- fi(as.vector(MAPE$parametersMAP[16])) #100-1
 yM0E_0    <- yM1E_0*exp((age3-age9)*yR1E_0)
 yM0E_1    <- yM1E_1*exp((age3-age9)*yR1E_1)
 #sdHE      <- pars$sdH #0.67 #theta[8]
 #kHE       <- pars$kH  #1
-parsE$kDH <- fp(as.vector(MAPE$parametersMAP[24]))
-parsE$kDO <- parsE$kDH
-parsE$rIH <- fi(as.vector(MAPE$parametersMAP[25]))
-
+#kDHE      <- pars$kDH #1
+#kDOE      <- pars$kDO #1
 #Dependent parameters
 parsE$h_0 = hME_0*exp((age-age9)*hRE_0)
 parsE$h_1 = hME_1*exp((age-age9)*hRE_1)
-parsE$d_0 = dME_0*exp((age-age9)*dRE_0)
-parsE$d_1 = dME_1*exp((age-age9)*dRE_1)
-parsE$m_0 = mME_0*exp((age-age9)*mRE_0)
-parsE$m_1 = mME_1*exp((age-age9)*mRE_1)
+parsE$d_0 = 2*parsE$h_0*pars$m_0
+parsE$d_1 = 2*parsE$h_1*pars$m_1
 parsE$y_1 = c(yM0E_1 + yR0E_1*(age3-age[1:2]), yM1E_1*exp((age[3:9]-age9)*yR1E_1))
 parsE$y_0 = c(yM0E_0 + yR0E_0*(age3-age[1:2]), yM1E_0*exp((age[3:9]-age9)*yR1E_0))
-parsE$ad = 1 #not used if not d=2*h*m
 parsE$Ea0   = parsE$Na0*parsE$pE0
 parsE$Sa0   = parsE$Na0 - parsE$Ea0 - parsE$Ia0 - parsE$Ua0 - parsE$Ha0 - parsE$Oa0 - parsE$Ra0 - parsE$Da0   
 parsE$beta  = BETA(parsE) #BETA_0(parsE)
@@ -813,9 +804,22 @@ vsample_0 = matrix(0,ntimes,nsample)
 zsample_1 = matrix(0,ntimes,nsample)
 wsample_1 = matrix(0,ntimes,nsample)
 vsample_1 = matrix(0,ntimes,nsample)
-Psample = matrix(0,ntimes,nsample)
-csample = matrix(0,ntimes,nsample)
-parsES  = pars #parsE
+Psample   = matrix(0,ntimes,nsample)
+csample   = matrix(0,ntimes,nsample)
+parsES    = pars #parsE
+### scenario b
+dHosp_0   = rep(0,times=nsample)
+dHosp_1   = rep(0,times=nsample)
+dHosp     = rep(0,times=nsample)
+dMort_0   = rep(0,times=nsample)
+dMort_1   = rep(0,times=nsample)
+dMort     = rep(0,times=nsample)
+#zsample_0_b = matrix(0,ntimes,nsample)
+#wsample_0_b = matrix(0,ntimes,nsample)
+#vsample_0_b = matrix(0,ntimes,nsample)
+#zsample_1_b = matrix(0,ntimes,nsample)
+#wsample_1_b = matrix(0,ntimes,nsample)
+#vsample_1_b = matrix(0,ntimes,nsample)
 ### UPDATE: @@
 ###         proposal pars$
 ###         MAP      parsE$, 
@@ -824,45 +828,34 @@ for(i in 1:nsample){
   #rIR,    rOD,    R0,          pE0,     fu      hM,     1/hR,   dM,     1/dR,
   #mM,     1/mR,   1/yR0,       yM1,     1/yR1,  kD 
   parsES$rIR <- fi(as.vector(psample[i,1])) 
-  parsES$rOD <- fi(as.vector(psample[i,2])) 
-  parsES$R0  <- fs(as.vector(psample[i,3]))
+  parsES$rOD <- fi(as.vector(psample[i,2]))
+  parsES$rIH <- fi(as.vector(psample[i,3]))
   parsES$pE0 <- fs(as.vector(psample[i,4]))
-  parsES$fu  <- fs(as.vector(psample[i,5]))
-  hMES_0     <- fs(as.vector(psample[i,6]))  #0-1 
-  hMES_1     <- fs(as.vector(psample[i,7]))  #0-1 
-  hRES_0     <- fi(as.vector(psample[i,8]))  #100-1
-  hRES_1     <- fi(as.vector(psample[i,9]))  #100-1
-  dMES_0     <- fs(as.vector(psample[i,10]))  #0-1
-  dMES_1     <- fs(as.vector(psample[i,11]))  #0-1
-  dRES_0     <- fi(as.vector(psample[i,12]))  #100-1
-  dRES_1     <- fi(as.vector(psample[i,13]))  #100-1
-  mMES_0     <- fs(as.vector(psample[i,14])) #0-1
-  mMES_1     <- fs(as.vector(psample[i,15])) #0-1
-  mRES_0     <- fi(as.vector(psample[i,16])) #100-1
-  mRES_1     <- fi(as.vector(psample[i,17])) #100-1
-  yR0ES_0    <- fi(as.vector(psample[i,18])) #100-1
-  yR0ES_1    <- fi(as.vector(psample[i,19])) #100-1
-  yM1ES_0    <- fs(as.vector(psample[i,20]))  #0-1
-  yM1ES_1    <- fs(as.vector(psample[i,21]))  #0-1
-  yR1ES_0    <- fi(as.vector(psample[i,22])) #100-1
-  yR1ES_1    <- fi(as.vector(psample[i,23])) #100-1
+  hMES_0     <- fs(as.vector(psample[i,5]))  #0-1 
+  hMES_1     <- fs(as.vector(psample[i,6]))  #0-1 
+  hRES_0     <- fi(as.vector(psample[i,7]))  #100-1
+  hRES_1     <- fi(as.vector(psample[i,8]))  #100-1
+  parsES$ad_0<- fI(as.vector(psample[i,9]))  #0-1
+  parsES$ad_1<- fI(as.vector(psample[i,10])) #0-1
+  yR0ES_0    <- fi(as.vector(psample[i,11])) #100-1
+  yR0ES_1    <- fi(as.vector(psample[i,12])) #100-1
+  yM1ES_0    <- fs(as.vector(psample[i,13]))  #0-1
+  yM1ES_1    <- fs(as.vector(psample[i,14]))  #0-1
+  yR1ES_0    <- fi(as.vector(psample[i,15])) #100-1
+  yR1ES_1    <- fi(as.vector(psample[i,16])) #100-1
   yM0ES_0    <- yM1ES_0*exp((age3-age9)*yR1ES_0)
   yM0ES_1    <- yM1ES_1*exp((age3-age9)*yR1ES_1)
   #sdHES      <- pars$sdH #0.67 #theta[8]
   #kHES       <- pars$kH  #1
-  parsES$kDH <- fp(as.vector(psample[i,24]))
-  parsES$kDO <- parsES$kDH
-  parsES$rIH <- fi(as.vector(psample[i,25]))
+  #kDHES      <- pars$kDH #1
+  #kDOES      <- pars$kDO #1
   #Dependent parameters
   parsES$h_0  = hMES_0*exp((age-age9)*hRES_0)
   parsES$h_1  = hMES_1*exp((age-age9)*hRES_1)
-  parsES$d_0  = dMES_0*exp((age-age9)*dRES_0)
-  parsES$d_1  = dMES_1*exp((age-age9)*dRES_1)
-  parsES$m_0  = mMES_0*exp((age-age9)*mRES_0)
-  parsES$m_1  = mMES_1*exp((age-age9)*mRES_1)
+  parsES$d_0  = 2*parsES$h_0*pars$m_0
+  parsES$d_1  = 2*parsES$h_1*pars$m_1
   parsES$y_0  = c(yM0ES_0 + yR0ES_0*(age3-age[1:2]), yM1ES_0*exp((age[3:9]-age9)*yR1ES_0)) #pars$y = c(liny[1:2],expy[1:7])
   parsES$y_1  = c(yM0ES_1 + yR0ES_1*(age3-age[1:2]), yM1ES_1*exp((age[3:9]-age9)*yR1ES_1))
-  parsES$ad = 1 #not used if not d=2*h*m
   parsES$Ea0  = parsES$Na0*parsES$pE0
   parsES$Sa0  = parsES$Na0 - parsES$Ea0 - parsES$Ia0 - parsES$Ua0 - parsES$Ha0 - parsES$Oa0 - parsES$Ra0 - parsES$Da0 
   parsES$beta = BETA(parsES) #BETA_0(parsES)
@@ -875,6 +868,27 @@ for(i in 1:nsample){
   vsample_1[,i] = outs$byw_1$DOw[imodelH] 
   Psample[,i]   = (outs$byw_0$It[imodelH] + outs$byw_1$It[imodelH] + outs$byw_0$Ut[imodelH] + outs$byw_1$Ut[imodelH])*oN
   csample[,i]   = (outs$byw_0$Ct[imodelH] + outs$byw_1$Ct[imodelH])*oN
+  ### scenario b
+  parsES_b      = parsES
+  parsES_b$cm_1 = parsES_b$cm_0
+  outs_b        = model(as.vector(parsES_b))
+  #zsample_0_b[,i] = outs_b$byw_0$Hw[imodelH]
+  #wsample_0_b[,i] = outs_b$byw_0$DHw[imodelH]
+  #vsample_0_b[,i] = outs_b$byw_0$DOw[imodelH]
+  #zsample_1_b[,i] = outs_b$byw_1$Hw[imodelH]
+  #wsample_1_b[,i] = outs_b$byw_1$DHw[imodelH]
+  #vsample_1_b[,i] = outs_b$byw_1$DOw[imodelH]
+  ### scenario difference
+  #dHosp_0[i] = sum(zsample_0[,i] - zsample_0_b[,i]) 
+  #dHosp_1[i] = sum(zsample_1[,i] - zsample_1_b[,i])
+  #dMort_0[i] = sum(wsample_0[,i] - wsample_0_b[,i] + vsample_0[,i] - vsample_0_b[,i])
+  #dMort_1[i] = sum(wsample_1[,i] - wsample_1_b[,i] + vsample_1[,i] - vsample_1_b[,i])
+  dHosp_0[i] = sum(outs_b$byw_0$Hw[imodelH] - outs$byw_0$Hw[imodelH]) 
+  dHosp_1[i] = sum(outs_b$byw_1$Hw[imodelH] - outs$byw_1$Hw[imodelH])
+  dMort_0[i] = sum(outs_b$byw_0$DHw[imodelH]- outs$byw_0$DHw[imodelH] + outs_b$byw_0$DOw[imodelH]- outs$byw_0$DOw[imodelH])
+  dMort_1[i] = sum(outs_b$byw_1$DHw[imodelH]- outs$byw_1$DHw[imodelH] + outs_b$byw_1$DOw[imodelH]- outs$byw_1$DOw[imodelH])
+  dHosp[i]   = dHosp_0[i] + dHosp_1[i]
+  dMort[i]   = dMort_0[i] + dMort_1[i]
 } 
 Weekssample = 1 + outs$byw_0$time[imodelH]/7 + Week_shift_model
 Datessample = lubridate::ymd( "2020-01-06" ) + lubridate::weeks(Weekssample - 1) #"2020-01-06" Mon
@@ -888,8 +902,36 @@ vsample95_0 = matrix(0,ntimes,2)
 vsample95_1 = matrix(0,ntimes,2)
 Psample95   = matrix(0,ntimes,2)
 csample95   = matrix(0,ntimes,2)
+dHosp95_0   = rep(0,times=3)
+dHosp95_1   = rep(0,times=3)
+dHosp95     = rep(0,times=3)
+dMort95_0   = rep(0,times=3)
+dMort95_1   = rep(0,times=3)
+dMort95     = rep(0,times=3)
 q1=0.01 #0.05
 q2=0.99 #0.95
+#averted_0, _1 q1
+dHosp95_0[1] = quantile(dHosp_0,q1,na.rm=T)[[1]]
+dHosp95_1[1] = quantile(dHosp_1,q1,na.rm=T)[[1]]
+dMort95_0[1] = quantile(dMort_0,q1,na.rm=T)[[1]]
+dMort95_1[1] = quantile(dMort_1,q1,na.rm=T)[[1]]
+#averted_0, _1 med
+dHosp95_0[2] = quantile(dHosp_0,0.5,na.rm=T)[[1]]
+dHosp95_1[2] = quantile(dHosp_1,0.5,na.rm=T)[[1]]
+dMort95_0[2] = quantile(dMort_0,0.5,na.rm=T)[[1]]
+dMort95_1[2] = quantile(dMort_1,0.5,na.rm=T)[[1]]
+#averted_0, _1 q2
+dHosp95_0[3] = quantile(dHosp_0,q2,na.rm=T)[[1]]
+dHosp95_1[3] = quantile(dHosp_1,q2,na.rm=T)[[1]]
+dMort95_0[3] = quantile(dMort_0,q2,na.rm=T)[[1]]
+dMort95_1[3] = quantile(dMort_1,q2,na.rm=T)[[1]]
+#averted q1, med, q2
+dHosp95[1]   = quantile(dHosp,q1,na.rm=T)[[1]]
+dMort95[1]   = quantile(dMort,q1,na.rm=T)[[1]]
+dHosp95[2]   = quantile(dHosp,0.5,na.rm=T)[[1]]
+dMort95[2]   = quantile(dMort,0.5,na.rm=T)[[1]]
+dHosp95[3]   = quantile(dHosp,q2,na.rm=T)[[1]]
+dMort95[3]   = quantile(dMort,q2,na.rm=T)[[1]]
 for(it in 1:ntimes){
   samp_it <- zsample_0[it,]
   zsample95_0[it,1] = quantile(samp_it,q1,na.rm=T)[[1]]
@@ -924,44 +966,33 @@ for(i in 1:nsampleR0){
   #mM,     1/mR,   yM0,         yM1,     1/yR1,  kD 
   parsES$rIR <- fi(as.vector(psample[i,1])) 
   parsES$rOD <- fi(as.vector(psample[i,2])) 
-  parsES$R0  <- fs(as.vector(psample[i,3]))
-  parsES$pE0 <- fI(as.vector(psample[i,4]))
-  parsES$fu  <- fs(as.vector(psample[i,5]))
-  hMES_0     <- fs(as.vector(psample[i,6]))  #0-1 
-  hMES_1     <- fs(as.vector(psample[i,7]))  #0-1 
-  hRES_0     <- fi(as.vector(psample[i,8]))  #100-1
-  hRES_1     <- fi(as.vector(psample[i,9]))  #100-1
-  dMES_0     <- fs(as.vector(psample[i,10]))  #0-1
-  dMES_1     <- fs(as.vector(psample[i,11]))  #0-1
-  dRES_0     <- fi(as.vector(psample[i,12]))  #100-1
-  dRES_1     <- fi(as.vector(psample[i,13]))  #100-1
-  mMES_0     <- fs(as.vector(psample[i,14])) #0-1
-  mMES_1     <- fs(as.vector(psample[i,15])) #0-1
-  mRES_0     <- fi(as.vector(psample[i,16])) #100-1
-  mRES_1     <- fi(as.vector(psample[i,17])) #100-1
-  yR0ES_0    <- fi(as.vector(psample[i,18])) #100-1
-  yR0ES_1    <- fi(as.vector(psample[i,19])) #100-1
-  yM1ES_0    <- fs(as.vector(psample[i,20]))  #0-1
-  yM1ES_1    <- fs(as.vector(psample[i,21]))  #0-1
-  yR1ES_0    <- fi(as.vector(psample[i,22])) #100-1
-  yR1ES_1    <- fi(as.vector(psample[i,23])) #100-1
+  parsES$rIH <- fi(as.vector(psample[i,3]))
+  parsES$pE0 <- fs(as.vector(psample[i,4]))
+  hMES_0     <- fs(as.vector(psample[i,5]))  #0-1 
+  hMES_1     <- fs(as.vector(psample[i,6]))  #0-1 
+  hRES_0     <- fi(as.vector(psample[i,7]))  #100-1
+  hRES_1     <- fi(as.vector(psample[i,8]))  #100-1
+  parsES$ad_0<- fI(as.vector(psample[i,9]))  #0-1
+  parsES$ad_1<- fI(as.vector(psample[i,10])) #0-1
+  yR0ES_0    <- fi(as.vector(psample[i,11])) #100-1
+  yR0ES_1    <- fi(as.vector(psample[i,12])) #100-1
+  yM1ES_0    <- fs(as.vector(psample[i,13]))  #0-1
+  yM1ES_1    <- fs(as.vector(psample[i,14]))  #0-1
+  yR1ES_0    <- fi(as.vector(psample[i,15])) #100-1
+  yR1ES_1    <- fi(as.vector(psample[i,16])) #100-1
   yM0ES_0    <- yM1ES_0*exp((age3-age9)*yR1ES_0)
   yM0ES_1    <- yM1ES_1*exp((age3-age9)*yR1ES_1)
   #sdHES      <- pars$sdH #0.67 #theta[8]
   #kHES       <- pars$kH  #1
-  parsES$kDH <- fp(as.vector(psample[i,24]))
-  parsES$kDO <- parsES$kDH
-  parsES$rIH <- fi(as.vector(psample[i,25]))
+  #kDHES      <- pars$kDH #1
+  #kDOES      <- pars$kDO #1
   #Dependent parameters
   parsES$h_0  = hMES_0*exp((age-age9)*hRES_0)
   parsES$h_1  = hMES_1*exp((age-age9)*hRES_1)
-  parsES$d_0  = dMES_0*exp((age-age9)*dRES_0)
-  parsES$d_1  = dMES_1*exp((age-age9)*dRES_1)
-  parsES$m_0  = mMES_0*exp((age-age9)*mRES_0)
-  parsES$m_1  = mMES_1*exp((age-age9)*mRES_1)
+  parsES$d_0  = 2*parsES$h_0*pars$m_0
+  parsES$d_1  = 2*parsES$h_1*pars$m_1
   parsES$y_0  = c(yM0ES_0 + yR0ES_0*(age3-age[1:2]), yM1ES_0*exp((age[3:9]-age9)*yR1ES_0)) #pars$y = c(liny[1:2],expy[1:7])
   parsES$y_1  = c(yM0ES_1 + yR0ES_1*(age3-age[1:2]), yM1ES_1*exp((age[3:9]-age9)*yR1ES_1))
-  parsES$ad = 1 #not used if not d=2*h*m
   parsES$Ea0  = parsES$Na0*parsES$pE0
   parsES$Sa0  = parsES$Na0 - parsES$Ea0 - parsES$Ia0 - parsES$Ua0 - parsES$Ha0 - parsES$Oa0 - parsES$Ra0 - parsES$Da0 
   parsES$beta = BETA(parsES) #BETA_0(parsES)
@@ -981,12 +1012,24 @@ for(it in 1:ntimes) {
 
 
 
+##Averted events
+cat("\n");
+cat("Averted events \n")
+print(paste0("Averted Hosp_1: ", round(dHosp95_1[2],0), "[",round(dHosp95_1[1],0),",",round(dHosp95_1[3],0),"]"))
+print(paste0("Averted Hosp:   ", round(dHosp95[2],0),   "[",round(dHosp95[1],  0),",",round(dHosp95[3],  0),"]"))
+print(paste0("Averted Mort_1: ", round(dMort95_1[2],0), "[",round(dMort95_1[1],0),",",round(dMort95_1[3],0),"]"))
+print(paste0("Averted Mort:   ", round(dMort95[2],0),   "[",round(dMort95[1],  0),",",round(dMort95[3],  0),"]"))
+cat("\n");
+##Averted events
+
+
 ##### Summary - txt output
 SCREEN=0
 #if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=FALSE,split=FALSE)
 #  cat("\n"); print(paste0(format(Sys.Date(), "%d-%m-%Y"), " - ", format(Sys.time(),'%H.%M.%S_%d-%m-%Y'))); cat("\n")
 #  print("Summary 1..."); cat("\n")
 #sink()}
+
 
 sink(file = paste0(output_dir,"/",pset$File_fit_summary_1),append=FALSE,split=FALSE)
 print(paste0("Likelihood NB"))
@@ -999,25 +1042,27 @@ cat("\n")
 ## MAP Estimates
 print(paste0("kH  Fixed: ", round(parsE$kH,    3),    ". Expected: ", round(  pars$kH,      3))) #kH
 print(paste0("sdH Fixed: ", round(parsE$sdH,   3),    ". Expected: ", round(  pars$sdH,     3))) #sdH
-print(paste0("kDH,kDO MAP:",round(parsE$kDH,   3),    ". Expected: ", round(  pars$kDH,     3), ", sdH=",pars$sdH)) #kD
+print(paste0("kDH,kDO fix:",round(parsE$kDH,   3),    ". Expected: ", round(  pars$kDH,     3))) #kD
 print(paste0("1/rIR MAP: ", round(1/parsE$rIR, 3),    ". Expected: ", round(1/pars$rIR,     3))) #rEI
 print(paste0("1/rOD MAP: ", round(1/parsE$rOD, 3),    ". Expected: ", round(1/pars$rOD,     3))) #rOD
 print(paste0("1/rIH MAP: ", round(1/parsE$rIH, 3),    ". Expected: ", round(1/pars$rIH,     3))) #rIH
-print(paste0("R0    MAP: ", round(parsE$R0,    3),    ". Expected: ", round(  pars$R0,      3))) #R0
+print(paste0("R0    fix: ", round(parsE$R0,    3),    ". Expected: ", round(  pars$R0,      3))) #R0
 print(paste0("pE0   MAP: ", round(parsE$pE0,   4),    ". Expected: ", round(  pars$pE0,     3))) #pE0
-print(paste0("fu    MAP: ", round(parsE$fu,    4),    ". Expected: ", round(  pars$fu,      3))) #pE0 #fu #yA
-print(paste0("hM_0  MAP: ", round(parsE$h_0[9],  4),    ". Expected: ", round(  pars$h_0[9],    3))) #h9
-print(paste0("hM_1  MAP: ", round(parsE$h_1[9],  4),    ". Expected: ", round(  pars$h_1[9],    3))) #h9
+print(paste0("fu    fix: ", round(parsE$fu,    3),    ". Expected: ", round(  pars$fu,      3))) #pE0 #fu #yA
+print(paste0("hM_0  MAP: ", round(parsE$h_0[9], 4),    ". Expected: ", round(  pars$h_0[9],    3))) #h9
+print(paste0("hM_1  MAP: ", round(parsE$h_1[9], 4),    ". Expected: ", round(  pars$h_1[9],    3))) #h9
 print(paste0("hR_0  MAP: ", round(log(parsE$h_0[8]/parsE$h_0[9])/(age[8]-age9),    4),    ". Expected: "))
 print(paste0("hR_1  MAP: ", round(log(parsE$h_1[8]/parsE$h_1[9])/(age[8]-age9),    4),    ". Expected: "))
-print(paste0("mM_0  MAP: ", round(parsE$m_0[9],  4),    ". Expected: ", round(  pars$m_0[9],    3))) #d9
-print(paste0("mM_1  MAP: ", round(parsE$m_1[9],  4),    ". Expected: ", round(  pars$m_1[9],    3))) #d9
-print(paste0("mR_0  MAP: ", round(log(parsE$m_0[8]/parsE$m_0[9])/(age[8]-age9),    4),    ". Expected: "))
-print(paste0("mR_1  MAP: ", round(log(parsE$m_1[8]/parsE$m_1[9])/(age[8]-age9),    4),    ". Expected: "))
-print(paste0("dM_0  MAP: ", round(parsE$d_0[9],  4),    ". Expected: ", round(  pars$d_0[9]*pars$ad,    3))) #m9
-print(paste0("dM_1  MAP: ", round(parsE$d_1[9],  4),    ". Expected: ", round(  pars$d_1[9]*pars$ad,    3))) #m9
-print(paste0("dR_0  MAP: ", round(log(parsE$d_0[8]/parsE$d_0[9])/(age[8]-age9),    4),    ". Expected: "))
-print(paste0("dR_1  MAP: ", round(log(parsE$d_1[8]/parsE$d_1[9])/(age[8]-age9),    4),    ". Expected: "))
+print(paste0("ad_0  MAP: ", round(parsE$ad_0,  3),    ". Expected: ", round(  pars$ad_0,    3))) #m9
+print(paste0("ad_1  MAP: ", round(parsE$ad_1,  3),    ". Expected: ", round(  pars$ad_1,    3))) #m9
+#print(paste0("mM_0  MAP: ", round(parsE$m_0[9],  4),    ". Expected: ", round(  pars$m_0[9],    3))) #d9
+#print(paste0("mM_1  MAP: ", round(parsE$m_1[9],  4),    ". Expected: ", round(  pars$m_1[9],    3))) #d9
+#print(paste0("mR_0  MAP: ", round(log(parsE$m_0[8]/parsE$m_0[9])/(age[8]-age9),    4),    ". Expected: "))
+#print(paste0("mR_1  MAP: ", round(log(parsE$m_1[8]/parsE$m_1[9])/(age[8]-age9),    4),    ". Expected: "))
+#print(paste0("dM_0  MAP: ", round(parsE$d_0[9],  4),    ". Expected: ", round(  pars$d_0[9]*pars$ad,    3))) #m9
+#print(paste0("dM_1  MAP: ", round(parsE$d_1[9],  4),    ". Expected: ", round(  pars$d_1[9]*pars$ad,    3))) #m9
+#print(paste0("dR_0  MAP: ", round(log(parsE$d_0[8]/parsE$d_0[9])/(age[8]-age9),    4),    ". Expected: "))
+#print(paste0("dR_1  MAP: ", round(log(parsE$d_1[8]/parsE$d_1[9])/(age[8]-age9),    4),    ". Expected: "))
 print(paste0("yR0_0 MAP: ", round((parsE$y_0[1]  - parsE$y_0[2])/(age[2]-age1),    4), ". Expected: "))
 print(paste0("yR0_1 MAP: ", round((parsE$y_1[1]  - parsE$y_1[2])/(age[2]-age1),    4), ". Expected: "))
 print(paste0("yM1_0 MAP: ", round( parsE$y_0[9],  4),   ". Expected: ", round(  pars$y_0[9],    3))) #y9
@@ -1029,6 +1074,11 @@ print(paste0("yM0_1 MAP: ", round( parsE$y_1[3],  4),    ". Expected: ", round( 
 print(paste0("beta  dep: ", round(parsE$beta,     5) ))
 print(paste0("E0    dep: ", round(sum(parsE$Ea0), 0), ". Expected: ", round(sum(pars$Na0*pars$pE0)) ))
 print(paste0("Estimated proportion deaths outside hospital = ", round(parsE$ad/(1+parsE$ad),3)))
+cat("\n");
+print(paste0("Averted Hosp_1: ", round(dHosp95_1[2],0), "[",round(dHosp95_1[1],0),",",round(dHosp95_1[3],0),"]"))
+print(paste0("Averted Hosp:   ", round(dHosp95[2],0),   "[",round(dHosp95[1],  0),",",round(dHosp95[3],  0),"]"))
+print(paste0("Averted Mort_1: ", round(dMort95_1[2],0), "[",round(dMort95_1[1],0),",",round(dMort95_1[3],0),"]"))
+print(paste0("Averted Mort:   ", round(dMort95[2],0),   "[",round(dMort95[1],  0),",",round(dMort95[3],  0),"]"))
 
 cat("\n");
 print(summary(out)); 

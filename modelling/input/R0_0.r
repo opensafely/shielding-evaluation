@@ -39,7 +39,7 @@ for (i in 1:ntcontact) { #1:52
       d_k=pars$d_0[k]*ad; 
       for (j in 1:9) {
             ngm[j,k,i] = beta0*u[j]*cm_0[j,k,i]*( y_k*( (1+fu*(rIO*d_k*orOD))/( rIR*(1-h_k-d_k) + rIH*(h_k) + rIO*(d_k) )) + fu*(1-y_k)/rUR) }}
-  R0_week[i] = max(eigen(ngm[,,i])[[1]]) } #max eigenvalue of NGM
+  R0_week[i] = max(Re(eigen(ngm[,,i])[[1]])) } #max eigenvalue of NGM
 
 ## if pars$R0 is given
 ## and want pars$beta
