@@ -12,8 +12,8 @@ pars <- within(pars, {
     m    <- c(0.0000, 0.004, 0.005, 0.006, 0.018, 0.048, 0.094, 0.193, 0.411) #*cohort filtered events
     m[1] <- 0.0021 #age1 in log lin regression
     ##Mortality fraction among critically infected outside hospital
-    ad   <- 0.1    #proportionality factor in d
-    d    <- 2*h*m  #use da[a] = ad*d[a] #derived
+    ad   <- 1#0.1    #proportionality factor in d
+    d    <- 0.1*2*h*m  #use da[a] = ad*d[a] #derived
     #Shield split
     m_0  <- c(0, 0.005, 0.006, 0.005, 0.016, 0.040, 0.084, 0.182, 0.409) #*
     m_1  <- c(0,     0,     0, 0.016, 0.033, 0.099, 0.138, 0.222, 0.418) #*
@@ -24,8 +24,8 @@ pars <- within(pars, {
     y_1  <- y
     h_0  <- h
     h_1  <- h
-    d_0  <- 2*h_0*m_0
-    d_1  <- 2*h_1*m_1
+    d_0  <- 0.1*2*h_0*m_0
+    d_1  <- 0.1*2*h_1*m_1
     m_0  <- m_0
     m_1  <- m_1
     ##England demography, Census 2021, CoMix age-bands,  ukpopestimatesmid2020on2021geography....xls
@@ -66,7 +66,7 @@ pars <- within(pars, {
     rRS    <- 0
     rC     <- 1/8.5           #rate of loss of positivity, Davies Lancet ID
     R0     <- 1.8 #2.23            #3 #2020-wild-type basic reproduction rate, Knock et al 2021
-    fu     <- 0.7 #0.5             #relative transmission of U group, Davies Lancet ID
+    fu     <- 0.5 #0.7 #0.5             #relative transmission of U group, Davies Lancet ID
     beta   <- 1               #transmission rate between two given individuals
     Npopcoh<- 24.02*1e6       #cohort size
     Npop   <- 56.55*1e6       #ONS-England population size mid 2020, ukpopestimatesmid2020on2021geography....xls

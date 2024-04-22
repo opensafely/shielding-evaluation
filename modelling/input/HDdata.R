@@ -1,10 +1,10 @@
 # Reads H, DH, DO and HR data
-# Fitting dataframes: dataHa_l, datDHa_l, datDOa_l and dataHas_l, datDHas_l, datDOas_l
-# Output checking csv: include REDACTED and UNDERLYING datasets
-# Output svg: each dataset, different age, shielding variable combinations
-# Age-group merging: available for by_age only, not for s_by_age (but currently doen within _fit)
+# For-fitting dataframes: dataHas_l, datDHas_l, datDOas_l or dataHa_l, datDHa_l, datDOa_l
+# Output checking csv: include REDACTED and UNDERLIE datasets
+# Output svg: each dataset, for different age-shielding variable combinations
+# Age-group merging: available for by_age only, not for s_by_age (bec currently done within _fit)
 # Shielding definition: flags up to 2020-12-01
-# Mkd version includes carehomes and related plots
+# HDdata.Mkd version includes carehomes and related plots
 
 library(arrow)
 library(data.table)
@@ -351,7 +351,8 @@ datH     <- dat      %>% rename(Week=weekH, Date=dateH, Freq=freqH)           %>
   w1     <- datH     %>% mutate(Freq     = ifelse(Freq<8,Freq_cutoff,Freq))   %>%
                          write.csv(.,file=paste0(filepart,"_all_REDACTED.csv"))               }#}#output data
 #Long-pivot FULL including the data and 0s (where data missing, no reporting) - no ageg merging
-nweek = max(range(c(range(DAT$weekH,na.rm=T),range(DAT$weekD,na.rm=T))))
+nweek = max(range(c(48))) #,range(DAT$weekH,na.rm=T),range(DAT$weekD,na.rm=T))))
+print(paste0("nweek = ", nweek))
 datH_l   <- Longdf(nweek,"H") %>%                                                                #(no longer) fit data
             Include_dat(., dat, "H") %>% #datH_l; print(datH_l[which(datH_l$freqH>0),]) 
             rename(Week=weekH, Date=dateH, Freq=freqH)

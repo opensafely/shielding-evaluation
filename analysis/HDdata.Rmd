@@ -2,12 +2,7 @@
 title: "Report title"
 date: "`r Sys.Date()`"
 author: "Johnny Filipe"
-#output: html_document
 output: html_document
-#   bookdown::html_document2: 
-#   toc: false
-#   number_sections: false
-# bibliography: references.bib
 ---
 
 ```{r setup, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
@@ -17,7 +12,6 @@ output: html_document
 ## All, H, DH, DO
 ## Aggregation by week, ageg, shielding
 ## (see HDdata_test.R for tests on simulated data)
-# This will create the factory in the working directory
 
 library(arrow)
 library(data.table)
@@ -30,7 +24,6 @@ library(magrittr)
 library(svglite)
 library(tidyverse)
 
-#new_factory(outputs = paste0(here::here("output/HDsynthesis")))
 
 ```
 
@@ -70,7 +63,6 @@ fig0 <- function(data, x , y, col, xname='Week', yname='Weekly admissions') { #y
   p0 <- ggplot(data, aes(x = {{x}}, y = {{y}}, col = {{col}})) +
     geom_line() +     geom_point(size = 1.2, pch = 1) +    
     labs(x = xname, y = yname) +  xlim(c(0, NA)) +  ylim(c(0, NA)) +   theme_bw() 
-    #labs(x = xname, y = yname) +  ylim(c(0, NA)) +   theme_bw() 
   print(p0)} #for when sourcing the code
 #Figures - panels for groups
 fig <- function(data, x , y, col, facets, xname='Date', yname='Weekly admissions') { #yname='Weekly deaths'
@@ -78,7 +70,6 @@ fig <- function(data, x , y, col, facets, xname='Date', yname='Weekly admissions
     geom_line() +     geom_point(size = 1.2, pch = 1) +    
     facet_wrap(facets, ncol = 1, scales = 'free_y') +
     labs(x = xname, y = yname) +  xlim(c(0, NA)) +  ylim(c(0, NA)) +   theme_bw() 
-    #labs(x = xname, y = yname) +  ylim(c(0, NA)) +   theme_bw() 
   print(p)}
 ##NOTE: fig0() (overlap) - for now - better than panels - unless for H & D
 
@@ -301,7 +292,6 @@ if (WHAT=="H") X <- X  %>% rename(weekH=week, freqHa=freq, dateH=date)
 if (WHAT=="D") X <- X  %>% rename(weekD=week, freqDa=freq, dateD=date) 
 return(X)
 } #data; print(X[which(X$freqHa>0),]) 
-#=> worked on H
 
 #Long-pivot including the data and 0s (where data missing, no reporting)
 Longdf <- function(lageg,nageg,nweek,WHAT){
@@ -342,7 +332,9 @@ datHa<- dat %>% rename(Week=weekH, Date=dateH, Freq=freqHa)                #fit 
 datw <- dat %>% mutate(freqHa = ifelse(freqHa<8,Freq_cutoff,freqHa)) %>%
                 write.csv(file=paste0(filepart,"_by_age.csv"))             #show data
 #Long-pivot FULL including the data and 0s (where data missing, no reporting) - no ageg merging
-nweek = max(range(c(range(DAT$weekH,na.rm=T),range(DAT$weekD,na.rm=T))))
+#nweek = max(range(c(range(DAT$weekH,na.rm=T),range(DAT$weekD,na.rm=T))))
+nweek = max(range(c(48))) #,range(DAT$weekH,na.rm=T),range(DAT$weekD,na.rm=T))))
+print(paste0("nweek = ", nweek))
 X <- Longdf(1,9,nweek,"H") %>%
      Include_dat_a(., dat, "H", "NOMERGE")  #dat; print(X[which(X$freqHa>0),]) 
 datHa_l <- X  %>% rename(Week=weekH, Date=dateH, Freq=freqHa, ageg=ageg2)
@@ -1208,6 +1200,7 @@ print(paste0("Patient % age 50-59: ", pct1(nP_50,nP) ));
 print(paste0("Patient % age 60-69: ", pct1(nP_60,nP) ));
 print(paste0("Patient % age 70+:   ", pct1(nP_70,nP) ));
 print(paste0("Patient % all:       ", pct1(nP_sum,nP) ));
+
 
 #Hospitalisations
 cat("\n")
