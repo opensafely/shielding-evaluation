@@ -333,7 +333,7 @@ datw <- dat %>% mutate(freqHa = ifelse(freqHa<8,Freq_cutoff,freqHa)) %>%
                 write.csv(file=paste0(filepart,"_by_age.csv"))             #show data
 #Long-pivot FULL including the data and 0s (where data missing, no reporting) - no ageg merging
 #nweek = max(range(c(range(DAT$weekH,na.rm=T),range(DAT$weekD,na.rm=T))))
-nweek = max(range(c(48,range(DAT$weekH,na.rm=T),range(DAT$weekD,na.rm=T))))
+nweek = max(range(c(48))) #,range(DAT$weekH,na.rm=T),range(DAT$weekD,na.rm=T))))
 print(paste0("nweek = ", nweek))
 X <- Longdf(1,9,nweek,"H") %>%
      Include_dat_a(., dat, "H", "NOMERGE")  #dat; print(X[which(X$freqHa>0),]) 

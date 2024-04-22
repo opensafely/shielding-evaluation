@@ -351,7 +351,7 @@ datH     <- dat      %>% rename(Week=weekH, Date=dateH, Freq=freqH)           %>
   w1     <- datH     %>% mutate(Freq     = ifelse(Freq<8,Freq_cutoff,Freq))   %>%
                          write.csv(.,file=paste0(filepart,"_all_REDACTED.csv"))               }#}#output data
 #Long-pivot FULL including the data and 0s (where data missing, no reporting) - no ageg merging
-nweek = max(range(c(48,range(DAT$weekH,na.rm=T),range(DAT$weekD,na.rm=T))))
+nweek = max(range(c(48))) #,range(DAT$weekH,na.rm=T),range(DAT$weekD,na.rm=T))))
 print(paste0("nweek = ", nweek))
 datH_l   <- Longdf(nweek,"H") %>%                                                                #(no longer) fit data
             Include_dat(., dat, "H") %>% #datH_l; print(datH_l[which(datH_l$freqH>0),]) 
