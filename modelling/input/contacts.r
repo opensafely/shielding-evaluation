@@ -17,11 +17,11 @@ if (pset$DOcmREAD==1 & pset$iplatform==0) {
   if(imatrix==1) files <- list.files(path = "./m_9x9matrices_07feb24", pattern="Eng")
   if(imatrix==2) files <- list.files(path = "./m_9x9matrices_19feb24", pattern="Eng")
   if(imatrix==3) { 
-  files   <- list.files(path = "./m_9x9matrices_08feb24", pattern="Eng")
+  files   <- list.files(path =  "./m_9x9matrices_08feb24", pattern="Eng")
   files_0 <- list.files(path = "./mn_9x9matrices_08feb24", pattern="Eng")
   files_1 <- list.files(path = "./ms_9x9matrices_08feb24", pattern="Eng") }
   if(imatrix==4) {
-  files   <- list.files(path = "./m_9x9matrices_22mar24", pattern="Eng")
+  files   <- list.files(path =  "./m_9x9matrices_22mar24", pattern="Eng")
   files_0 <- list.files(path = "./mn_9x9matrices_22mar24", pattern="Eng")
   files_1 <- list.files(path = "./ms_9x9matrices_22mar24", pattern="Eng") }
   
@@ -31,27 +31,27 @@ if (pset$DOcmREAD==1 & pset$iplatform==0) {
   cl_0 = list()
   cl_1 = list()
   for (i in seq_along(cdate)) {
-    if(imatrix==1) cl[[i]]=read.csv(paste0("./m_9x9matrices_07feb24/England",cdate[i],"all.csv"),header=T)
-    if(imatrix==2) cl[[i]]=read.csv(paste0("./m_9x9matrices_19feb24/England",cdate[i],"all.csv"),header=T)
-    if(imatrix==3){ cl[[i]]  =read.csv(paste0("./m_9x9matrices_08feb24/England",cdate[i],"all.csv"),header=T) 
+    if(imatrix==1)  cl[[i]]  =read.csv(paste0( "./m_9x9matrices_07feb24/England",cdate[i],"all.csv"),header=T)
+    if(imatrix==2)  cl[[i]]  =read.csv(paste0( "./m_9x9matrices_19feb24/England",cdate[i],"all.csv"),header=T)
+    if(imatrix==3){ cl[[i]]  =read.csv(paste0( "./m_9x9matrices_08feb24/England",cdate[i],"all.csv"),header=T) 
                     cl_0[[i]]=read.csv(paste0("./mn_9x9matrices_08feb24/England",cdate[i],"all.csv"),header=T)
                     cl_1[[i]]=read.csv(paste0("./ms_9x9matrices_08feb24/England",cdate[i],"all.csv"),header=T)}
-    if(imatrix==4){ cl[[i]]  =read.csv(paste0("./m_9x9matrices_22mar24/England",cdate[i],"all.csv"),header=T) 
+    if(imatrix==4){ cl[[i]]  =read.csv(paste0( "./m_9x9matrices_22mar24/England",cdate[i],"all.csv"),header=T) 
                     cl_0[[i]]=read.csv(paste0("./mn_9x9matrices_22mar24/England",cdate[i],"all.csv"),header=T)
                     cl_1[[i]]=read.csv(paste0("./ms_9x9matrices_22mar24/England",cdate[i],"all.csv"),header=T)}  }
 ## Transition to shielding policy
 ## Linear transition from n to s
 ## 27-01-2020                        i=1   - m_1=mn
 ## fortnight 02-03-2020, 09-03-2020  i=6:7 - m_1 = mn
-## fortnight 16-03-2020, 23-03-2020  i=8:9 - m_1 = mean(mn,ms)
-## 30-03-2020                        i=10  - m_1 = ms - start of policy
+## fortnight 16-03-2020, 23-03-2020  i=8:9 - m_1 = mean(mn,ms) - shift to shielding behaviour in response to epidemic
+## 30-03-2020                        i=10  - m_1 = ms - official start of policy
 for (i in 1:7) { 
   cl_1[[i]] = cl_0[[i]] #sh  = ns
-  cl[[i]]   = cl_0[[i]] #gen = ns bec sh=ns}
+  cl[[i]]   = cl_0[[i]] #gen = ns bec sh=ns
 }
 for (i in 8:9) { 
   cl_1[[i]] = (cl_1[[i]]+cl_0[[i]])*0.5 #mean at mid point bet start of policy and a month earlier when shielding behaviour started  
-  cl[[i]]   = (cl[[i]]  +cl_0[[i]])*0.5 #approximation - done properly would be at end point of contacts regression
+  cl[[i]]   = (cl[[i]]  +cl_0[[i]])*0.5 #approximation - done precisely would be at end point of contacts regression
 }
 #### Build matrix
   cm   <- array(0,dim=c(9,9,nd))            #9 age groups, 52 weeks
@@ -65,7 +65,6 @@ for (i in 8:9) {
   ##i=51:52 (last fornight) - gives complex EVs for cm_0
   #=> need symmetrise
   for (i in 51:52) {cm_0[,,i] = (cm_0[,,i] + t(cm_0[,,i]))/2 }
-  #=> worked, no more "complex" EV warnings
   ####################
   maxEV1   = max(eigen(cm[,,1])[[1]])       #maximum EV in week 1
   maxEV1_0 = max(eigen(cm_0[,,1])[[1]])     
@@ -83,7 +82,7 @@ for (i in 8:9) {
 } else {
   
   ####get normalised contact vector
-  vcmomaxEV1x3   <- read.csv(file = paste0(input_dir,"/",pset$File_contact_datax3))
+  vcmomaxEV1x3   <- read.csv(file = paste0(input_dir,"/",pset$File_contact_datax3)) #setup has options for other cm files
   cm   <- array(vcmomaxEV1x3$cm,  dim=c(9,9,nd))
   cm_0 <- array(vcmomaxEV1x3$cm_0,dim=c(9,9,nd))
   cm_1 <- array(vcmomaxEV1x3$cm_1,dim=c(9,9,nd))

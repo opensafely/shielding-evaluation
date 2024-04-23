@@ -6,11 +6,11 @@ output: html_document
 ---
 
 ```{r setup, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
-# 10jan24 - Rmarkdown vrs
+## HDdata - Rmarkdown vrs
 ##
 ## Data subsets, plots, dat files
 ## All, H, DH, DO
-## Aggregation by week, ageg, shielding
+## Aggregation by week, age group, shielding
 ## (see HDdata_test.R for tests on simulated data)
 
 library(arrow)
@@ -31,7 +31,7 @@ Select HD data, filter, save and plot.
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 
-jobno = "JDat13_"
+jobno = "JDat15_"
 
 cat("\n")
 print(paste0("Job: ", jobno))
@@ -86,7 +86,7 @@ DAT  <- arrow::read_parquet(file = here::here("output/data_edited.gz.parquet"),
 Date1="2020-01-01"
 Date2="2020-12-01"
 
-#D
+### Zeroth filtering - D
 dim_sc = dim(DAT) #500, 89
 if (dim_sc[1]>1000){ #only operates on real data, as dummy data has 500 to 1000 rows
   DAT <- DAT[           which(DAT$ons_death_date>="2020-01-01") | is.na(DAT$ons_death_date),]                      #remove deaths prior to 2020 but registered from 2020
@@ -129,14 +129,9 @@ DAT <- DAT                                                %>%
   filter(shielding_v1_startdate <= "2020-12-01" | is.na(shielding_v1_startdate )) %>%
   #Adding variables:
   mutate(ageg     = as.integer(factor(age_cat)))           %>% # factor: 1:9 <> 0-4 5-11 12-17 18-29 30-39 40-49 50-59 60-69 70+ 
-  ###Shielding flag
-  #mutate(shield   = as.factor(ifelse(shielding=="High Risk",1,0)))  %>% # factor: 0:1 - ever shielded (had HR flag)
-  #mutate(shield   = replace(shield, is.na(shield), as.factor(0)))   %>% # TODO: test shield_date < admission_date & <
-  #shielding flag - up to 2020-12-01
+  ###Shielding flag - up to 2020-12-01
   mutate(shield   = as.factor(ifelse(hirisk_codedate_1<"2020-12-02",1,0))) %>% # factor: 0:1-ever shield, had HR flag
-  mutate(shieldB  = as.factor(ifelse(highrisk_shield<"2020-12-02",1,0)))   %>% # factor: 0:1-ever shield, had HR flag
-  mutate(shield   = replace(shield, is.na(shield), as.factor(0))) %>% # TODO:test shield_date< admi_date &death_date
-  mutate(shieldB  = replace(shieldB, is.na(shieldB), as.factor(0))) %>% # TODO:test shield_date< admi_date &death_date
+  mutate(shield   = replace(shield, is.na(shield), as.factor(0))) %>% # TODO: shield_date< admi_date & death_date
   ###Shielding flag, but prior 2020-04-21
   mutate(shield1  = ifelse(shielding_v1_binary==TRUE,1,0)) %>% # number: 0:1 - hHigh Risk before 2020-04-21
   mutate(shield1  = ifelse(is.na(shield1), 0, shield1))    %>% #
@@ -156,8 +151,6 @@ DAT <- DAT                                                %>%
   select(-c(shield1,shield1_date))
 
 names1 = names(DAT)
-#print(paste0("names1"))
-#print(paste0(names1))
 
 
 ### Aggregation
@@ -174,11 +167,12 @@ DAT <- DAT %>% #NB: ceiling(1/7 + nweeks) = floor(nweeks) + 1
           dateD = StartDateD + weeks(weekD - week(StartDateD)) ) #%>%
 
 names1 = names(DAT)
-#print(paste0("names1"))
-#print(paste0(names1))
+#print(paste0("names1")) #print(paste0(names1))
+
 
 ## Replacemnet for low count
 Freq_cutoff = 8 #NA #replaces 0:7
+
 
 ### Carehomes plots and data
 
@@ -235,7 +229,7 @@ dati <- dat %>% mutate(freqDch = ifelse(freqDch<8,Freq_cutoff,freqDch)) %>%
 
 
 ### Hospital re-admissions plots and data
-### TODO: PLot H: all, first, and subsequent hospitalisations
+### TODO: PLot hospitalisations: all, first, and subsequent admissions
 
 
 
@@ -254,16 +248,13 @@ DAT <- DAT                                                 %>%
   ungroup()
 
 names2 = names(DAT)
-#print(paste0("names2"))
-#print(paste0(names2))
+#print(paste0("names2")) #print(paste0(names2))
 
 
 
 ### For fitting - TIME SERIES DATA #############################################
 ### H & D events linked at patient level
-#TODO: check weekH < weekD (hospitalisations and deaths in hospital)
-#TODO: shield1 rather than shield
-
+#TODO: weekH < weekD (in hospital)
 
 ## Function to insert dataframe (data rows only) into long-pivot dataframe (data & missing data rows)
 Include_dat_a <- function(fX,fdat,WHAT,MERGE){
@@ -293,7 +284,7 @@ if (WHAT=="D") X <- X  %>% rename(weekD=week, freqDa=freq, dateD=date)
 return(X)
 } #data; print(X[which(X$freqHa>0),]) 
 
-#Long-pivot including the data and 0s (where data missing, no reporting)
+#Long-pivot,including data and 0s (i.e. missing data, no reporting)
 Longdf <- function(lageg,nageg,nweek,WHAT){
   ageg  = rep(lageg:9,each=nweek)
   week  = rep(1:nweek,times=nageg)
@@ -331,9 +322,9 @@ svglite(paste0(filepart,"_by_age.svg")); print(p2); invisible(dev.off())
 datHa<- dat %>% rename(Week=weekH, Date=dateH, Freq=freqHa)                #fit data
 datw <- dat %>% mutate(freqHa = ifelse(freqHa<8,Freq_cutoff,freqHa)) %>%
                 write.csv(file=paste0(filepart,"_by_age.csv"))             #show data
-#Long-pivot FULL including the data and 0s (where data missing, no reporting) - no ageg merging
+#Long-pivot,including data and 0s (i.e. missing data, no reporting)
 #nweek = max(range(c(range(DAT$weekH,na.rm=T),range(DAT$weekD,na.rm=T))))
-nweek = max(range(c(48))) #,range(DAT$weekH,na.rm=T),range(DAT$weekD,na.rm=T))))
+nweek = 48
 print(paste0("nweek = ", nweek))
 X <- Longdf(1,9,nweek,"H") %>%
      Include_dat_a(., dat, "H", "NOMERGE")  #dat; print(X[which(X$freqHa>0),]) 
@@ -354,7 +345,7 @@ dat  <- dat1 %>% mutate(age_cat2= age_cat)                               %>%
 yname = paste0('Admissions, 6 strata (tot ', sum(dat$freqHa,na.rm=T),')')
 p2 <- fig0(dat, x=weekH, y=freqHa, col=age_cat2, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_by_age_merged.svg")); print(p2); invisible(dev.off())
-#Long-pivot MERGED including the data and 0s (where data missing, no reporting - merged agegs
+#Long-pivot MERGED,including data and 0s (i.e. missing data, no reporting) - merged agegs
 X <- Longdf(lageg,nageg,nweek,"H") %>%
      Include_dat_a(., dat, "H", "MERGE")    #dat; print(X[which(X$freqHa>0),]) 
 datHa_m_l<- X  %>% rename(Week=weekH, Date=dateH, Freq=freqHa)
@@ -393,8 +384,7 @@ dat   <- dat %>% select(-c(age_cat))
 datHas<- dat %>% rename(Week=weekH, Date=dateH, Freq=freqHas)              #fit data
 dat   <- dat %>% mutate(freqHas = ifelse(freqHas<8,Freq_cutoff,freqHas)) %>%
                  write.csv(file=paste0(filepart,"_s_by_age.csv"))          #show data
-#merge ageg 1-4 - shield age
-#TODO...
+#merge ageg 1-4 - shield age #TODO...
 
 
 ### DATA 2 Hospitalisations with recovery by week, age, and shielding ########
@@ -424,8 +414,8 @@ svglite(paste0(filepart,"_by_age.svg")); print(p2); invisible(dev.off())
 datHRa<-dat %>% rename(Week=weekH, Date=dateH, Freq=freqHa)                #fit data
 datw <- dat %>% mutate(freqHa = ifelse(freqHa<8,Freq_cutoff,freqHa)) %>%
                 write.csv(file=paste0(filepart,"_by_age.csv"))             #show data
-#merge ageg 1-4
-#TODO...
+#merge ageg 1-4 #TODO...
+
 #by_shield
 dat <- dat1 %>% frqs(c(weekH, shield), "freqHs") %>% 
                 select(shield, weekH, dateH, freqHs) %>% 
@@ -457,12 +447,11 @@ dat    <- dat %>% select(-c(age_cat))
 datHRas<- dat %>% rename(Week=weekH, Date=dateH, Freq=freqHas)              #fit data
 dat    <- dat %>% mutate(freqHas = ifelse(freqHas<8,Freq_cutoff,freqHas)) %>%
                   write.csv(file=paste0(filepart,"_s_by_age.csv"))          #show data
-#merge ageg 1-4
-#TODO...
+#merge ageg 1-4  #TODO...
 
                  
 ### DATA 3 Deaths in Hospital by week, age, and shielding ####################
-#TODO: & weekH < weekD)
+#TODO: & weekH < weekD
 dat1 <- DAT %>% filter((!is.na(weekD) | !is.na(ons_death_date)) & (!is.na(weekH) | all_covid_hosp>0))
 filename = "DHdata"; filepart = paste0(output_dir,"/",jobno,filename)
 ### Plots 3.1-3.3 Deaths in Hospital
@@ -489,7 +478,7 @@ svglite(paste0(filepart,"_by_age.svg")); print(p2); invisible(dev.off())
 datDHa<-dat %>% rename(Week=weekD, Date=dateD, Freq=freqDa)                #fit data
 datw  <-dat %>% mutate(freqDa = ifelse(freqDa<8,Freq_cutoff,freqDa)) %>%
                 write.csv(file=paste0(filepart,"_by_age.csv"))             #show data
-#Long-pivot FULL including the data and 0s (where data missing, no reporting) - no ageg merging
+#Long-pivot,including data and 0s (i.e. missing data, no reporting)
 X <- Longdf(1,9,nweek,"D") %>%
      Include_dat_a(., dat, "D", "NOMERGE")  #dat; print(X[which(X$freqDa>0),]) 
 datDHa_l<- X  %>% rename(Week=weekD, Date=dateD, Freq=freqDa, ageg=ageg2)
@@ -509,7 +498,7 @@ dat  <- dat1 %>% mutate(age_cat2= age_cat)                               %>%
 yname = paste0('Deaths in Hospital, 4 strata (tot ', sum(dat$freqDa,na.rm=T),')')
 p2 <- fig0(dat, x=weekD, y=freqDa, col=age_cat2, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_by_age_merged.svg")); print(p2); invisible(dev.off())
-#Long-pivot MERGED including the data and 0s (where data missing, no reporting - merged agegs
+#Long-pivot MERGED, including data and 0s (i.e. missing data, no reporting) - merged agegs
 X <- Longdf(lageg,nageg,nweek,"D") %>%
      Include_dat_a(., dat, "D", "MERGED")    #dat; print(X[which(X$freqHa>0),]) 
 datDHa_m_l<- X  %>% rename(Week=weekD, Date=dateD, Freq=freqDa)
@@ -548,8 +537,7 @@ dat   <- dat %>% select(-c(age_cat))
 datDHas<-dat %>% rename(Week=weekD, Date=dateD, Freq=freqDas)              #fit data
 dat   <- dat %>% mutate(freqDas = ifelse(freqDas<8,Freq_cutoff,freqDas)) %>%
                  write.csv(file=paste0(filepart,"_s_by_age.csv"))          #show data
-#merge ageg 1-6
-#TODO...
+#merge ageg 1-6  #TODO...
 
                
 ### DATA 4 Deaths outside Hospital by week, age, and shielding #################
@@ -579,7 +567,7 @@ svglite(paste0(filepart,"_by_age.svg")); print(p2); invisible(dev.off())
 datDOa<-dat %>% rename(Week=weekD, Date=dateD, Freq=freqDa)                #fit data
 datw  <-dat %>% mutate(freqDa = ifelse(freqDa<8,Freq_cutoff,freqDa)) %>%
                 write.csv(file=paste0(filepart,"_by_age.csv"))             #show data
-#Long-pivot FULL including the data and 0s (where data missing, no reporting) - no ageg merging
+#Long-pivot,including data and 0s (i.e. missing data, no reporting)
 X <- Longdf(1,9,nweek,"D") %>%
      Include_dat_a(., dat, "D", "NOMERGE")  #dat; print(X[which(X$freqDa>0),]) 
 datDOa_l<- X  %>% rename(Week=weekD, Date=dateD, Freq=freqDa, ageg=ageg2)
@@ -599,7 +587,7 @@ dat  <- dat1 %>% mutate(age_cat2= age_cat)                               %>%
 yname = paste0('Deaths outside Hospital, 4 strata (tot ', sum(dat$freqDa,na.rm=T),')')
 p2 <- fig0(dat, x=weekD, y=freqDa, col=age_cat2, xname ='Week', yname = yname)
 svglite(paste0(filepart,"_by_age_merged.svg")); print(p2); invisible(dev.off())
-#Long-pivot MERGED including the data and 0s (where data missing, no reporting - merged agegs
+#Long-pivot MERGED, including data and 0s (i.e. missing data, no reporting) - merged agegs
 X <- Longdf(lageg,nageg,nweek,"D") %>%
      Include_dat_a(., dat, "D", "MERGED")    #dat; print(X[which(X$freqHa>0),]) 
 datDOa_m_l<- X  %>% rename(Week=weekD, Date=dateD, Freq=freqDa)
@@ -638,8 +626,7 @@ dat   <- dat %>% select(-c(age_cat))
 datDOas<-dat %>% rename(Week=weekD, Date=dateD, Freq=freqDas)             #fit data
 dat   <- dat %>% mutate(freqDas = ifelse(freqDas<8,Freq_cutoff,freqDas)) %>%
                  write.csv(file=paste0(filepart,"_s_by_age.csv"))          #show data
-#merge ageg 1-6
-#TODO...
+#merge ageg 1-6  #TODO...
 
 
 ### Plots 5 - DATA overall (no age or shield) ##################################
@@ -709,14 +696,10 @@ invisible(dev.off())
 
 #### Summary of statistics and parameter estimates
 ##### Data & metadata for _fit
-#- sink(file = paste0(output_dir,"/",jobno,"HDdata_summary.txt"),append=F,split=F)
-
-#TODO: assess date/week range of each TS - use it or set missing data to zero?
 
 print(paste0("Date range: ", Date1," to ", Date2))
 
 cat("Time series date range \n")
-#TODO; use weekH or weekD rather than date?
 ##H
 DateLim_H   = range(  datH$Date)
 DateLim_H1  = range( datHa$Date[ which(datHa$ageg==1)],na.rm=T)
@@ -1312,7 +1295,6 @@ print(paste0("Mean (median) time from 1st admission to 1st discharge:  ", men_ti
 #Shielding
 cat("\n")
 cat("Shielding/Not \n")
-##TODO: use shield or shield1
 nP_s1        = sum(DAT$shield=="1", na.rm = T)
 nP_s0        = sum(DAT$shield=="0", na.rm = T)
 nP_HorD_s1   = sum(DAT$shield=="1" & (!is.na(DAT$ons_death_date) |  DAT$all_covid_hosp>0))
@@ -1479,7 +1461,6 @@ print(paste0(names1))
 print(paste0("names2"))
 print(paste0(names2))
 
-#- sink()
 
 ```
 

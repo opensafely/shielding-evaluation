@@ -10,7 +10,7 @@
 BETA <- function(pars) {
 cm1  = cm_0[,,1]   #main variable
 ngm1 = cm1
-u    = pars$u   #u_1 = u_0 = u => don't need specify whether contacts are _0 or _1
+u    = pars$u   #u_1 = u_0 = u => don't need specify whether the participant's contacts are _0 or _1
 fu   = pars$fu
 rIR  = pars$rIR #est
 rIH  = pars$rIH

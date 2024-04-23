@@ -72,7 +72,7 @@ sd3  = round(0.05*mean(vm))  #for normal data
 dev0 = sd #1/sqrt(par$k)     #noise parameter
 
 #### Simulated Data each week
-set.seed(77)#7)                  ###reproducibility
+set.seed(77)#7)
 
 #Normal noise
 #zd = zm + rnorm(n=nd,mean=0,sd=sd)
@@ -103,8 +103,8 @@ for (iw in 1:nd){
     zmt[iw] = zmt[iw] + zam[[i]][iw] }}
 #=> zmt = zm, as expected
 #=> sum(zdt-zd)<0, probably randomness, adding 9 NB variates .ne. 1 NB variate with mean=sum means
-#=> could simulate fit zdt rather than zd - should I bother?
-#=> But, for plot illustration only; for real data dont need construct noise
+#=> could simulate fit zdt rather than zd - is it worth it?
+#=> Maybe not, for plot illustration only; for real data dont need construct noise
 plot(1:nd,zd,type="p")
 for(i in 1:9){points(1:nd,zad[[i]],col=i+1)}
 lines(1:nd,zm,type="l")

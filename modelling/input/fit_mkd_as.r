@@ -2,15 +2,14 @@
 ### Dataframes from model:
 ###   datM$  Weeks, Dataz, Dataw, Datav, Datazi, Datawi, Datavi, etc
 
-### Dataframes with OS data - sourced from HDdata.R vai main:
+### Dataframes with OS data - sourced from HDdata.R via main:
 ###   datH_l,   datDH_l,   datDO_l
 ###   datHa_l,  datDHa_l,  datDOa_l
 ###   datHs_l,  datDHs_l,  datDOs_l
 ###   datHas_l, datDHas_l, datDOas_l
 ### names: Week, Date, Freq, Ageg, Shield
 
-# TODO: => Dont need specific idataH, imodelH, etc - idata and imodel suffice
-#          use single imodel and idata all over?
+# TODO: => Dont need specific idataH, imodelH, etc - idata and imodel suffice - use all over?
 
 ###### Output settings and parameters
 sink(file = paste0(output_dir,"/",pset$File_run), append=TRUE, split=FALSE)
@@ -22,7 +21,7 @@ print(rev(pset))
 cat("\n")
 print(paste0("Date range in contact-data:   ", Week1_Model, ", ", Week2_Model)); cat("\n")
 if(pset$iplatform>0) {
-  Week1_Data = lubridate::week("2020-01-01") #HDdata.r, HDdata.Rmd
+  Week1_Data = lubridate::week("2020-01-01") #applied in HDdata.r, HDdata.Rmd
   Week2_Data = lubridate::week("2020-12-01")
   print(paste0("Date range in H, D data:      ", "2020-01-01", " - ", "2020-12-01")); cat("\n")
   print(paste0("Week range in H, D data:      ", Week1_Data,   " - ", Week2_Data  )); cat("\n") }
@@ -102,10 +101,10 @@ if (pset$iplatform==0) {
 } else { #if iplatform>0
 
 ## Each age group has:
-#-- weeks 1-48 in 2020
-#-- freq=0 (date=NA) when events unreported
-# Date range for fitting
-# Convert dates to WEEKS                          #check: week("2020-01-01") or week("2020-01-07") #[1] 1
+## - weeks 1-48 in 2020
+## - freq=0 (inputted) when events unreported
+## Date range for fitting
+## Convert dates to WEEKS                         #check: week("2020-01-01") or week("2020-01-07") #[1] 1
   Week1_Model  = lubridate::week("2020-01-27")    #  4 #start of "contact" data
   Week2_Model  = Week1_Model + (pars$nw-1)        # 55 #model set to run 52=pars$nw weeks 
   Week2_Study  = lubridate::week("2020-12-01")    # 48 #start of vacc & alpha
@@ -184,8 +183,8 @@ if (pset$iplatform==0) {
   for (i in 1:nmD_1){ wdm6_1 = wdm6_1 + eval(parse(text = paste0("wd",eval(i),"_1")))  }
   for (i in 1:nmD_1){ vdm6_1 = vdm6_1 + eval(parse(text = paste0("vd",eval(i),"_1")))  }
   
-## Convert data week-range (index 4:48, from Week1_Model=2020-01-27 to Week2_Study=2020-12-01) 
-## to model-weeks          (index 1:52, from Week1_Model=2020-01-27)
+## Convert data week-range (index 4:48, since Week1_Model=2020-01-27 to Week2_Study=2020-12-01) 
+## to model-weeks          (index 1:52, since Week1_Model=2020-01-27)
 ## => use model in likelihood
   Week_shift_model = (Week1_Model-1)
   imodelH  = idataH  - Week_shift_model #1:45 = 4:48-(4-1)
@@ -254,7 +253,7 @@ sdzdm4w_1 = sd(zdm4w_1)
 sdwdm6w_1 = sd(wdm6w_1)
 sdvdm6w_1 = sd(vdm6w_1)
 
-### raw groups
+### raw & total groups
 for (i in 1:9){
   ## -Counts for NB need be integer => round()
   assign(paste0("zd",  eval(i),"w_0"), round( eval(parse(text = paste0("zd",eval(i),"_0")))*weight[i], 0)) #zd1w_0-zd9w_0
@@ -278,7 +277,7 @@ for (i in 1:9){
   assign(paste0("Tzd",eval(i),"w_1"), sum( eval(parse(text = paste0("zd",eval(i),"w_1")))) )              #Tzd1w_1-Tzd9w_1
   assign(paste0("Twd",eval(i),"w_1"), sum( eval(parse(text = paste0("wd",eval(i),"w_1")))) )              #Twd1w_1-Twd9w_1
   assign(paste0("Tvd",eval(i),"w_1"), sum( eval(parse(text = paste0("vd",eval(i),"w_1")))) )              #Tvd1w_01Tvd9w_1
-  #standard deviation for normal likelihood
+  #standard deviation if normal likelihood
   assign(paste0("sdTzd",eval(i),"w_0"),    eval(parse(text = paste0("sdzd",eval(i),"w_0")))*sqrt(length(4:48)) ) #sdTzd4w_0-sdTzd9w_0 #45 time points
   assign(paste0("sdTwd",eval(i),"w_0"),    eval(parse(text = paste0("sdwd",eval(i),"w_0")))*sqrt(length(4:48)) ) #sdTwd4w_0-sdTwd9w_0
   assign(paste0("sdTvd",eval(i),"w_0"),    eval(parse(text = paste0("sdvd",eval(i),"w_0")))*sqrt(length(4:48)) ) #sdTvd4w_0-sdTvd9w_0
@@ -311,7 +310,7 @@ Dates_posi = lubridate::ymd( "2020-01-27" ) + lubridate::weeks(idata_posi - 1 + 
 if (pset$iplatform==0){ #this factor used because the prevalence data is unrelated to the simulated data
   posi_d_to_m = max( 100*((mout$byw_0$Ct[imodel_posi] + mout$byw_1$Ct[imodel_posi])/pars$Npop) )/ 
                 max(posi_av_perc[idata_posi])  #[1] 0.007730766
-} else { 
+} else { #fitting real data
   posi_d_to_m=1 }
 ##data to be fittted
 posi_data_perc = posi_av_perc[idata_posi]
@@ -336,7 +335,7 @@ model <- SEIUHRD
 ### -for each age group within the model
 ### -can only initialise: Ha0[] and Da0[]
 ### -can be inconsistent with other state variables, which, except for Ea0, are assumed=0
-### -Ea0 >0 enough => Ia and Ua increase afterwards (but only one of Ia0 or Ua0 won't do that)
+### -Ea0 >0 is enough => Ia and Ua increase afterwards (but if initialised only Ia0 or Ua0 wouldn't do that)
 if (pset$iplatform==2 & pset$DataIC==1){ #>0
 for (i in 1:9){ #assigining current incidence to state variables (neglecting remains of state from previously)
   ivalueH  = which( datHa_l$Ageg==i &  datHa_l$Week==Week1_Fit_H)
@@ -344,7 +343,7 @@ for (i in 1:9){ #assigining current incidence to state variables (neglecting rem
   ivalueDO = which(datDOa_l$Ageg==i & datDOa_l$Week==Week1_Fit_H)
   pars$Ha0[i] =  datHa_l$Freq[ivalueH]
   pars$Da0[i] = datDHa_l$Freq[ivalueDH] + datDOa_l$Freq[ivalueDO]
-  #fit_mkd: breaks down into H1_0(ia,0) = Ha0[ia]*pa_0; and H1_1(ia,0) = Ha0[ia]*pa_1;
+  #model_: breaks down into H1_0(ia,0) = Ha0[ia]*pa_0; and H1_1(ia,0) = Ha0[ia]*pa_1;
 }}
   
 ### Parameter transformation functions
@@ -372,7 +371,7 @@ g2  <- function(par)   { gi(par)}
 f3  <- function(theta) { fi(theta)};
 g3  <- function(par)   { gi(par)}
 #pars$pE0
-f4  <- function(theta) { fe(theta)}; #s - keep e: marginal narrow
+f4  <- function(theta) { fe(theta)}; #s - keep e: marginal is narrow
 g4  <- function(par)   { ge(par)}    #s
 #hM_0
 f5  <- function(theta) { fI(theta)}; #e
@@ -420,8 +419,8 @@ age3 = age[3]
 
 tMax     = 10 #20 #10
 tMax2    = 30 #50 #30
-tMin     = 1  #implicit in LOWER and par rescaling
-tMin2    = 1  #implicit in UPPER and par rescaling
+tMin     = 1  #
+tMin2    = 1  #
 
 R0Max    = 5 #20 #10
 R0Min    = 0.1 #0.01
@@ -432,16 +431,16 @@ pE0Min   = 10/pars$Npop #0.00001   #pop = 565.5
 fuMax    = 1
 fuMin    = 0.1 #0.001
 
-yR0Max = 0.15*max(1/(age3-age[1:2]))
-yR0Min = 0.001*max(1/(age3-age[1:2]))
+yR0Max = 0.15*max(1/(age3-age[1:2]))    #[1] 0.02307692
+yR0Min = 0.001*max(1/(age3-age[1:2]))   #[1] 0.0001538462
 
-yR1Max = 1.25*max(1/abs(age[3:8]-age9))
-yR1Min = 0.05*max(1/abs(age[3:8]-age9))
+yR1Max = 1.25*max(1/abs(age[3:8]-age9)) #[1] 0.08064516
+yR1Min = 0.05*max(1/abs(age[3:8]-age9)) #[1] 0.003225806
 yM1Max = 1
 yM1Min = 0.01
 
-hRMax  = 1.5*max(1/abs(age[1:8]-age9)) #10*max(1/abs(age[1:8]-age9)) #80 #60 #100 #h, m, d, y-exp-part - yR1 ~1/52 from EXP fit lit y[3:9]
-hRMin  = 0.01*max(1/abs(age[1:8]-age9))
+hRMax  = 1.5*max(1/abs(age[1:8]-age9))  #[1] 0.09677419
+hRMin  = 0.01*max(1/abs(age[1:8]-age9)) #[1] 0.0006451613
 hMMax  = 1
 hMMin  = 0.01
 
@@ -449,7 +448,7 @@ adMax  = 1
 adMin  = 0.01
 
 sdHMin = 0.01
-sdHMax = 5 #multiplicative factor of the sd across the age-glrups fitted
+sdHMax = 5    #multiplicative factor of the sd across the age-groups fitted
 
 pkMin  = 0.1  #1/k^2, NB likelihood and data
 pkMax  = 5    #Assume: same kD for DH and DO
@@ -459,7 +458,7 @@ oN = 1/pars$Npop
 
 ### LIKELIHOOD FUNCTION
 
-source(file = paste0(input_dir,"/BETA_0.r")) #Used within Likelihood
+source(file = paste0(input_dir,"/BETA_0.r")) #BETA <- function(pars) - Used within Likelihood
 LogLikelihood <- function(theta){
   ### UPDATE: @@
   ###         proposal pars$
@@ -470,22 +469,22 @@ LogLikelihood <- function(theta){
   pars$rOD = f2(theta[2])
   pars$rIH = f3(theta[3])
   pars$pE0 = f4(theta[4])
-  hM_0=      f5(theta[5])  #0-1 
-  hM_1=      f6(theta[6])  #0-1 
-  hR_0=      f7(theta[7])  #0-1 
-  hR_1=      f8(theta[8])  #0-1
-  dM_0=      f9(theta[9])  #0-1 
-  dM_1=      f10(theta[10])  #0-1 
-  dR_0=      f11(theta[11])  #0-1 
-  dR_1=      f12(theta[12])  #0-1  
-  #pars$ad_0= f9(theta[9])  #0-1
-  #pars$ad_1= f10(theta[10]) #0-1
-  #yR0_0=     f11(theta[11]) #100-1 
-  #yR0_1=     f12(theta[12]) #100-1 
-  yM1_0=     f13(theta[13]) #0-1
-  yM1_1=     f14(theta[14]) #0-1
-  yR1_0=     f15(theta[15]) #100-1 
-  yR1_1=     f16(theta[16]) #100-1 
+  hM_0=      f5(theta[5])
+  hM_1=      f6(theta[6])
+  hR_0=      f7(theta[7])
+  hR_1=      f8(theta[8])
+  dM_0=      f9(theta[9])
+  dM_1=      f10(theta[10])
+  dR_0=      f11(theta[11])
+  dR_1=      f12(theta[12])
+  #pars$ad_0= f9(theta[9])  
+  #pars$ad_1= f10(theta[10]) 
+  #yR0_0=     f11(theta[11]) 
+  #yR0_1=     f12(theta[12]) 
+  yM1_0=     f13(theta[13])
+  yM1_1=     f14(theta[14])
+  yR1_0=     f15(theta[15])
+  yR1_1=     f16(theta[16])
   # liny = yM0 + yR0*(age3-age[1:3])
   # expy = yM1*exp((age[3:9]-age9)*yR1)
   # liny[3] = expy[1] =>
@@ -507,14 +506,10 @@ LogLikelihood <- function(theta){
   pars$beta  = BETA(pars) #BETA_0(pars)
   #pars$R0  = fs(theta[3])
   #pars$fu  = fs(theta[5])
-  #dM_0=      fs(theta[10])  #0-1
-  #dM_1=      fs(theta[11])  #0-1
-  #dR_0=      fi(theta[12])  #100-1
-  #dR_1=      fi(theta[13])  #100-1
-  #mM_0=      fs(theta[14]) #0-1
-  #mM_1=      fs(theta[15]) #0-1
-  #mR_0=      fi(theta[16]) #100-1
-  #mR_1=      fi(theta[17]) #100-1
+  #mM_0=      fs(theta[14])
+  #mM_1=      fs(theta[15])
+  #mR_0=      fi(theta[16])
+  #mR_1=      fi(theta[17])
   #kH =       fp(theta[8])  #pk = theta = 1/sqrt(k) => k = 1/pk^2
   #kDH =      fp(theta[24])
   #kDO =      fp(theta[3])
@@ -524,9 +519,7 @@ LogLikelihood <- function(theta){
   #pars$m     = mA*pars$m
   #pars$m_0 = mM_0*exp((age-age9)*mR_0)
   #pars$m_1 = mM_1*exp((age-age9)*mR_1)
-  #pars$d_0 = dM_0*exp((age-age9)*dR_0)
-  #pars$d_1 = dM_1*exp((age-age9)*dR_1)
-  
+
   ### Model outputs (from Rcpp, given the above proposed parameters)
   m <- model(pars)
   
@@ -534,7 +527,7 @@ LogLikelihood <- function(theta){
   MeanPosi_perc = (m$byw_0$Ct[imodel_posi] + m$byw_1$Ct[imodel_posi] )*oN*100
 
   ### Model predictions - incidence
-  ### (Note: Ha, DHa, Doa and are proportional to ageons (via Na))
+  ### (Note: Has, DHas, DOas and are proportional to ageons (via Na))
   #Totals
   for (i in 1:nmH_0) { 
     assign(paste0("TMeanH", eval(i),"_0"), sum(eval(parse(text = paste0("m$byw_ageH_0$H", eval(i),"w[imodelH]")))))  }  # TMeanH1_0-4_0
@@ -590,14 +583,14 @@ LogLikelihood <- function(theta){
   #product over: 1) datasets (H,DH,DO), 2) age-groups, and 3) weeks
   #Negative binomial or Normal likelihood
 
-  ## Totals - sum of 45 NB,s - but note: many are added (non-reported) zeros
+  ## Totals - sum of 45 NB,s - but note: many are inputted (non-reported) zeros
   kHT  = kH*10  #45; 
   kDHT = kDH*10 #*45; 
   kDOT = kDO*10 #*45; 
   ## Merged  - sum of 4 or 6 variables
-  kHm  = kH;  #kHm  = kH*4;   
-  kDHm = kDH; #kDHm = kDH*6;
-  kDOm = kDO; #kDOm = kDO*6; 
+  kHm  = kH;   #kH*4;   
+  kDHm = kDH;  #kDH*6;
+  kDOm = kDO;  #kDO*6; 
 
   ll_0 =
   ###H 
@@ -730,8 +723,8 @@ LogLikelihood <- function(theta){
 
 
 ## Likelihood definition, parameter ranges  ####################################
-niter = 6000#60000#15000#6000#3000#30000#60000#6000##3000
-if (pset$iplatform==2){niter=200000} #150000} #120000} #200000
+niter = 6000#60000#15000#6000#3000#30000#60000
+if (pset$iplatform==2){niter=200000} #150000} #120000}
 
         #1/rIR,     1/rOD,       1/rIH,       pE0,          hM,                         hR,                
 LOWER = c(tMin,     tMin2,       tMin2,       g4(pE0Min),   g5(hMMin),    g6(hMMin),    g7(hRMin),    g8(hRMin),
@@ -748,13 +741,13 @@ hMbest_1=0.4755 #0.3567
 hRbest_0=0.0684
 hRbest_1=0.0684
 
-dMbest_0=0.0213 #assumes ad*2*h*m
+dMbest_0=0.0213 #assumes 2*0.1*h*m (ad=1)
 dMbest_1=0.0296
 dRbest_0=0.1219
 dRbest_1=0.1157
 
-yMbest_0=0.69 #0.7689 #ageg 3:9 #pars$y[9]=0.69
-yMbest_1=0.69 #0.7689
+yMbest_0=0.69   #0.7689 #ageg 3:9 #pars$y[9]=0.69
+yMbest_1=0.69   #0.7689
 yRbest_0=0.019
 yRbest_1=0.019
 
@@ -777,7 +770,7 @@ BEST = c(1/pars$rIR, 1/pars$rOD, 1/pars$rIH, pars$pE0,
   Burnin = round(niter/2)+1  #round(niter/4)+1 #+1 as "burnin" is the start of effective sample
   PRIOR <- createBetaPrior(4,4,lower = LOWER, upper = UPPER) #createBetaPrior(3,3,lower = LOWER, upper = UPPER
   setup  = createBayesianSetup(likelihood=LogLikelihood, prior =PRIOR, best=BEST) #parallel = T,
-  settings = list (iterations = niter, burnin = Burnin, message=T) #F) #round(niter*length(LOWER)/15), message=T) #F)
+  settings = list (iterations = niter, burnin = Burnin, message=T) #F) 
 
 ## Bayesian sample
 tout1 <- system.time(out <- runMCMC(bayesianSetup=setup, settings=settings) )
@@ -788,13 +781,12 @@ Resample=0 #####################################################################
 if (Resample==1){
 ## Run with new prior based on posterior
 #newPrior <- createPriorDensity(out)
-newPrior = createPriorDensity(out, method = "multivariate", eps = 1e-10, lower = LOWER, upper =  UPPER, best = NULL)
-#newPrior = createPriorDensity(out, method = "multivariate", eps = 1e-10, lower = rep(-10, 3), upper =  rep(10, 3), best = NULL)
+newPrior = createPriorDensity(out, method = "multivariate", eps = 1e-10, lower = LOWER, upper =  UPPER, best = NULL) #lower = rep(-10, 3), upper =  rep(10, 3)
 setup2 = createBayesianSetup(likelihood=LogLikelihood, prior = newPrior)
 ## Try: message=T)
 ## Bayesian sample
 tout2 <- system.time(out2 <- runMCMC(bayesianSetup=setup2, settings=settings) )
- #=> lots of NAN bec parameters not sensinbly bounded - would need to transform pars to allow this
+ #=> lots of NAN bec parameters not sensibly bounded - would need to transform pars to allow this
 out_1 <- out
 out   <- out2 }
 
@@ -802,7 +794,6 @@ out   <- out2 }
 Restart=0 ######################################################################
 if (Restart==1){
 ## Restart same sampling
-#tout2 <- system.time(out2 <- runMCMC(bayesianSetup=setup, settings=settings) )
   out_1 <- out
   out   <- out2
 tout3 <- system.time(out3 <- runMCMC(bayesianSetup=setup, settings=settings) )
@@ -814,33 +805,31 @@ tout3 <- system.time(out3 <- runMCMC(bayesianSetup=setup, settings=settings) )
 ## MAP Estimates  ##############################################################
 print("MAP..."); cat("\n")
 parsE     <- pars     #pars setup initially
-MAPE      <- MAP(out) #pasr estimated
+MAPE      <- MAP(out) #pars estimated
 ### UPDATE: @@
 ###         proposal pars$
 ###         MAP      parsE$, 
 ###         sample   parsES$
-#rIR,    rOD,    R0,          pE0,     fu      hM,     1/hR,   dM,     1/dR,
-#mM,     1/mR,   1/yR0,       yM1,     1/yR1,  kD  
 parsE$rIR <- f1(as.vector(MAPE$parametersMAP[1]))
 parsE$rOD <- f2(as.vector(MAPE$parametersMAP[2]))
 parsE$rIH <- f3(as.vector(MAPE$parametersMAP[3]))
 parsE$pE0 <- f4(as.vector(MAPE$parametersMAP[4]))
-hME_0     <- f5(as.vector(MAPE$parametersMAP[5]))  #0-1 
-hME_1     <- f6(as.vector(MAPE$parametersMAP[6]))  #0-1 
-hRE_0     <- f7(as.vector(MAPE$parametersMAP[7]))  #100-1
-hRE_1     <- f8(as.vector(MAPE$parametersMAP[8]))  #100-1
-dME_0     <- f9(as.vector(MAPE$parametersMAP[9]))  #0-1 
-dME_1     <- f10(as.vector(MAPE$parametersMAP[10]))  #0-1 
-dRE_0     <- f11(as.vector(MAPE$parametersMAP[11]))  #100-1
-dRE_1     <- f12(as.vector(MAPE$parametersMAP[12]))  #100-1
+hME_0     <- f5(as.vector(MAPE$parametersMAP[5]))
+hME_1     <- f6(as.vector(MAPE$parametersMAP[6]))
+hRE_0     <- f7(as.vector(MAPE$parametersMAP[7]))
+hRE_1     <- f8(as.vector(MAPE$parametersMAP[8]))
+dME_0     <- f9(as.vector(MAPE$parametersMAP[9]))
+dME_1     <- f10(as.vector(MAPE$parametersMAP[10]))
+dRE_0     <- f11(as.vector(MAPE$parametersMAP[11]))
+dRE_1     <- f12(as.vector(MAPE$parametersMAP[12]))
 #parsE$ad_0<- f9(as.vector(MAPE$parametersMAP[9]))
 #parsE$ad_1<- f10(as.vector(MAPE$parametersMAP[10]))
-#yR0E_0    <- f11(as.vector(MAPE$parametersMAP[11])) #0-1
-#yR0E_1    <- f12(as.vector(MAPE$parametersMAP[12])) #0-1
-yM1E_0    <- f13(as.vector(MAPE$parametersMAP[13])) #0-1
-yM1E_1    <- f14(as.vector(MAPE$parametersMAP[14])) #0-1
-yR1E_0    <- f15(as.vector(MAPE$parametersMAP[15])) #100-1
-yR1E_1    <- f16(as.vector(MAPE$parametersMAP[16])) #100-1
+#yR0E_0    <- f11(as.vector(MAPE$parametersMAP[11]))
+#yR0E_1    <- f12(as.vector(MAPE$parametersMAP[12]))
+yM1E_0    <- f13(as.vector(MAPE$parametersMAP[13]))
+yM1E_1    <- f14(as.vector(MAPE$parametersMAP[14]))
+yR1E_0    <- f15(as.vector(MAPE$parametersMAP[15]))
+yR1E_1    <- f16(as.vector(MAPE$parametersMAP[16]))
 #yM0E_0    <- yM1E_0*exp((age3-age9)*yR1E_0)
 #yM0E_1    <- yM1E_1*exp((age3-age9)*yR1E_1)
 #sdHE      <- pars$sdH #0.67 #theta[8]
@@ -878,16 +867,16 @@ print("Sampling..."); cat("\n")
 
 oN = 1/pars$Npop
 npar = length(LOWER)
-Thin=4#2#4
-Chains=3
+Thin = 4#2
+Chains = 3
 StartSampChainPostBurn = 1
 LengtMcmcChainPostBurn = floor((niter-Burnin+1)/Chains)
 LengtSampChainPostBurn = LengtMcmcChainPostBurn - StartSampChainPostBurn + 1
-nsample = Chains*LengtMcmcChainPostBurn/Thin #nsample = 100#3000#500#1000#;
+nsample = Chains*LengtMcmcChainPostBurn/Thin #nsample = 100#3000#500#1000
 #start-end - for each chain
-#Note: parametersOnly = F = gives extra: Lposterior Llikelihood     Lprior
+#Note: parametersOnly = F => gives extra: Lposterior Llikelihood     Lprior
 psample = getSample(out, parametersOnly = T, start=StartSampChainPostBurn, end= LengtSampChainPostBurn, thin=Thin)
-#dim(psample)#  = c(nsample, npar)
+#dim(psample) #= c(nsample, npar)
 # run model for each parameter set in the sample
 zsample_0 = matrix(0,ntimes,nsample)
 wsample_0 = matrix(0,ntimes,nsample)
@@ -916,28 +905,26 @@ dMort     = rep(0,times=nsample)
 ###         MAP      parsE$, 
 ###         sample   parsES$
 for(i in 1:nsample){
-  #rIR,    rOD,    R0,          pE0,     fu      hM,     1/hR,   dM,     1/dR,
-  #mM,     1/mR,   1/yR0,       yM1,     1/yR1,  kD 
   parsES$rIR <- f1(as.vector(psample[i,1])) 
   parsES$rOD <- f2(as.vector(psample[i,2]))
   parsES$rIH <- f3(as.vector(psample[i,3]))
   parsES$pE0 <- f4(as.vector(psample[i,4]))
-  hMES_0     <- f5(as.vector(psample[i,5]))  #0-1 
-  hMES_1     <- f6(as.vector(psample[i,6]))  #0-1 
-  hRES_0     <- f7(as.vector(psample[i,7]))  #100-1
-  hRES_1     <- f8(as.vector(psample[i,8]))  #100-1
-  dMES_0     <- f9(as.vector(psample[i,9]))  #0-1 
-  dMES_1     <- f10(as.vector(psample[i,10]))  #0-1 
-  dRES_0     <- f11(as.vector(psample[i,11]))  #100-1
-  dRES_1     <- f12(as.vector(psample[i,12]))  #100-1
-  #parsES$ad_0<- f9(as.vector(psample[i,9]))  #0-1
-  #parsES$ad_1<- f10(as.vector(psample[i,10])) #0-1
-  #yR0ES_0    <- f11(as.vector(psample[i,11])) #100-1
-  #yR0ES_1    <- f12(as.vector(psample[i,12])) #100-1
-  yM1ES_0    <- f13(as.vector(psample[i,13]))  #0-1
-  yM1ES_1    <- f14(as.vector(psample[i,14]))  #0-1
-  yR1ES_0    <- f15(as.vector(psample[i,15])) #100-1
-  yR1ES_1    <- f16(as.vector(psample[i,16])) #100-1
+  hMES_0     <- f5(as.vector(psample[i,5]))
+  hMES_1     <- f6(as.vector(psample[i,6]))
+  hRES_0     <- f7(as.vector(psample[i,7]))
+  hRES_1     <- f8(as.vector(psample[i,8]))
+  dMES_0     <- f9(as.vector(psample[i,9]))
+  dMES_1     <- f10(as.vector(psample[i,10]))
+  dRES_0     <- f11(as.vector(psample[i,11]))
+  dRES_1     <- f12(as.vector(psample[i,12]))
+  #parsES$ad_0<- f9(as.vector(psample[i,9]))
+  #parsES$ad_1<- f10(as.vector(psample[i,10]))
+  #yR0ES_0    <- f11(as.vector(psample[i,11]))
+  #yR0ES_1    <- f12(as.vector(psample[i,12]))
+  yM1ES_0    <- f13(as.vector(psample[i,13]))
+  yM1ES_1    <- f14(as.vector(psample[i,14]))
+  yR1ES_0    <- f15(as.vector(psample[i,15]))
+  yR1ES_1    <- f16(as.vector(psample[i,16]))
   #yM0ES_0    <- yM1ES_0*exp((age3-age9)*yR1ES_0)
   #yM0ES_1    <- yM1ES_1*exp((age3-age9)*yR1ES_1)
   #sdHES      <- pars$sdH #0.67 #theta[8]
@@ -949,8 +936,8 @@ for(i in 1:nsample){
   parsES$h_1  = hMES_1*exp((age-age9)*hRES_1)
   parsES$d_0  = dMES_0*exp((age-age9)*dRES_0) #2*parsES$h_0*pars$m_0
   parsES$d_1  = dMES_1*exp((age-age9)*dRES_1) #2*parsES$h_1*pars$m_1
-  parsES$y_0[3:9]  = yM1ES_0*exp((age[3:9]-age9)*yR1ES_0)
-  parsES$y_1[3:9]  = yM1ES_1*exp((age[3:9]-age9)*yR1ES_1)
+  parsES$y_0[3:9] = yM1ES_0*exp((age[3:9]-age9)*yR1ES_0)
+  parsES$y_1[3:9] = yM1ES_1*exp((age[3:9]-age9)*yR1ES_1)
   parsES$Ea0  = parsES$Na0*parsES$pE0
   parsES$Sa0  = parsES$Na0 - parsES$Ea0 - parsES$Ia0 - parsES$Ua0 - parsES$Ha0 - parsES$Oa0 - parsES$Ra0 - parsES$Da0 
   parsES$beta = BETA(parsES) #BETA_0(parsES)
@@ -987,7 +974,6 @@ for(i in 1:nsample){
 } 
 Weekssample = 1 + outs$byw_0$time[imodelH]/7 + Week_shift_model
 Datessample = lubridate::ymd( "2020-01-06" ) + lubridate::weeks(Weekssample - 1) #"2020-01-06" Mon
-#Datessample = as.Date(paste(Weekssample, "2020", 'Mon'), '%U %Y %a') #Checked: "Mon" consistent with weeks/dates def throughout 
 ##95% CrI
 zsample95_0 = matrix(0,ntimes,2)
 zsample95_1 = matrix(0,ntimes,2)
@@ -1054,31 +1040,33 @@ for(it in 1:ntimes){
   csample95[it,2] = quantile(samp_it,q2,na.rm=T)[[1]]
 }
 ## R0_week
+### UPDATE: @@
+###         proposal pars$
+###         MAP      parsE$, 
+###         sample   parsES$
 nsampleR0 = min(750,nsample) #300#100
 R0weeksample = matrix(0,ntimes,nsampleR0)
 for(i in 1:nsampleR0){
-  #rIR,    rOD,    R0,          pE0,     fu      hM,     1/hR,   dM,     1/dR,
-  #mM,     1/mR,   yM0,         yM1,     1/yR1,  kD 
   parsES$rIR <- f1(as.vector(psample[i,1])) 
   parsES$rOD <- f2(as.vector(psample[i,2]))
   parsES$rIH <- f3(as.vector(psample[i,3]))
   parsES$pE0 <- f4(as.vector(psample[i,4]))
-  hMES_0     <- f5(as.vector(psample[i,5]))  #0-1 
-  hMES_1     <- f6(as.vector(psample[i,6]))  #0-1 
-  hRES_0     <- f7(as.vector(psample[i,7]))  #100-1
-  hRES_1     <- f8(as.vector(psample[i,8]))  #100-1
-  dMES_0     <- f9(as.vector(psample[i,9]))  #0-1 
-  dMES_1     <- f10(as.vector(psample[i,10]))  #0-1 
-  dRES_0     <- f11(as.vector(psample[i,11]))  #100-1
-  dRES_1     <- f12(as.vector(psample[i,12]))  #100-1
-  #parsES$ad_0<- f9(as.vector(psample[i,9]))  #0-1
-  #parsES$ad_1<- f10(as.vector(psample[i,10])) #0-1
-  #yR0ES_0    <- f11(as.vector(psample[i,11])) #100-1
-  #yR0ES_1    <- f12(as.vector(psample[i,12])) #100-1
-  yM1ES_0    <- f13(as.vector(psample[i,13]))  #0-1
-  yM1ES_1    <- f14(as.vector(psample[i,14]))  #0-1
-  yR1ES_0    <- f15(as.vector(psample[i,15])) #100-1
-  yR1ES_1    <- f16(as.vector(psample[i,16])) #100-1
+  hMES_0     <- f5(as.vector(psample[i,5]))
+  hMES_1     <- f6(as.vector(psample[i,6]))
+  hRES_0     <- f7(as.vector(psample[i,7]))
+  hRES_1     <- f8(as.vector(psample[i,8]))
+  dMES_0     <- f9(as.vector(psample[i,9]))
+  dMES_1     <- f10(as.vector(psample[i,10]))
+  dRES_0     <- f11(as.vector(psample[i,11]))
+  dRES_1     <- f12(as.vector(psample[i,12]))
+  #parsES$ad_0<- f9(as.vector(psample[i,9]))
+  #parsES$ad_1<- f10(as.vector(psample[i,10]))
+  #yR0ES_0    <- f11(as.vector(psample[i,11]))
+  #yR0ES_1    <- f12(as.vector(psample[i,12]))
+  yM1ES_0    <- f13(as.vector(psample[i,13]))
+  yM1ES_1    <- f14(as.vector(psample[i,14]))
+  yR1ES_0    <- f15(as.vector(psample[i,15]))
+  yR1ES_1    <- f16(as.vector(psample[i,16]))
   #yM0ES_0    <- yM1ES_0*exp((age3-age9)*yR1ES_0)
   #yM0ES_1    <- yM1ES_1*exp((age3-age9)*yR1ES_1)
   #sdHES      <- pars$sdH #0.67 #theta[8]
@@ -1101,8 +1089,8 @@ for(i in 1:nsampleR0){
 R0weeksample95 = matrix(0,length(imodelH),2)
 for(it in 1:ntimes) {
   samp_it <- R0weeksample[it,]
-  R0weeksample95[it,1] = quantile(samp_it,0.01,na.rm=T)[[1]] #min(samp_it) #quantile(samp_it,q1)[[1]]
-  R0weeksample95[it,2] = quantile(samp_it,0.99,na.rm=T)[[1]] #max(samp_it) #quantile(samp_it,q2)[[1]]
+  R0weeksample95[it,1] = quantile(samp_it,q1,na.rm=T)[[1]]
+  R0weeksample95[it,2] = quantile(samp_it,q2,na.rm=T)[[1]]
 }
 
 
@@ -1123,13 +1111,6 @@ cat("\n");
 
 
 ##### Summary - txt output
-SCREEN=0
-#if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=FALSE,split=FALSE)
-#  cat("\n"); print(paste0(format(Sys.Date(), "%d-%m-%Y"), " - ", format(Sys.time(),'%H.%M.%S_%d-%m-%Y'))); cat("\n")
-#  print("Summary 1..."); cat("\n")
-#sink()}
-
-
 sink(file = paste0(output_dir,"/",pset$File_fit_summary_1),append=FALSE,split=FALSE)
 print(paste0("Likelihood NB"))
 #cat("\n"); 
@@ -1162,10 +1143,6 @@ print(paste0("dR_1  MAP: ", round(log(parsE$d_1[8]/parsE$d_1[9])/(age[8]-age9), 
 #print(paste0("mM_1  MAP: ", round(parsE$m_1[9],  4),    ". Expected: ", round(  pars$m_1[9],    3))) #d9
 #print(paste0("mR_0  MAP: ", round(log(parsE$m_0[8]/parsE$m_0[9])/(age[8]-age9),    4),    ". Expected: "))
 #print(paste0("mR_1  MAP: ", round(log(parsE$m_1[8]/parsE$m_1[9])/(age[8]-age9),    4),    ". Expected: "))
-#print(paste0("dM_0  MAP: ", round(parsE$d_0[9],  4),    ". Expected: ", round(  pars$d_0[9]*pars$ad,    3))) #m9
-#print(paste0("dM_1  MAP: ", round(parsE$d_1[9],  4),    ". Expected: ", round(  pars$d_1[9]*pars$ad,    3))) #m9
-#print(paste0("dR_0  MAP: ", round(log(parsE$d_0[8]/parsE$d_0[9])/(age[8]-age9),    4),    ". Expected: "))
-#print(paste0("dR_1  MAP: ", round(log(parsE$d_1[8]/parsE$d_1[9])/(age[8]-age9),    4),    ". Expected: "))
 #print(paste0("yR0_0 MAP: ", round((parsE$y_0[1]  - parsE$y_0[2])/(age[2]-age1),    4), ". Expected: ", pars$y_0[1]))
 #print(paste0("yR0_1 MAP: ", round((parsE$y_1[1]  - parsE$y_1[2])/(age[2]-age1),    4), ". Expected: ", pars$y_1[1]))
 print(paste0("yM1_0 MAP: ", round( parsE$y_0[9],  4),   ". Expected: ", BEST[13])) #round(  pars$y_0[9],    3))) #y9
@@ -1300,7 +1277,7 @@ datH <- tibble(datH,
                Weeksz = datH_l$Weeks[idataH],
                Datesz = Dates)            #datH_l$Dates[idataH]) 
                #Justification:datX_l$Dates (X=DH, DO) has NA (both dummy & OS) 
-               #while         datX_l$Weeks anddatX_l$Freq (zd, wd, vd) have no NA (by _l construction)
+               #while         datX_l$Weeks and datX_l$Freq (zd, wd, vd) have no NA (by _l construction)
 datD <- tibble(datD,
                Weeksw = datDH_l$Weeks[idataDH],
                Weeksv = datDO_l$Weeks[idataDO],
@@ -1324,7 +1301,7 @@ datD <- tibble(datD,
 
 #y axis log transformation - default: linear
 YLOG <- function(y,LOG=0){ if (LOG==1) {z=log10(y+1)} else {z=y}; return(z) }
-LOG=1; #0 #apply scale of plotting Age Profiles
+LOG=1; #0 #apply scale of Age Profile plotting
 
 if (!is.element(pset$iplatform,1) & length(idataH)==length(idataDH) ){
 #Indices of data vectors (pset$iplatform==2)
@@ -1359,7 +1336,7 @@ if (!is.element(pset$iplatform,1) & length(idataH)==length(idataDH) ){
     valuesH_1  =  datHas_l$Freq[ivaluesH]*weight[i] 
     valuesDH_1 = datDHas_l$Freq[ivaluesDH]*weight[i]
     valuesDO_1 = datDOas_l$Freq[ivaluesDO]*weight[i]  
-    } else { #iplatform=0  #simulated (actually, true model, as data too noisy)
+    } else { #iplatform=0  #simulated (actually, true model, as simulated data too noisy)
   #for (i in 1:9){ assign(paste0("zd",eval(i),"_0"), datM[paste0("Dataz",i,"_0")][[1]] ) }#zd1-zd9 - Hospitalisations
     valuesH_0  = eval(parse(text = paste0( "datM$H_mod",eval(i),"_0","[imodelH]"))) 
     valuesDH_0 = eval(parse(text = paste0("datM$DH_mod",eval(i),"_0","[imodelDH]"))) 
@@ -1426,9 +1403,6 @@ datDOa_1<- tibble(datT,
 #### Diagnostics
 
 #1 marginal
-#if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-#  cat("\n"); print("Fig 1..."); cat("\n")
-#  sink()}
 par(mar=c(0.5, 1, 1, 1)) #shows axis scale better #par(mar =c(0,0,0,0)) # c(0.5, 1, 1, 1)) #Par(mar = c(2, 2, 1, 1))  #bottom, left, top, right
 #p<-marginalPlot(out); print(p)
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_marginalPlot")
@@ -1439,9 +1413,6 @@ if(length(UPPER)<17){
   svglite(paste0(filenamepath,".svg")); plot(1:10); invisible(dev.off())        }
 
 #2-3 trace
-#if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-#  cat("\n"); print("Fig 2-3..."); cat("\n")
-#  sink()}
 par(mar = c(2, 2, 1, 1)) ##bottom, left, top, right
 p<-plot(out); print(p)
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_plotout_lastPage")
@@ -1449,9 +1420,6 @@ if (pset$iplatform==0){
   svglite(paste0(filenamepath,".svg")); plot(out); invisible(dev.off())         }
 
 #4 correlations
-#if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-#  cat("\n"); print("Fig 4..."); cat("\n")
-#  sink()}
 par(mar = c(0,0,0,0)) #par(mar = c(2, 2, 1, 1))
 #pdf("corr.pdf")
 #p<-correlationPlot(out); print(p)  #Error in plot.new() : figure margins too large  (16 par)
@@ -1467,9 +1435,6 @@ Title_0 = c("Other")
 Title_1 = c("Shielding")
 
 #5 overall
-#if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-#  cat("\n"); print("Fig 5..."); cat("\n")
-#  sink()}
 colors <- c(  "I_dat"  = "black",   "I_est" = "red",     "I_model" = "green",
              "H_datw"  = "black",   "H_est" = "red",     "H_model" = "pink",
             "DH_datw"  = "grey",   "DH_est" = "blue",   "DH_model" = "cyan",
@@ -1518,9 +1483,6 @@ svglite(paste0(filenamepath,".svg"),width=sc*6, height=sc*3); print(pO); invisib
 
 #6 Plot posterior samples
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
-#if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-#  cat("\n"); print("Fig 6..."); cat("\n")
-#  sink()}
 ##
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_PosteriorSample")
 ##
@@ -1668,9 +1630,6 @@ colors <- c("0-4" = 1, "05-11" = 2,  "12-17" = 3, "18-29" = 4, "30-39" = 5,
 Yname = c('Hospitalisations', 'Deaths in hospital', 'Deaths outside hospital')
 if (LOG==1) {Yname = c('log10 Hospitalisations', 'log10 Deaths in hospital', 'log10 Deaths outside hospital')}
 
-#if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-#  cat("\n"); print("Fig 7..."); cat("\n")
-#  sink()}
 #H
 pH_0 <- ggplot() +
     labs(x = "", y = Yname[1], color = "") + #Legend") + 
@@ -1718,9 +1677,6 @@ pH_1 <- ggplot() +
     geom_point(data=datHa_1, aes(x=Dates,y=H9d, color = "70+"))
 
 #DH
-#if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-#  cat("\n"); print("Fig 8..."); cat("\n")
-#  sink()}
 pDH_0 <- ggplot() +
     labs(x = "", y = Yname[2], color = "Age group") + #Legend") + 
     scale_color_manual(values = colors) +
@@ -1767,9 +1723,6 @@ pDH_1 <- ggplot() +
     geom_point(data=datDHa_1, aes(x=Dates,y=DH9d, color = "70+"))  
 
 #DO
-#if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-#  cat("\n"); print("Fig 9..."); cat("\n")
-#  sink()}
 pDO_0 <- ggplot() +
     labs(x = 'Date', y = Yname[3], color = "") + #Legend") + 
     scale_color_manual(values = colors) +
@@ -1826,9 +1779,6 @@ invisible(dev.off())
 
 ##summary in text file
 #10
-#if(SCREEN==1){sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-#  cat("\n"); print("Fig/Tab 10..."); cat("\n")
-#sink()}
 #plot.new()
 #for (i in 1:2){
 #filenamepath =  paste0(output_dir,"/",pset$File_fit_summary0,"_",i)
@@ -1843,30 +1793,6 @@ invisible(dev.off())
 #invisible(dev.off())
 #}
 
-#need?
-#pdf(file = paste0(output_dir,"/",pset$File_fit_variables), height=nrow(mE$byw)/3)
-#if(SCREEN==1){ sink(file = paste0(output_dir,"/","screen.txt"),append=TRUE,split=FALSE)
-#  cat("\n"); print("Fig 11..."); cat("\n")
-#sink()}
-#filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_variables")
-#svglite(paste0(filenamepath,".svg")) #, height=nrow(mE$byw)/3); #os complained
-#   plot(1:10)
-#   #gridExtra::grid.table(round(mE$byw[c("time","St","Ht","Hw","Dt","Dw")])) 
-#invisible(dev.off())
-
-#if (pset$iplatform>0){
-#  
-#pdf(file = paste0(output_dir,"/",pset$File_fit_data1), height=nrow(datDH)/3)
-#  gridExtra::grid.table(datH[c("Weeks","zdw")])
-#dev.off()
-#pdf(file = paste0(output_dir,"/",pset$File_fit_data2), height=nrow(datDD)/3)
-#  gridExtra::grid.table(datDH[c("Weeks","wdw")])
-#dev.off()
-#pdf(file = paste0(output_dir,"/",pset$File_fit_data2), height=nrow(datDD)/3)
-#  gridExtra::grid.table(datDO[c("Weeks","vdw")])
-#dev.off()
-
-## pdf end
 
 
 

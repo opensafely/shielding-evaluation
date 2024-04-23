@@ -8,8 +8,7 @@ output: html_document
 
 
 ```{r libs, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
-# 03feb24 - Rmarkdown vrs of main
-
+# Rmarkdown vrs of main
 
 ## SEIR and SEIUHRD compartment models: age-structured with CoMix-contacts 
 ## 1-OS data, 2-contacts, parameters & R0, 3-Simulation, 4-MCMC fitting, plots & reports
@@ -31,7 +30,6 @@ library(glue)
 library(svglite)
 
 
-#new_factory(outputs = paste0(here::here("output/HDsynthesis")))
 
 ```
 
@@ -41,8 +39,6 @@ Fit: Select parameters, run mcmc, see outputs.
 
 
 ```{r setup, echo=FALSE}
-
-#Source: see https://bookdown.org/yihui/rmarkdown-cookbook/source-script.html
 
 # 0-SET UP
 TIME  = format(Sys.time(),'%H.%M.%S_%d-%m-%Y')
@@ -57,6 +53,7 @@ print(paste0("outpur_dir:  ", output_dir))
   
 source(file = paste0(input_dir,"/setup.r"), local = knitr::knit_global())
 print("Main.Rmd: sourced setup.r")
+
 ## Model choice
 if (pset$iplatform==0) { print(paste0("Model chosen: ",pset$MODEL[pset$imodel]))
                          print(paste0("Platform: ",pset$PLATFORM[pset$iplatform+1])) }
@@ -65,15 +62,13 @@ if (pset$iplatform==0) { print(paste0("Model chosen: ",pset$MODEL[pset$imodel]))
 
 ```{r data, echo=FALSE}
 # 1-OS DATA
-## Options: Option_Writedfs (=1), Option_Printout (=0), Option_Writeout (=0), Freq_cutoff = 8
+## Options: files output (Option_WriteOutC..., Option_WriteLong..., Option_PrintFig, Option_Merge), 
+## Option:  Freq_cutoff = 8
 ## Input:   jobno = pset$Job
-## Return:  dim_sc = dim(DAT), dataframes for fitting (Option_Writedfs=1)
-## Output:  output_dir_HD=here::here("output/HDsynthesis"), csv, svg 
-## Plots:   same as svg
+## Return:  dim_sc = dim(DAT), dataframes for fitting (Option_WriteLong...)
+## Output:  output_dir_HD <- paste0(getwd(),"/output/HDsynthesys"), csv, svg 
 if (pset$iplatform>0) {
   if(pset$imodel==1) source(file = paste0(input_dir,"/SEIR_data.r"))
-  #output_dir_HD <- paste0(getwd(),"/output/HDsynthesys")
-  #fs::dir_create(output_dir_HD)
   if(pset$imodel==2) source(file = paste0(input_dir,"/HDdata.R"), local = knitr::knit_global())
   print("Main.Rmd: sourced HDdata.R")
 }
@@ -83,25 +78,25 @@ if (pset$iplatform>0) {
 ```{r model, echo=FALSE}
 # 2-MODEL (for fitting or simulation)
 ## Contact matrix
-### return: cm, cm_0, cm_1
-### csv: Contact_matrix_year-from-27Jan20_vector-lenght-9x9x52_norm=maxEV1_x3
-### txt: ontact_matrix_year-from-27Jan20_vector-lenght-9x9x52_norm=maxEV1_stats
+## return: cm, cm_0, cm_1
+## csv: Contact_matrix_year-from-27Jan20_vector-lenght-9x9x52_norm=maxEV1_x3
+## txt: Contact_matrix_year-from-27Jan20_vector-lenght-9x9x52_norm=maxEV1_stats
 source(file = paste0(input_dir,"/contacts.r"), local = knitr::knit_global())
 print("Main.Rmd: sourced contacts.r")
 
-# Parameters and initial condition
+
+## Parameters and initial condition
 #source(file = paste0(input_dir,"/",pset$File_parameters), local = knitr::knit_global())
 source(file = paste0(input_dir,"/",pset$File_parametersas), local = knitr::knit_global())
 pars$cm  <- as.vector(cm)
 print("Main.Rmd: sourced parameters.r")
-#insert contacts into parameters
+## copy contacts into parameters
 pars$cm    <- as.vector(cm)
 pars$cm_0  <- as.vector(cm_0)
 pars$cm_1  <- as.vector(cm_1)
 
 
-# Output settings and parameters
-#sink(file = paste0(output_dir,"/",pset$File_run), append=TRUE, split=FALSE)
+## Output settings and parameters
   cat(" \n")
   print(format(Sys.time(),'%H.%M.%S_%d-%m-%Y'))
   cat(" \n")
@@ -109,16 +104,16 @@ pars$cm_1  <- as.vector(cm_1)
   cat("\n")
   print(paste0("Date range in contact-data:   ", Week1_Model, ", ", Week2_Model)); cat("\n")
   if(pset$iplatform>0) {
-  Week1_Data = lubridate::week("2020-01-01") #HDdata.R, HDdata.Rmd
+  Week1_Data = lubridate::week("2020-01-01") #applied in HDdata.R, HDdata.Rmd
   Week2_Data = lubridate::week("2020-12-01")
   print(paste0("Date range in H, D data:      ", "2020-01-01", " - ", "2020-12-01")); cat("\n")
   print(paste0("Week range in H, D data:      ", Week1_Data,   " - ", Week2_Data  )); cat("\n") }
   cat(" \n")
   print("pars: \n "); #print(rev(pars[-1])); #exclude cm
   cat("\n \n")
-#sink()
 
-# R0 by week
+
+## R0 by week
 ### Output: Simul_R0_by_week.csv
 source(file = paste0(input_dir,"/R0_0.r"), local = knitr::knit_global())
 r0 = R0_0(pars=pars,GetBeta=1,GetOutput=1)
