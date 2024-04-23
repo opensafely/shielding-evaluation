@@ -1,5 +1,5 @@
 ## Dataset general questions
-## Merging H, D, Shielding for each ID
+## Linking H, D, and Shielding at ID level
 ## see HDdata_test.R for tests on simulated data
 ##
 library(arrow)
@@ -135,7 +135,7 @@ DAT <- DAT                                                %>%
                 dplyr::contains("hosp_admitted"),              # date,    "covid_hosp_admitted_{n}",
                 dplyr::contains("hosp_discharge"),             # date,    "covid_hosp_admitted_{n}",
                 ons_death_date,                                # date,    covid death
-				ons_underlying_cause,                          # code,    covid death
+				        ons_underlying_cause,                          # code,    covid death
                 shielding,                                     # factor:  High Risk, Low/Moderate risk, No shielding
                 shieldA, shieldB,                              # Defined above
                 shielding_v1_startdate,                        # date,    High Risk before 2020-04-21 - NA if binary=0
@@ -670,8 +670,6 @@ print(paste0("Patient0 shield: ", nP_tot_s1,       ", %cohort0:  ", rd2(100*nP_t
 print(paste0("Patient0 not sh: ", nP_tot_s0,       ", %cohort0:  ", rd2(100*nP_tot_s0/nP_tot) ))
 print(paste0("Patient1 shield: ", nP_all_dates_s1, ", %cohort1:  ", rd2(100*nP_all_dates_s1/nP_all_dates) ))
 print(paste0("Patient1 not sh: ", nP_all_dates_s0, ", %cohort1:  ", rd2(100*nP_all_dates_s0/nP_all_dates) ))
-print(paste0("Patient0 inc CH, covid deaths Dec-2020-Sep-2021, non-covid deaths Jan-2020-Sep-2021"))
-print(paste0("Patient1 inc CH, covid deaths Dec-2020-Sep-2021"))
 cat("\n")
 print(paste0("Patients shieldA: ", nP_sA1,           ", %patients: ", rd2(100*nP_sA1/nP) ))
 print(paste0("Patients not shA: ", nP_sA0,           ", %patients: ", rd2(100*nP_sA0/nP) ))
@@ -1323,8 +1321,6 @@ print(paste0("Patient0 shield: ", nP_tot_s1,       ", %cohort0:  ", rd2(100*nP_t
 print(paste0("Patient0 not sh: ", nP_tot_s0,       ", %cohort0:  ", rd2(100*nP_tot_s0/nP_tot) ))
 print(paste0("Patient1 shield: ", nP_all_dates_s1, ", %cohort1:  ", rd2(100*nP_all_dates_s1/nP_all_dates) ))
 print(paste0("Patient1 not sh: ", nP_all_dates_s0, ", %cohort1:  ", rd2(100*nP_all_dates_s0/nP_all_dates) ))
-print(paste0("Patient0 inc CH, covid deaths Dec-2020-Aug-2021, non-covid deaths"))
-print(paste0("Patient1 inc CH, covid deaths Dec-2020-Aug-2021"))
 cat("\n")
 print(paste0("Patients shieldA: ", nP_sA1,           ", %patients: ", rd2(100*nP_sA1/nP) ))
 print(paste0("Patients not shA: ", nP_sA0,           ", %patients: ", rd2(100*nP_sA0/nP) ))

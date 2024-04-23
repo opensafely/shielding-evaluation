@@ -9,7 +9,7 @@ sourceCpp(file = paste0(input_dir,"/",pset$File_modelas_choice))
 ## Get beta for given R0
 source(file = paste0(input_dir,"/R0_0.r"))
 r0 = R0_0(pars,GetBeta=1,GetOutput=1) #Defaults used: Sampling=0, nt=pars$cmdim3
-pars$beta = r0[[1]]$beta            #pars$beta=1
+pars$beta = r0[[1]]$beta              #pars$beta=1
 print(paste0("R0 = ", pars$R0, ",  beta = ", round(pars$beta,2)))
 
 ## run model
@@ -68,8 +68,8 @@ vm = vm_0 + vm_1                      #incidence outside hospital
 
 #Incidence by age
 zam <- as.data.frame(matrix(rep(0,nd*na), ncol = na)); names(zam)=c(paste0("z", 1:na,"_0"))
-wam <- as.data.frame(matrix(rep(0,nd*na), ncol = na)); names(wam)=c(paste0("w", 1:na,"_0")) #length can differ from zam
-vam <- as.data.frame(matrix(rep(0,nd*na), ncol = na)); names(vam)=c(paste0("v", 1:na,"_0")) #length can differ from zam
+wam <- as.data.frame(matrix(rep(0,nd*na), ncol = na)); names(wam)=c(paste0("w", 1:na,"_0"))
+vam <- as.data.frame(matrix(rep(0,nd*na), ncol = na)); names(vam)=c(paste0("v", 1:na,"_0"))
 
 for (i in 1:9){ #by age #need keep order of cols im zam etc => separate loops
   zam[paste0("z",i,"_0")] = eval(parse(text = paste0("mout$byw_ageH_0$H", i,"w"))) #
@@ -141,8 +141,8 @@ for (iw in 1:nd){
     zmt[iw] = zmt[iw] + zam[[i]][iw] }}
 #=> zmt = zm, as expected
 #=> sum(zdt-zd)<0, probably randomness, adding 9 NB variates .ne. 1 NB variate with mean=sum means
-#=> could simulate fit zdt rather than zd - worth it?
-#=> But, for plot illustration only; for real data don't need to construct noise
+#=> could simulate fit zdt rather than zd - is it worth it?
+#=> Maybe not, for plot illustration only; for real data dont need construct noise
 plot(1:nd,zd,type="p")
 for(i in 1:9){points(1:nd,zad[[i]],col=i+1)}
 lines(1:nd,zm,type="l")
@@ -340,8 +340,6 @@ p3_1 <- ggplot(datM, aes(x = Weeks)) +
 
 
 ##By age
-#colors <- c("0-4" = 9, "5-11" = 8,  "12-17" = 7, "18-29" = 6, "30-39" = 5, 
-#            "40-49" = 4, "50-59" = 3,  "60-69" = 2, "70+" = 1)
 colors <- c("0-4" = "yellow", "5-11" = "pink",  "12-17" = "grey", "18-29" = "orange", "30-39" = "magenta", 
             "40-49" = "blue", "50-59" = "green",  "60-69" = "red", "70+" = "black")
 #H

@@ -15,8 +15,8 @@ R0_0 <- function(pars,GetBeta,GetOutput,Sampling=0, nt=pars$cmdim3 ){
 R0_week   = vector()
 cmMEV     = vector()
 rIR       = pars$rIR
-u         = pars$u     #u_1 = u_0 = u => don't need specify whether contacts are _0 or _1
-ngm       = cm_0       #array from "contacts"
+u         = pars$u     #u_1 = u_0 = u => don't need specify whether the participant's contacts are _0 or _1
+ngm       = cm_0       #array from "contacts.r"
 beta0     = pars$beta 
 ntcontact = nt
 
