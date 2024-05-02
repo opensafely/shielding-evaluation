@@ -89,5 +89,6 @@ pars <- within(pars, {
 
 #pars <- within(pars, {
   #update
-  source(paste0(getwd(),"/parameters_J6_24apr24.r"))
+  #input_dir  <- getwd() #paste0(getwd(),"/modelling/input"))#
+  source(paste0(input_dir,"/parameters_J6_24apr24.r"))
 #})
