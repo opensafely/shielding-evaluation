@@ -7,9 +7,13 @@ sourceCpp(file = paste0(input_dir,"/",pset$File_modelas_choice))
 # -cm_0       - for R0, BETA to estimate beta or R0 from current parameters
 
 ## Get beta for given R0
+print(paste0("R0 = ", pars$R0, ",  pars$beta = ", round(pars$beta,2)))
 source(file = paste0(input_dir,"/R0_0.r"))
 r0 = R0_0(pars,GetBeta=1,GetOutput=1) #Defaults used: Sampling=0, nt=pars$cmdim3
-pars$beta = r0[[1]]$beta              #pars$beta=1
+pars$beta = r0[[1]]$beta
+print(paste0("R0 = ", pars$R0, ",  R0_0_beta = ", round(pars$beta,2)))
+source(file = paste0(input_dir,"/BETA_0.r")) #BETA <- function(pars)
+pars$beta = BETA(pars) #[1] 2.372594 
 print(paste0("R0 = ", pars$R0, ",  beta = ", round(pars$beta,2)))
 
 ## run model
@@ -247,94 +251,108 @@ for (i in 1:na){
   datM[paste0("DO_mod",i,"_1")]= vam[[9+i]] 
 }
 
+
+### Figures
+Title_a = c("All")
+Title_0 = c("Other")
+Title_1 = c("Shielding")
+
 #panel 1
+colors <- c( "H_data"  = "red",    "H_pred"  = "red", 
+             "DH_data" = "green",  "DH_pred" = "green", 
+             "DO_data" = "blue",   "DO_pred" = "blue")
+
+p1_0 <- ggplot(datM, aes(x = Weeks)) +
+  geom_point(aes(y = Dataz_0,    color =  'H_data'), size = 1.2, pch = 1) +
+  geom_line (aes(y = PH_mod_0*N, color =  'H_pred')) +
+  geom_point(aes(y = Dataw_0,    color = 'DH_data'), size = 1.2, pch = 2) +
+  geom_line (aes(y = PDH_mod_0*N,color = 'DH_pred')) +
+  geom_point(aes(y = Datav_0,    color = 'DO_data'), size = 1.2, pch = 2) +
+  geom_line (aes(y = PDO_mod_0*N,color = 'DO_pred')) +
+  #geom_line (aes(y = PInf_0/100, color = 'Pinf/100')) +
+  labs(x = 'Weeks', y = 'Weekly incidence', color = "") + 
+  theme(legend.position = "none") +
+  scale_color_manual(values = colors) + ylim(0,max(datM$PH_mod*N)*1.2) + 
+  ggtitle(Title_0)
+
+p1_1 <- ggplot(datM, aes(x = Weeks)) +
+  geom_point(aes(y = Dataz_1,    color =  'H_data'), size = 1.2, pch = 1) +
+  geom_line (aes(y = PH_mod_1*N, color =  'H_pred')) +
+  geom_point(aes(y = Dataw_1,    color = 'DH_data'), size = 1.2, pch = 2) +
+  geom_line (aes(y = PDH_mod_1*N,color = 'DH_pred')) +
+  geom_point(aes(y = Datav_1,    color = 'DO_data'), size = 1.2, pch = 2) +
+  geom_line (aes(y = PDO_mod_1*N,color = 'DO_pred')) +
+  #geom_line (aes(y = PInf_0/100, color = 'Pinf/100')) +
+  labs(x = 'Weeks', y = 'Weekly incidence', color = "") +
+  theme(legend.position = "none") +
+  scale_color_manual(values = colors) + ylim(0,max(datM$PH_mod_1*N)*1.2) + 
+  ggtitle(Title_1)
+
+p1 <- ggplot(datM, aes(x = Weeks)) +
+  geom_point(aes(y = Dataz,    color =  'H_data'), size = 1.2, pch = 1) +
+  geom_line (aes(y = PH_mod*N, color =  'H_pred')) +
+  geom_point(aes(y = Dataw,    color = 'DH_data'), size = 1.2, pch = 2) +
+  geom_line (aes(y = PDH_mod*N,color = 'DH_pred')) +
+  geom_point(aes(y = Datav,    color = 'DO_data'), size = 1.2, pch = 2) +
+  geom_line (aes(y = PDO_mod*N,color = 'DO_pred')) +
+  #geom_line (aes(y = PInf/100, color = 'Pinf/100')) +
+  labs(x = 'Weeks', y = 'Weekly incidence', color = "") +  
+  #theme(legend.position = "none") +
+  scale_color_manual(values = colors) + ylim(0,max(datM$PH_mod*N)*1.2) + 
+  ggtitle(Title_a)
+
+#panel 2
 xx <- quantile(datM$Weeks,0.6)[[1]]; yy = max(datM$PInf)*0.9; y2 = max(datM$PInf)*0.6;
 colors <- c("Pinf" = "red", "Psus/100" = "green", "Prec/100" = "blue", 
             "Dinf" = "black", "PH_mod" = "orange", "PDH_mod" = "magenta")
 
-
-p1  <- ggplot(datM, aes(x = Weeks)) +
-  geom_line (aes(y = PInf,     color = 'Pinf')) +
-  geom_line (aes(y = PSus/100, color = 'Psus/100')) +
-  geom_line (aes(y = PRec/100, color = 'Prec/100')) +
-  annotate("text", size=3, x=xx, y=yy, label= paste0("beta=",round(pars$beta,3),", R0unif=",round(pars$R0,2),", R0=",round(max(R0_week),2))) +
-  annotate("text", size=3, x=xx, y=y2, label= paste0("pinf2(log10)=",round(pars$logPI0,2),", IP=",round(1/pars$rIR,2))) +
-  labs(x = 'Weeks', y = 'PInfected', color = "") + #Legend") +
-  scale_color_manual(values = colors) + ylim(0,max(datM$PInf)*1.2)
-
-p1_0  <- ggplot(datM, aes(x = Weeks)) +
+p2_0  <- ggplot(datM, aes(x = Weeks)) +
   geom_line (aes(y = PInf_0,     color = 'Pinf')) +
   geom_line (aes(y = PSus_0/100, color = 'Psus/100')) +
   geom_line (aes(y = PRec_0/100, color = 'Prec/100')) +
   #annotate("text", size=3, x=xx, y=yy, label= paste0("beta=",round(pars$beta,3),", R0unif=",round(pars$R0,2),", R0=",round(max(R0_week),2))) +
   #annotate("text", size=3, x=xx, y=y2, label= paste0("pinf2(log10)=",round(pars$logPI0,2),", IP=",round(1/pars$rIR,2))) +
-  labs(x = 'Weeks', y = 'PInfected, not shielding', color = "") + #Legend") +
+  labs(x = 'Weeks', y = 'PInfected, not shielding', color = "") +
+  theme(legend.position = "none") +
   scale_color_manual(values = colors) + ylim(0,max(datM$PInf)*1.2)
 
-p1_1  <- ggplot(datM, aes(x = Weeks)) +
+p2_1  <- ggplot(datM, aes(x = Weeks)) +
   geom_line (aes(y = PInf_1,     color = 'Pinf')) +
   geom_line (aes(y = PSus_1/100, color = 'Psus/100')) +
   geom_line (aes(y = PRec_1/100, color = 'Prec/100')) +
   #annotate("text", size=3, x=xx, y=yy, label= paste0("beta=",round(pars$beta,3),", R0unif=",round(pars$R0,2),", R0=",round(max(R0_week),2))) +
   #annotate("text", size=3, x=xx, y=y2, label= paste0("pinf2(log10)=",round(pars$logPI0,2),", IP=",round(1/pars$rIR,2))) +
   labs(x = 'Weeks', y = 'PInfected, shielding', color = "") + #Legend") +
+  theme(legend.position = "none") +
   scale_color_manual(values = colors) + ylim(0,max(datM$PInf_1)*1.2)
 
+p2  <- ggplot(datM, aes(x = Weeks)) +
+  geom_line (aes(y = PInf,     color = 'Pinf')) +
+  geom_line (aes(y = PSus/100, color = 'Psus/100')) +
+  geom_line (aes(y = PRec/100, color = 'Prec/100')) +
+  annotate("text", size=3, x=xx, y=yy, label= paste0("beta=",round(pars$beta,3),", R0unif=",round(pars$R0,2),", R0=",round(max(R0_week),2))) +
+  annotate("text", size=3, x=xx, y=y2, label= paste0("pinf2(log10)=",round(pars$logPI0,2),", IP=",round(1/pars$rIR,2))) +
+  labs(x = 'Weeks', y = 'PInfected', color = "") +
+  #theme(legend.position = "none") +
+  scale_color_manual(values = colors) + ylim(0,max(datM$PInf)*1.2)
 
-#panel 2
-p2 <-  ggplot(datM, aes(x= Weeks)) +
-  geom_point(aes(y=R0)) +
-  geom_line (aes(y=rep(1,nd)),col='red') +
-  labs(x = 'Weeks', y = 'R0') 
-
-p2_0 <-  ggplot(datM, aes(x= Weeks)) +
-  geom_point(aes(y=R0)) +
-  geom_line (aes(y=rep(1,nd)),col='red') +
-  labs(x = 'Weeks', y = 'R0') 
-
-p2_1 <-  ggplot(datM, aes(x= Weeks)) +
-  geom_point(aes(y=R0)) +
-  geom_line (aes(y=rep(1,nd)),col='red') +
-  labs(x = 'Weeks', y = 'R0') 
 
 #panel 3
-colors <- c( "H_data"  = "green",  "H_pred"  = "green", 
-             "DH_data" = "blue",   "DH_pred" = "blue", 
-             "DO_data" = "orange", "DO_pred" = "orange", 
-            "Pinf/100" = "red")
 
-p3 <- ggplot(datM, aes(x = Weeks)) +
-  geom_point(aes(y = Dataz/N,  color =  'H_data'), size = 1.2, pch = 1) +
-  geom_line (aes(y = PH_mod,   color =  'H_pred')) +
-  geom_point(aes(y = Dataw/N,  color = 'DH_data'), size = 1.2, pch = 2) +
-  geom_line (aes(y = PDH_mod,  color = 'DH_pred')) +
-  geom_point(aes(y = Datav/N,  color = 'DO_data'), size = 1.2, pch = 2) +
-  geom_line (aes(y = PDO_mod,  color = 'DO_pred')) +
-  geom_line (aes(y = PInf/100, color = 'Pinf/100')) +
-  labs(x = 'Weeks', y = 'Proportion', color = "") + #Legend") + 
-  scale_color_manual(values = colors) + ylim(0,max(datM$PH_mod)*1.2)
+p3_0 <-  ggplot(datM, aes(x= Weeks)) +
+  geom_point(aes(y=R0)) +
+  geom_line (aes(y=rep(1,nd)),col='red') +
+  labs(x = 'Weeks', y = 'R0') 
 
-p3_0 <- ggplot(datM, aes(x = Weeks)) +
-  geom_point(aes(y = Dataz_0/N,  color =  'H_data'), size = 1.2, pch = 1) +
-  geom_line (aes(y = PH_mod_0,   color =  'H_pred')) +
-  geom_point(aes(y = Dataw_0/N,  color = 'DH_data'), size = 1.2, pch = 2) +
-  geom_line (aes(y = PDH_mod_0,  color = 'DH_pred')) +
-  geom_point(aes(y = Datav_0/N,  color = 'DO_data'), size = 1.2, pch = 2) +
-  geom_line (aes(y = PDO_mod_0,  color = 'DO_pred')) +
-  geom_line (aes(y = PInf_0/100, color = 'Pinf/100')) +
-  labs(x = 'Weeks', y = 'Proportion', color = "") + #Legend") + 
-  scale_color_manual(values = colors) + ylim(0,max(datM$PH_mod)*1.2)
+p3_1 <-  ggplot(datM, aes(x= Weeks)) +
+  geom_point(aes(y=R0)) +
+  geom_line (aes(y=rep(1,nd)),col='red') +
+  labs(x = 'Weeks', y = 'R0') 
 
-p3_1 <- ggplot(datM, aes(x = Weeks)) +
-  geom_point(aes(y = Dataz_1/N,  color =  'H_data'), size = 1.2, pch = 1) +
-  geom_line (aes(y = PH_mod_1,   color =  'H_pred')) +
-  geom_point(aes(y = Dataw_1/N,  color = 'DH_data'), size = 1.2, pch = 2) +
-  geom_line (aes(y = PDH_mod_1,  color = 'DH_pred')) +
-  geom_point(aes(y = Datav_1/N,  color = 'DO_data'), size = 1.2, pch = 2) +
-  geom_line (aes(y = PDO_mod_1,  color = 'DO_pred')) +
-  geom_line (aes(y = PInf_1/100, color = 'Pinf/100')) +
-  labs(x = 'Weeks', y = 'Proportion', color = "") + #Legend") + 
-  scale_color_manual(values = colors) + ylim(0,max(datM$PH_mod_1)*1.2)
+p3 <-  ggplot(datM, aes(x= Weeks)) +
+  geom_point(aes(y=R0)) +
+  geom_line (aes(y=rep(1,nd)),col='red') +
+  labs(x = 'Weeks', y = 'R0') 
 
 #gridExtra::grid.arrange(p1, p1_0, p1_1, p2, p2_0, p2_1, p3, p3_0, p3_1, nrow = 3, ncol=3)
 
@@ -343,38 +361,36 @@ p3_1 <- ggplot(datM, aes(x = Weeks)) +
 colors <- c("0-4" = "yellow", "5-11" = "pink",  "12-17" = "grey", "18-29" = "orange", "30-39" = "magenta", 
             "40-49" = "blue", "50-59" = "green",  "60-69" = "red", "70+" = "black")
 #H
-p4 <- ggplot(datM) #, aes(x = Weeks)) 
+p4_0 <- ggplot(datM, aes(x = Weeks)) 
+for (i in 1:9){  p4_0 <- p4_0 +
+  geom_point(aes(y = .data[[paste0("Dataz",i,"_0")]]), color=colors[eval(parse(text = paste0("names(colors)[",eval(i),"]")))][[1]], size = 1.2, pch = 1) +
+  geom_line (aes(y = .data[[paste0("H_mod",i,"_0")]]), color=colors[eval(parse(text = paste0("names(colors)[",eval(i),"]")))][[1]] )}
+p4_0 <- p4_0 + 
+  labs(x = 'Weeks', y = 'Hospital admissions by age', color = "Legend") + 
+  scale_color_manual(values = colors) + ylim(0,max(datM$H_mod9)*1.2) + 
+  ggtitle(Title_0)
+
+p4_1 <- ggplot(datM, aes(x = Weeks)) 
+for (i in 1:9){  p4_1 <- p4_1 +
+  geom_point(aes(y = .data[[paste0("Dataz",i,"_1")]]), color=colors[eval(parse(text = paste0("names(colors)[",eval(i),"]")))][[1]], size = 1.2, pch = 1) +
+  geom_line (aes(y = .data[[paste0("H_mod",i,"_1")]]), color=colors[eval(parse(text = paste0("names(colors)[",eval(i),"]")))][[1]] )}
+p4_1<- p4_1 + 
+  labs(x = 'Weeks', y = 'Hospital admissions by age', color = "Legend") + 
+  scale_color_manual(values = colors) + ylim(0,max(datM$H_mod9_1)*1.2) + 
+  ggtitle(Title_1)
+
+p4 <- ggplot(datM, aes(x = Weeks)) 
 for (i in 1:9){  p4 <- p4 +
   #geom_point(aes(y = .data[[paste0("Dataz",i)]]), color=names(colors)[i], size = 1.2, pch = 1) +
   #geom_line (aes(y = .data[[paste0("H_mod",i)]]), color=names(colors)[i]) }
-  geom_point(aes(x = Weeks, y = .data[[paste0("Dataz",i)]]), color=colors[eval(parse(text = paste0("names(colors)[",eval(i),"]")))], size = 1.2, pch = 1) +
-  geom_line (aes(x = Weeks, y = .data[[paste0("H_mod",i)]]), color=colors[eval(parse(text = paste0("names(colors)[",eval(i),"]")))] )}
-p4 <- p4 + labs(x = 'Weeks', y = 'Hospital admissions by age', color = "") + #Legend") + 
-           scale_color_manual(values = colors) + ylim(0,max(datM$H_mod9)*1.2)
-
-p4_0 <- ggplot(datM) #, aes(x = Weeks)) 
-for (i in 1:9){  p4_0 <- p4_0 +
-  geom_point(aes(x = Weeks, y = .data[[paste0("Dataz",i,"_0")]]), color=colors[eval(parse(text = paste0("names(colors)[",eval(i),"]")))], size = 1.2, pch = 1) +
-  geom_line (aes(x = Weeks, y = .data[[paste0("H_mod",i,"_0")]]), color=colors[eval(parse(text = paste0("names(colors)[",eval(i),"]")))] )}
-p4_0 <- p4_0 + labs(x = 'Weeks', y = 'Hospital admissions by age', color = "")+ #Legend") + 
-  scale_color_manual(values = colors) + ylim(0,max(datM$H_mod9)*1.2)
-
-p4_1 <- ggplot(datM) #, aes(x = Weeks)) 
-for (i in 1:9){  p4_1 <- p4_1 +
-  geom_point(aes(x = Weeks, y = .data[[paste0("Dataz",i,"_1")]]), color=colors[eval(parse(text = paste0("names(colors)[",eval(i),"]")))], size = 1.2, pch = 1) +
-  geom_line (aes(x = Weeks, y = .data[[paste0("H_mod",i,"_1")]]), color=colors[eval(parse(text = paste0("names(colors)[",eval(i),"]")))] )}
-p4_1<- p4_1 + labs(x = 'Weeks', y = 'Hospital admissions by age', color = "")+ #Legend") + 
-  scale_color_manual(values = colors) + ylim(0,max(datM$H_mod9_1)*1.2)
-
+  geom_point(aes(y = .data[[paste0("Dataz",i)]]), color=colors[eval(parse(text = paste0("names(colors)[",eval(i),"]")))], size = 1.2, pch = 1) +
+  geom_line (aes(y = .data[[paste0("H_mod",i)]]), color=colors[eval(parse(text = paste0("names(colors)[",eval(i),"]")))] )}
+p4 <- p4 + 
+  labs(x = 'Weeks', y = 'Hospital admissions by age', color = "Legend") + 
+  scale_color_manual(values = colors) + ylim(0,max(datM$H_mod9)*1.2) + 
+  ggtitle(Title_a)
 
 #DH
-p5 <- ggplot(datM, aes(x = Weeks)) 
-for (i in 1:9){  p5 <- p5 +
-  geom_point(aes(x = Weeks, y = .data[[paste0("Dataw",i)      ]]), color=colors[eval(parse(text = paste0("names(colors)[",eval(i),"]")))], size = 1.2, pch = 1) +
-  geom_line (aes(x = Weeks, y = .data[[paste0("DH_mod",i)     ]]), color=colors[eval(parse(text = paste0("names(colors)[",eval(i),"]")))] )}
-p5 <- p5 + labs(x = 'Weeks', y = 'Deaths in hospital by age', color = "")+ #Legend") +  
-          scale_color_manual(values = colors) + ylim(0,max(datM$DH_mod9)*1.2)
-
 p5_0 <- ggplot(datM, aes(x = Weeks)) 
 for (i in 1:9){  p5_0 <- p5_0 +
   geom_point(aes(x = Weeks, y = .data[[paste0("Dataw",i,"_0") ]]), color=colors[eval(parse(text = paste0("names(colors)[",eval(i),"]")))], size = 1.2, pch = 1) +
@@ -389,15 +405,14 @@ for (i in 1:9){  p5_1 <- p5_1 +
 p5_1 <- p5_1 + labs(x = 'Weeks', y = 'Deaths in hospital by age', color = "")+ #Legend") +  
   scale_color_manual(values = colors) + ylim(0,max(datM$DH_mod9_1)*1.2)
 
+p5 <- ggplot(datM, aes(x = Weeks)) 
+for (i in 1:9){  p5 <- p5 +
+  geom_point(aes(x = Weeks, y = .data[[paste0("Dataw",i)      ]]), color=colors[eval(parse(text = paste0("names(colors)[",eval(i),"]")))], size = 1.2, pch = 1) +
+  geom_line (aes(x = Weeks, y = .data[[paste0("DH_mod",i)     ]]), color=colors[eval(parse(text = paste0("names(colors)[",eval(i),"]")))] )}
+p5 <- p5 + labs(x = 'Weeks', y = 'Deaths in hospital by age', color = "")+ #Legend") +  
+  scale_color_manual(values = colors) + ylim(0,max(datM$DH_mod9)*1.2)
 
 #DO
-p6 <- ggplot(datM, aes(x = Weeks)) 
-for (i in 1:9){  p6 <- p6 +
-  geom_point(aes(x = Weeks, y = .data[[paste0("Datav",i)     ]]),  color=colors[eval(parse(text = paste0("names(colors)[",eval(i),"]")))], size = 1.2, pch = 1) +
-  geom_line (aes(x = Weeks, y = .data[[paste0("DO_mod",i)     ]]), color=colors[eval(parse(text = paste0("names(colors)[",eval(i),"]")))] )}
-p6 <- p6 + labs(x = 'Weeks', y = 'Deaths outside hospital by age', color = "")+ #Legend") + 
-  scale_color_manual(values = colors) + ylim(0,max(datM$DO_mod9)*1.2)
-
 p6_0 <- ggplot(datM, aes(x = Weeks)) 
 for (i in 1:9){  p6_0 <- p6_0 +
   geom_point(aes(x = Weeks, y = .data[[paste0("Datav",i,"_0")]]),  color=colors[eval(parse(text = paste0("names(colors)[",eval(i),"]")))], size = 1.2, pch = 1) +
@@ -412,6 +427,12 @@ for (i in 1:9){  p6_1 <- p6_1 +
 p6_1 <- p6_1 + labs(x = 'Weeks', y = 'Deaths outside hospital by age', color = "")+ #Legend") + 
   scale_color_manual(values = colors) + ylim(0,max(datM$DO_mod9_1)*1.2)
 
+p6 <- ggplot(datM, aes(x = Weeks)) 
+for (i in 1:9){  p6 <- p6 +
+  geom_point(aes(x = Weeks, y = .data[[paste0("Datav",i)     ]]),  color=colors[eval(parse(text = paste0("names(colors)[",eval(i),"]")))], size = 1.2, pch = 1) +
+  geom_line (aes(x = Weeks, y = .data[[paste0("DO_mod",i)     ]]), color=colors[eval(parse(text = paste0("names(colors)[",eval(i),"]")))] )}
+p6 <- p6 + labs(x = 'Weeks', y = 'Deaths outside hospital by age', color = "")+ #Legend") + 
+  scale_color_manual(values = colors) + ylim(0,max(datM$DO_mod9)*1.2)
 
 ###pdf
 #pdf(file = paste0(output_dir,"/",pset$File_model_sim_plots))
@@ -420,12 +441,12 @@ p6_1 <- p6_1 + labs(x = 'Weeks', y = 'Deaths outside hospital by age', color = "
 #dev.off()
 #svg
 svglite(file = paste0(output_dir,"/",pset$File_model_sim_plots,"_1-3.svg")); 
-  gridExtra::grid.arrange(p1, p1_0, p1_1, 
-                          p2, p2_0, p2_1, 
-                          p3, p3_0, p3_1, nrow = 3, ncol=3)
+  gridExtra::grid.arrange(p1_0, p1_1, p1, 
+                          p2_0, p2_1, p2,
+                          p3_0, p3_1, p3, nrow = 3, ncol=3)
 invisible(dev.off())
 svglite(file = paste0(output_dir,"/",pset$File_model_sim_plots,"_4-6.svg")); 
-  gridExtra::grid.arrange(p4, p4_0, p4_1, 
-                          p5, p5_0, p5_1, 
-                          p6, p6_0, p6_1, nrow = 3, ncol=3)
+  gridExtra::grid.arrange(p4_0, p4_1, p4, 
+                          p5_0, p5_1, p5,
+                          p6_0, p6_1, p6, nrow = 3, ncol=3)
 invisible(dev.off())

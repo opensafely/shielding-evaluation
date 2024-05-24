@@ -16,13 +16,26 @@ pars <- within(pars, {
     d    <- 0.2*h*m  #model input: da[a] = ad*d[a]                       #derived here
     #Shield split
     m_0  <- c(0, 0.005, 0.006, 0.005, 0.016, 0.040, 0.084, 0.182, 0.409) #derived
+    ma_0 <- c(0,     0, 0.017, 0.007, 0.025, 0.050, 0.122, 0.249, 0.498) #derived
+    mb_0 <- c(0, 0.009,     0, 0.004, 0.009, 0.029, 0.040, 0.108, 0.292) #derived
     m_1  <- c(0,     0,     0, 0.016, 0.033, 0.099, 0.138, 0.222, 0.418) #derived
+    ma_1 <- c(0,     0,     0, 0.020, 0.025, 0.112, 0.150, 0.256, 0.451) #derived
+    mb_1 <- c(0,     0,     0, 0.012, 0.041, 0.081, 0.123, 0.181, 0.376) #derived
+
     h_0  <- h
     h_1  <- h
-    ad_0 <- ad
+    ad_0 <- ad            #need for R0, BETA
     ad_1 <- ad
-    d_0  <- 0.2*h_0*m_0
+    d_0  <- 0.2*h_0*m_0   #need for R0, BETA
     d_1  <- 0.2*h_1*m_1
+    da_0 <- 0.2*h_0*ma_0
+    db_0 <- 0.2*h_0*mb_0
+    da_1 <- 0.2*h_1*ma_1
+    db_1 <- 0.2*h_1*mb_1
+    #TODO: fit - d_0, d_1 - may need 2-period (has same data fit issue as hosp) - but:
+    #- cant estimate 2x parameters (a, b) => 2x2x2=8 d() parameters
+    #- cant get da, db from _questions?
+    #- can do of total number (if assume incidence_a = incidenece_b)
     y_0  <- y
     y_1  <- y
 
@@ -49,12 +62,18 @@ pars <- within(pars, {
     rIR    <- 1/3 #J5h3 est   #1/5 #recovery, Davies Nat Med
     rUR    <- rIR             #recovery
     rIH    <- 1/8.5           #hospitalisation, Davies Lancet PH
-    rHR    <- 1/12.00         #recovery rate in hospital
+    rHRa   <- 1/10.07 #1/12.00 #recovery rate in hospital
+    rHRb   <- 1/14.20 #1/12.00 #recovery rate in hospital
     rHD    <- 1/13.91         #death rate in hospital	
+    rHDa   <- 1/12.50 #1/13.91 #death rate in hospital	
+    rHDb   <- 1/16.78 #1/13.91 #death rate in hospital	
     #rHD    <- rHR            #death rate in hospital, RE - varied during pandemic; 7d in Davies Lancet PH
     #rID    <- 1/(1/rIH+1/rHD)#death rate outside hospital - assumed here
     rIO    <- rIH             #death rate outside hospital - assumed here
-    rOD    <- rHD             #delay in death outside hospital in addition to usual time to hopitalisation
+    rOD    <- rHD              #delay in death outside hospital in addition to usual time to hopitalisation
+    rODa   <- rHDa             #delay in death outside hospital in addition to usual time to hopitalisation
+    rODb   <- rHDb             #delay in death outside hospital in addition to usual time to hopitalisation
+    rODboa <- rODb/rODa
     rRS    <- 0
     rC     <- 1/8.5           #rate of loss of positivity, Russell et al; Davies Lancet ID
     R0     <- 1.8 #2.23       #2020-wild-type basic reproduction rate, Knock et al 2021
@@ -74,7 +93,7 @@ pars <- within(pars, {
     Da0    <- Na0*0.00
     Sa0    <- Na0-Ea0-Ia0-Ua0-Ha0-Oa0-Ra0-Da0
     logPI0 <- log10((Ea0[2]+Ia0[2]+Ua0[2])/Na0[2]) #proportion of infection in age-group 2
-    k      <- 1#5#1           #dispersion/shape parameter of NB likelihood (and noise if simulating) 
+    k      <- 1#10#1#5#1           #dispersion/shape parameter of NB likelihood (and noise if simulating) 
     kH     <- k               #dispersion/shape parameter - hospitalisations
     kDH    <- k               #dispersion/shape parameter - deaths in hospital 
     kDO    <- k               #dispersion/shape parameter - deaths outside hospital 
@@ -90,5 +109,5 @@ pars <- within(pars, {
 #pars <- within(pars, {
   #update
   #input_dir  <- getwd() #paste0(getwd(),"/modelling/input"))#
-  source(paste0(input_dir,"/parameters_J6_24apr24.r"))
+  source(paste0(input_dir,"/parameters_J6_24apr24_rev.r"))
 #})
