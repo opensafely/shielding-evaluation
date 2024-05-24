@@ -1590,6 +1590,10 @@ dzsample_0<- tibble(Date=Datessample, Datez=datH$Datesz, zsample05=zsample95_0[,
 dzsample_1<- tibble(Date=Datessample, Datez=datH$Datesz, zsample05=zsample95_1[,1], 
                     zsample95=zsample95_1[,3], zMAP=mE$byw_1$Hw[imodelH], zdw=datH$zdw_1)
 
+#breaks=seq(min(as.POSIXct(Datessample)), max(as.POSIXct(Datessample)), length=6)
+breaks=seq(min((Datessample)), max((Datessample)), length=6)
+date_labels = "%d/%m/%y" # "%D") # "%M-%Y")
+
 pz_0<-ggplot(dzsample_0, aes(x=Date)) + 
       geom_ribbon(aes(ymin = zsample05, ymax = zsample95), fill = "grey70") +
       geom_point(aes(x=Datez, y = zdw,       color="Data")) +
@@ -1597,7 +1601,8 @@ pz_0<-ggplot(dzsample_0, aes(x=Date)) +
       geom_line (aes(x=Date,  y = zsample05, color="95% CrI")) +
       labs(x = "", y = 'Hospitalisations',   color = "") + #Legend") + 
       scale_color_manual(values = colors) +
-      theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_0) #,
+      theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_0) +
+      scale_x_date(breaks= breaks, date_labels= date_labels) 
            #axis.title.y       = element_text(color = 1),
            #axis.title.y.right = element_text(color = 1) ,
            #axis.text          = element_text(size = 16),
@@ -1610,7 +1615,8 @@ pz_1<-ggplot(dzsample_1, aes(x=Date)) +
       geom_line (aes(x=Date,  y = zsample05, color="95% CrI")) +
       labs(x = "", y = 'Hospitalisations',   color = "") + #Legend") + 
       scale_color_manual(values = colors) +
-      theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_1)
+      theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_1) +
+      scale_x_date(breaks= breaks, date_labels= date_labels)
 #DH
 dwsample_0<- tibble(Date=Datessample, Datew=datD$Datesw, wsample05=wsample95_0[,1], 
                     wsample95=wsample95_0[,3], wMAP=mE$byw_0$DHw[imodelDH], wdw=datD$wdw_0)
@@ -1624,7 +1630,8 @@ pw_0 <-ggplot(dwsample_0, aes(x=Date)) +
        geom_line (aes(x=Date,  y = wsample05, color="95% CrI")) +
        labs(x = "", y = 'Deaths in hospital', color = "") + #Legend") + 
        scale_color_manual(values = colors) +
-       theme(axis.title = element_text(size = 12, face = "bold")) #+  ggtitle(Title_0)
+       theme(axis.title = element_text(size = 12, face = "bold")) +
+       scale_x_date(breaks= breaks, date_labels= date_labels)
 
 pw_1 <-ggplot(dwsample_1, aes(x=Date)) + 
        geom_ribbon(aes(ymin = wsample05, ymax = wsample95), fill = "grey70") +
@@ -1633,7 +1640,8 @@ pw_1 <-ggplot(dwsample_1, aes(x=Date)) +
        geom_line (aes(x=Date,  y = wsample05, color="95% CrI")) +
        labs(x = "", y = 'Deaths in hospital', color = "") + #Legend") + 
        scale_color_manual(values = colors) +
-       theme(axis.title = element_text(size = 12, face = "bold")) #+  ggtitle(Title_1)
+       theme(axis.title = element_text(size = 12, face = "bold")) +
+       scale_x_date(breaks= breaks, date_labels= date_labels)
 #DO
 dvsample_0<- tibble(Date=Datessample, Datev=datD$Datesv, vsample05=vsample95_0[,1], 
                     vsample95=vsample95_0[,3], vMAP=mE$byw_0$DOw[imodelDO], vdw=datD$vdw_0)
@@ -1647,7 +1655,8 @@ pv_0 <-ggplot(dvsample_0, aes(x=Date)) +
        geom_line (aes(x=Date,  y = vsample05, color="95% CrI")) +
        labs(x = '', y = 'Deaths outside hospital', color = "") + 
        scale_color_manual(values = colors) +
-       theme(axis.title = element_text(size = 12, face = "bold")) #+  ggtitle(Title_0)
+       theme(axis.title = element_text(size = 12, face = "bold")) +
+       scale_x_date(breaks= breaks, date_labels= date_labels)
 
 pv_1 <-ggplot(dvsample_1, aes(x=Date)) + 
        geom_ribbon(aes(ymin = vsample05, ymax = vsample95), fill = "grey70") +
@@ -1656,7 +1665,8 @@ pv_1 <-ggplot(dvsample_1, aes(x=Date)) +
        geom_line (aes(x=Date,  y = vsample05, color="95% CrI")) +
        labs(x = '', y = 'Deaths outside hospital', color = "") + 
        scale_color_manual(values = colors) +
-       theme(axis.title = element_text(size = 12, face = "bold")) #+  ggtitle(Title_1)
+       theme(axis.title = element_text(size = 12, face = "bold")) +
+       scale_x_date(breaks= breaks, date_labels= date_labels)
 
 gridExtra::grid.arrange(pz_0, pz_1, pw_0, pw_1, pv_0, pv_1, nrow = 3, ncol = 2)
 
