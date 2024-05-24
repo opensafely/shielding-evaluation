@@ -200,10 +200,14 @@ List SEIUHRD(List pars){
     const NumericVector y_1 = as<NumericVector>(pars["y_1"]); 
     const NumericVector h_0 = as<NumericVector>(pars["h_0"]); 
     const NumericVector h_1 = as<NumericVector>(pars["h_1"]); 
-    const NumericVector m_0 = as<NumericVector>(pars["m_0"]); 
-    const NumericVector m_1 = as<NumericVector>(pars["m_1"]); 
-    const NumericVector d_0 = as<NumericVector>(pars["d_0"]); 
-    const NumericVector d_1 = as<NumericVector>(pars["d_1"]);
+    const NumericVector m_a_0= as<NumericVector>(pars["ma_0"]); 
+    const NumericVector m_b_0= as<NumericVector>(pars["mb_0"]); 
+    const NumericVector m_a_1= as<NumericVector>(pars["ma_1"]); 
+    const NumericVector m_b_1= as<NumericVector>(pars["mb_1"]); 
+    const NumericVector d_0 = as<NumericVector>(pars["d_0"]);  //change for da_, db_
+    //const NumericVector d_0 = as<NumericVector>(pars["db_0"]); 
+    const NumericVector d_1 = as<NumericVector>(pars["d_1"]);  //change for da_, db_
+    //const NumericVector d_1 = as<NumericVector>(pars["db_1"]);
     const NumericVector psage_1 = as<NumericVector>(pars["psagecoh"]); //dim(psagecoh)=na
     const NumericVector rseed   = as<NumericVector>(pars["rseed"]);    //per age group
     
@@ -216,18 +220,22 @@ List SEIUHRD(List pars){
     const double rEU  = pars["rEU"];
     const double rIR  = pars["rIR"];
     const double rIO  = pars["rIO"];
-    const double rOD  = pars["rOD"];    
+    const double rOD  = pars["rOD"];  //change  
+    //const double rODa = pars["rODa"];  //change  
+    //const double rODb = pars["rODb"];  //change  
     const double rUR  = pars["rUR"];
     const double rIH  = pars["rIH"];
-    const double rHR  = pars["rHR"];
-    const double rHD  = pars["rHD"];
+    const double rHRa = pars["rHRa"];
+    const double rHRb = pars["rHRb"];
+    const double rHDa = pars["rHDa"];
+    const double rHDb = pars["rHDb"];
     const double rRS  = pars["rRS"];
     const double rC   = pars["rC"];
     const double rCi  = 5*rC;
-    const double rHi  = 5*rHD;
-    const double rOi  = 5*rOD;
+    //const double rHi  = 5*rHD;
+    const double rOi  = 5*rOD; //change
     const double dt   = pars["dt"];
-    
+
     // age group and population states initialised
     for (int ia = 0; ia < na; ia++) {
         const double pa_1 = psage_1[ia], pa_0 = 1-psage_1[ia];
@@ -288,10 +296,14 @@ List SEIUHRD(List pars){
     double  Dpw_0 = 0,   Dpw_1 = 0;
     double DHpw_0 = 0,  DHpw_1 = 0;
     double DOpw_0 = 0,  DOpw_1 = 0;
+    double rHR = rHRa;
+    double rHi = 5*rHDa;
+    double qma = 1;
     for (int it = 0; it < (nt-1); it++) {	//Crucial: nt-1
         week0 = week;
         week  = 1 + (int) time[it]/7;
         if (week <= 4) {seedon = 1;}; //floor(1/ceil(week/4));
+        if (week > 22) {rHR = rHRb;  rHi = 5*rHDb;  qma=0;}; //change: rOD = rODb;};
         cmdtmean_0[it] = 0;
         cmdtmean_1[it] = 0;
         
@@ -350,8 +362,8 @@ List SEIUHRD(List pars){
         double ya_1 = y_1[ia];
         double ha_0 = h_0[ia];
         double ha_1 = h_1[ia];
-        double ma_0 = m_0[ia];
-        double ma_1 = m_1[ia];
+        double ma_0 = m_a_0[ia]*qma + m_b_0[ia]*(1-qma);
+        double ma_1 = m_a_1[ia]*qma + m_b_1[ia]*(1-qma);
         double da_0 = d_0[ia]*ad_0;
         double da_1 = d_1[ia]*ad_1;
         double rseeda = seedon*rseed[ia];
