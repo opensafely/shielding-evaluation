@@ -24,18 +24,18 @@ pars <- within(pars, {
 
     h_0  <- h
     h_1  <- h
+    
     ad_0 <- ad            #need for R0, BETA
     ad_1 <- ad
+    
     d_0  <- 0.2*h_0*m_0   #need for R0, BETA
     d_1  <- 0.2*h_1*m_1
+    
     da_0 <- 0.2*h_0*ma_0
     db_0 <- 0.2*h_0*mb_0
     da_1 <- 0.2*h_1*ma_1
     db_1 <- 0.2*h_1*mb_1
-    #TODO: fit - d_0, d_1 - may need 2-period (has same data fit issue as hosp) - but:
-    #- cant estimate 2x parameters (a, b) => 2x2x2=8 d() parameters
-    #- cant get da, db from _questions?
-    #- can do of total number (if assume incidence_a = incidenece_b)
+
     y_0  <- y
     y_1  <- y
 
@@ -62,18 +62,21 @@ pars <- within(pars, {
     rIR    <- 1/3 #J5h3 est   #1/5 #recovery, Davies Nat Med
     rUR    <- rIR             #recovery
     rIH    <- 1/8.5           #hospitalisation, Davies Lancet PH
+    
+    rHR    <- 1/12.00         #recovery rate in hospital
     rHRa   <- 1/10.07 #1/12.00 #recovery rate in hospital
     rHRb   <- 1/14.20 #1/12.00 #recovery rate in hospital
+
     rHD    <- 1/13.91         #death rate in hospital	
     rHDa   <- 1/12.50 #1/13.91 #death rate in hospital	
     rHDb   <- 1/16.78 #1/13.91 #death rate in hospital	
+
     #rHD    <- rHR            #death rate in hospital, RE - varied during pandemic; 7d in Davies Lancet PH
     #rID    <- 1/(1/rIH+1/rHD)#death rate outside hospital - assumed here
     rIO    <- rIH             #death rate outside hospital - assumed here
     rOD    <- rHD              #delay in death outside hospital in addition to usual time to hopitalisation
     rODa   <- rHDa             #delay in death outside hospital in addition to usual time to hopitalisation
     rODb   <- rHDb             #delay in death outside hospital in addition to usual time to hopitalisation
-    rODboa <- rODb/rODa
     rRS    <- 0
     rC     <- 1/8.5           #rate of loss of positivity, Russell et al; Davies Lancet ID
     R0     <- 1.8 #2.23       #2020-wild-type basic reproduction rate, Knock et al 2021
@@ -110,4 +113,5 @@ pars <- within(pars, {
   #update
   #input_dir  <- getwd() #paste0(getwd(),"/modelling/input"))#
   source(paste0(input_dir,"/parameters_J6_24apr24_rev.r"))
+  #source(paste0(input_dir,"/parameters_J6_23may24.r"))
 #})
