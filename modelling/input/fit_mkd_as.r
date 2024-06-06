@@ -364,10 +364,10 @@ gl <- function(par)  {  return(theta = exp(par))     }
 #pars$rIR
 f1  <- function(theta) { fi(theta)}; 
 g1  <- function(par)   { gi(par)}
-#pars$rOD
+#pars$rIH
 f2  <- function(theta) { fi(theta)};
 g2  <- function(par)   { gi(par)}
-#pars$rIH
+#pars$rOD
 f3  <- function(theta) { fi(theta)};
 g3  <- function(par)   { gi(par)}
 #pars$pE0
@@ -385,18 +385,18 @@ g7  <- function(par)   { gI(par)}
 #hR_1
 f8  <- function(theta) { fI(theta)}; #l
 g8  <- function(par)   { gI(par)}
-#dM_0  #pars$ad_0
+#ad_0  #dM_0  
 f9  <- function(theta) { fI(theta)}; #fe(theta)}; #I
 g9  <- function(par)   { gI(par)}    #ge(par)}    #I
-#dM_1  #pars$ad_1
+#ad_1  #dM_1  
 f10 <- function(theta) { fI(theta)}; #fe(theta)}; #I
 g10 <- function(par)   { gI(par)}    #ge(par)}
-#dR_0  #yR0_0
-f11 <- function(theta) { fI(theta)}; #I #e
-g11 <- function(par)   { gI(par)}
-#dR_1  #yR0_1
-f12 <- function(theta) { fI(theta)}; #I #e
-g12 <- function(par)   { gI(par)}
+#R0    #dR_0  #yR0_0
+f11 <- function(theta) { fe(theta)}; #I #e
+g11 <- function(par)   { ge(par)}
+#kDH   #dR_1  #yR0_1
+f12 <- function(theta) { fp(theta)}; #I #e
+g12 <- function(par)   { gp(par)}
 #yM1_0
 f13 <- function(theta) { fI(theta)};  #e 
 g13 <- function(par)   { gI(par)}
@@ -466,21 +466,23 @@ LogLikelihood <- function(theta){
   ###         sample   parsES$
   ### Proposed parameters
   pars$rIR = f1(theta[1])
-  pars$rOD = f2(theta[2]) #pars$rODa= f2(theta[2])
-  pars$rIH = f3(theta[3])
+  pars$rIH = f2(theta[2])
+  pars$rOD = f3(theta[3]) #pars$rODa= f3(theta[3])
   pars$pE0 = f4(theta[4])
   hM_0=      f5(theta[5])
   hM_1=      f6(theta[6])
   hR_0=      f7(theta[7])
   hR_1=      f8(theta[8])
-  dM_0=      f9(theta[9])
-  dM_1=      f10(theta[10])
-  dR_0=      f11(theta[11])
-  dR_1=      f12(theta[12])
-  #pars$ad_0= f9(theta[9])  
-  #pars$ad_1= f10(theta[10]) 
+  #dM_0=      f9(theta[9])
+  #dM_1=      f10(theta[10])
+  #dR_0=      f11(theta[11])
+  #dR_1=      f12(theta[12])
+  pars$ad_0= f9(theta[9])  
+  pars$ad_1= f10(theta[10]) 
   #yR0_0=     f11(theta[11]) 
-  #yR0_1=     f12(theta[12]) 
+  #yR0_1=     f12(theta[12])
+  pars$R0  = f11(theta[11])
+  pars$kDH = f12(theta[12])
   yM1_0=     f13(theta[13])
   yM1_1=     f14(theta[14])
   yR1_0=     f15(theta[15])
@@ -498,8 +500,12 @@ LogLikelihood <- function(theta){
   #pars$rODb = pars$rODa*pars$rODboa
   pars$h_0 = hM_0*exp((age-age9)*hR_0)
   pars$h_1 = hM_1*exp((age-age9)*hR_1)
-  pars$d_0 = dM_0*exp((age-age9)*dR_0) #0.2*pars$h_0*pars$m_0  *pars$ad (default=1)
-  pars$d_1 = dM_1*exp((age-age9)*dR_0) #0.2*pars$h_1*pars$m_1  *pars$ad (default=1)
+  #pars$d_0 = dM_0*exp((age-age9)*dR_0) #0.2*pars$h_0*pars$m_0  *pars$ad (default=1)
+  #pars$d_1 = dM_1*exp((age-age9)*dR_0) #0.2*pars$h_1*pars$m_1  *pars$ad (default=1)
+  pars$da_0 = pars$h_0*pars$ma_0
+  pars$da_1 = pars$h_1*pars$ma_1
+  pars$db_0 = pars$h_0*pars$mb_0
+  pars$db_1 = pars$h_1*pars$mb_1
   pars$y_0[3:9] = yM1_0*exp((age[3:9]-age9)*yR1_0)
   pars$y_1[3:9] = yM1_1*exp((age[3:9]-age9)*yR1_1)
   pars$Ea0   = pars$Na0*pars$pE0
@@ -727,15 +733,15 @@ LogLikelihood <- function(theta){
 niter = 30000#120000#30000#6000#60000#15000#6000#3000#30000#60000
 if (pset$iplatform==2){niter=200000} #150000} #120000}
 
-        #1/rIR,     1/rOD,       1/rIH,       pE0,          hM,                         hR,                
+        #1/rIR,     1/rIH,       1/rOD,       pE0,          hM,                         hR,                
 LOWER = c(tMin,     tMin2,       tMin2,       g4(pE0Min),   g5(hMMin),    g6(hMMin),    g7(hRMin),    g8(hRMin),
-        #dM,                     dR,                        yM1,                        yR1,
-        g9(hMMin),  g10(hMMin),  g11(hRMin),  g12(hRMin),   g13(yM1Min),  g14(yM1Min),  g15(yR1Min),  g16(yR1Min));
+        #ad,                     R0,          kDH           yM1,                        yR1,
+        g9(adMin),  g10(adMin),  g11(R0Min),  f12(g12(pkMin)),   g13(yM1Min),  g14(yM1Min),  g15(yR1Min),  g16(yR1Min));
 
-        #1/rIR,     1/rOD,       1/rIH,      pE0,           hM,                         hR,                
+        #1/rIR,     1/rIH,       1/rOD,       pE0,           hM,                         hR,                
 UPPER = c(tMax,     tMax2,       tMax2,       g4(pE0Max),   g5(hMMax),    g6(hMMax),    g7(hRMax),    g8(hRMax),
-        #dM,                     dR,                        yM1,                       yR1,
-        g9(hMMax),  g10(hMMax),  g11(hRMax),  g12(hRMax),   g13(yM1Max),  g14(yM1Max),  g15(yR1Max),  g16(yR1Max));
+        #ad,                     R0           kDH,                        yM1,                       yR1,
+        g9(adMax),  g10(adMax),  g11(R0Max),  f12(g12(pkMax)),   g13(yM1Max),  g14(yM1Max),  g15(yR1Max),  g16(yR1Max));
 
 ######### parameters_J6_24apr24_rev
 hMbest_0= pars$hM_0 #0.3796 #0.3068 #0.4755 #0.3567 #pars$h[9]=0.4755
@@ -753,14 +759,19 @@ yMbest_1= pars$yM1_1 #0.1738 #0.1609 #0.69   #0.7689
 yRbest_0= pars$yR1_0 #0.0105 #0.016  #0.019
 yRbest_1= pars$yR1_1 #0.0151 #0.0115 #0.019
 
-BEST0 = c(1/pars$rIR, 1/pars$rOD, 1/pars$rIH, pars$pE0, #1/pars$rODa
+adbest_0= 0.2 #pars$ad_0
+adbest_1= 0.2 #pars$ad_1
+R0best  = pars$R0
+kDHbest = pars$kDH
+  
+BEST0 = c(1/pars$rIR, 1/pars$rIH, 1/pars$rOD, pars$pE0, #1/pars$rODa
          hMbest_0, hMbest_1, hRbest_0, hRbest_1,
-         dMbest_0, dMbest_1, dRbest_0, dRbest_1, 
+         adbest_0, adbest_1, R0best,   kDHbest,         #dMbest_0, dMbest_1, dRbest_0, dRbest_1, 
          yMbest_0, yMbest_1, yRbest_0, yRbest_1)
 
-BEST = c( g1(pars$rIR),  g2(pars$rOD),  g3(pars$rIH),  g4(pars$pE0),  #g2(pars$rODa) #currently: only affects par 4
+BEST = c( g1(pars$rIR),  g2(pars$rIH),  g3(pars$rOD),  g4(pars$pE0),  #g3(pars$rODa) #currently: g() only affects par 4
           g5(hMbest_0),  g6(hMbest_1),  g7(hRbest_0),  g8(hRbest_1),
-          g9(dMbest_0), g10(dMbest_1), g11(dRbest_0), g12(dRbest_1), 
+          g9(adbest_0), g10(adbest_1), g11(R0best),   g12(kDHbest),  #g9(dMbest_0), g10(dMbest_1), g11(dRbest_0), g12(dRbest_1), 
          g13(yMbest_0), g14(yMbest_1), g15(yRbest_0), g16(yRbest_1))
          
 #Uniform priors
@@ -813,21 +824,23 @@ MAPE      <- MAP(out) #pars estimated
 ###         MAP      parsE$, 
 ###         sample   parsES$
 parsE$rIR <- f1(as.vector(MAPE$parametersMAP[1]))
-parsE$rOD <- f2(as.vector(MAPE$parametersMAP[2])) #parsE$rODa
-parsE$rIH <- f3(as.vector(MAPE$parametersMAP[3]))
+parsE$rIH <- f2(as.vector(MAPE$parametersMAP[2]))
+parsE$rOD <- f3(as.vector(MAPE$parametersMAP[3])) #parsE$rODa
 parsE$pE0 <- f4(as.vector(MAPE$parametersMAP[4]))
 hME_0     <- f5(as.vector(MAPE$parametersMAP[5]))
 hME_1     <- f6(as.vector(MAPE$parametersMAP[6]))
 hRE_0     <- f7(as.vector(MAPE$parametersMAP[7]))
 hRE_1     <- f8(as.vector(MAPE$parametersMAP[8]))
-dME_0     <- f9(as.vector(MAPE$parametersMAP[9]))
-dME_1     <- f10(as.vector(MAPE$parametersMAP[10]))
-dRE_0     <- f11(as.vector(MAPE$parametersMAP[11]))
-dRE_1     <- f12(as.vector(MAPE$parametersMAP[12]))
-#parsE$ad_0<- f9(as.vector(MAPE$parametersMAP[9]))
-#parsE$ad_1<- f10(as.vector(MAPE$parametersMAP[10]))
+#dME_0     <- f9(as.vector(MAPE$parametersMAP[9]))
+#dME_1     <- f10(as.vector(MAPE$parametersMAP[10]))
+#dRE_0     <- f11(as.vector(MAPE$parametersMAP[11]))
+#dRE_1     <- f12(as.vector(MAPE$parametersMAP[12]))
+parsE$ad_0<- f9(as.vector(MAPE$parametersMAP[9]))
+parsE$ad_1<- f10(as.vector(MAPE$parametersMAP[10]))
 #yR0E_0    <- f11(as.vector(MAPE$parametersMAP[11]))
 #yR0E_1    <- f12(as.vector(MAPE$parametersMAP[12]))
+parsE$R0  <- f11(as.vector(MAPE$parametersMAP[11]))
+parsE$kDH <- f12(as.vector(MAPE$parametersMAP[12]))
 yM1E_0    <- f13(as.vector(MAPE$parametersMAP[13]))
 yM1E_1    <- f14(as.vector(MAPE$parametersMAP[14]))
 yR1E_0    <- f15(as.vector(MAPE$parametersMAP[15]))
@@ -842,8 +855,13 @@ yR1E_1    <- f16(as.vector(MAPE$parametersMAP[16]))
 #parsE$rODb= parsE$rODa*pars$rODboa
 parsE$h_0 = hME_0*exp((age-age9)*hRE_0)
 parsE$h_1 = hME_1*exp((age-age9)*hRE_1)
-parsE$d_0 = dME_0*exp((age-age9)*dRE_0) #2*parsE$h_0*pars$m_0
-parsE$d_1 = dME_1*exp((age-age9)*dRE_1) #2*parsE$h_1*pars$m_1
+#parsE$d_0 = dME_0*exp((age-age9)*dRE_0) #2*parsE$h_0*pars$m_0
+#parsE$d_1 = dME_1*exp((age-age9)*dRE_1) #2*parsE$h_1*pars$m_1
+parsE$da_0 = parsE$h_0*pars$ma_0
+parsE$da_1 = parsE$h_1*pars$ma_1
+parsE$db_0 = parsE$h_0*pars$mb_0
+parsE$db_1 = parsE$h_1*pars$mb_1
+
 parsE$y_0[3:9] = yM1E_0*exp((age[3:9]-age9)*yR1E_0)
 parsE$y_1[3:9] = yM1E_1*exp((age[3:9]-age9)*yR1E_1)
 parsE$Ea0   = parsE$Na0*parsE$pE0
@@ -891,11 +909,11 @@ psample = getSample(out, parametersOnly = T, start=StartSampChainPostBurn, end= 
 #dim(psample) #= c(nsample, npar)
 #
 # Parameter stats
-Pname=c("rIR  ",  "rOD  ",  "rIH  ", "pE0  ",
+Pname=c("rIR  ",  "rIH  ",  "rOD  ", "pE0  ",
         "hM_0 ",  "hM_1 ",  "hR_0 ", "hR_1 ",  
-        "dM_0 ",  "dM_1 ",  "dR_0 ", "dR_1 ",
+        "ad_0 ",  "ad_1 ",  "R0 ",   "kDO ",
         "yM1_0",  "yM1_1",  "yR1_0", "yR1_1")
-Pnamei=c("1/rIR", "1/rOD ",  "1/rIH", Pname[4:npar])
+Pnamei=c("1/rIR", "1/rIH",  "1/rOD",  Pname[4:npar])
 
 ##Full sample quantiles
 Pq=matrix(0,npar,3)
@@ -949,19 +967,21 @@ dMort     = rep(0,times=nsample)
 ###         sample   parsES$
 for(i in 1:nsample){
   parsES$rIR <- f1(as.vector(psample[i,1])) 
-  parsES$rOD <- f2(as.vector(psample[i,2])) #parsES$rODa
-  parsES$rIH <- f3(as.vector(psample[i,3]))
+  parsES$rIH <- f2(as.vector(psample[i,2]))
+  parsES$rOD <- f3(as.vector(psample[i,3])) #parsES$rODa
   parsES$pE0 <- f4(as.vector(psample[i,4]))
   hMES_0     <- f5(as.vector(psample[i,5]))
   hMES_1     <- f6(as.vector(psample[i,6]))
   hRES_0     <- f7(as.vector(psample[i,7]))
   hRES_1     <- f8(as.vector(psample[i,8]))
-  dMES_0     <- f9(as.vector(psample[i,9]))
-  dMES_1     <- f10(as.vector(psample[i,10]))
-  dRES_0     <- f11(as.vector(psample[i,11]))
-  dRES_1     <- f12(as.vector(psample[i,12]))
-  #parsES$ad_0<- f9(as.vector(psample[i,9]))
-  #parsES$ad_1<- f10(as.vector(psample[i,10]))
+  #dMES_0     <- f9(as.vector(psample[i,9]))
+  #dMES_1     <- f10(as.vector(psample[i,10]))
+  #dRES_0     <- f11(as.vector(psample[i,11]))
+  #dRES_1     <- f12(as.vector(psample[i,12]))
+  parsES$ad_0<- f9(as.vector(psample[i,9]))
+  parsES$ad_1<- f10(as.vector(psample[i,10]))
+  parsES$R0  <- f11(as.vector(psample[i,11]))
+  parsES$kDH <- f12(as.vector(psample[i,12]))
   #yR0ES_0    <- f11(as.vector(psample[i,11]))
   #yR0ES_1    <- f12(as.vector(psample[i,12]))
   yM1ES_0    <- f13(as.vector(psample[i,13]))
@@ -978,8 +998,12 @@ for(i in 1:nsample){
   #parsES$rODb = parsES$rODa*pars$rODboa
   parsES$h_0  = hMES_0*exp((age-age9)*hRES_0)
   parsES$h_1  = hMES_1*exp((age-age9)*hRES_1)
-  parsES$d_0  = dMES_0*exp((age-age9)*dRES_0) #2*parsES$h_0*pars$m_0
-  parsES$d_1  = dMES_1*exp((age-age9)*dRES_1) #2*parsES$h_1*pars$m_1
+  #parsES$d_0  = dMES_0*exp((age-age9)*dRES_0) #2*parsES$h_0*pars$m_0
+  #parsES$d_1  = dMES_1*exp((age-age9)*dRES_1) #2*parsES$h_1*pars$m_1
+  parsES$da_0 = parsES$h_0*pars$ma_0
+  parsES$da_1 = parsES$h_1*pars$ma_1
+  parsES$db_0 = parsES$h_0*pars$mb_0
+  parsES$db_1 = parsES$h_1*pars$mb_1
   parsES$y_0[3:9] = yM1ES_0*exp((age[3:9]-age9)*yR1ES_0)
   parsES$y_1[3:9] = yM1ES_1*exp((age[3:9]-age9)*yR1ES_1)
   parsES$Ea0  = parsES$Na0*parsES$pE0
@@ -1108,19 +1132,21 @@ R0weeksample = matrix(0,ntimes,nsampleR0)
 R0sample     = rep(0,times=nsampleR0) #in case R0 is estimated
 for(i in 1:nsampleR0){
   parsES$rIR <- f1(as.vector(psample[i,1])) 
-  parsES$rOD <- f2(as.vector(psample[i,2])) #parsES$rODa
-  parsES$rIH <- f3(as.vector(psample[i,3]))
+  parsES$rIH <- f2(as.vector(psample[i,2]))
+  parsES$rOD <- f3(as.vector(psample[i,3])) #parsES$rODa
   parsES$pE0 <- f4(as.vector(psample[i,4]))
   hMES_0     <- f5(as.vector(psample[i,5]))
   hMES_1     <- f6(as.vector(psample[i,6]))
   hRES_0     <- f7(as.vector(psample[i,7]))
   hRES_1     <- f8(as.vector(psample[i,8]))
-  dMES_0     <- f9(as.vector(psample[i,9]))
-  dMES_1     <- f10(as.vector(psample[i,10]))
-  dRES_0     <- f11(as.vector(psample[i,11]))
-  dRES_1     <- f12(as.vector(psample[i,12]))
-  #parsES$ad_0<- f9(as.vector(psample[i,9]))
-  #parsES$ad_1<- f10(as.vector(psample[i,10]))
+  #dMES_0     <- f9(as.vector(psample[i,9]))
+  #dMES_1     <- f10(as.vector(psample[i,10]))
+  #dRES_0     <- f11(as.vector(psample[i,11]))
+  #dRES_1     <- f12(as.vector(psample[i,12]))
+  parsES$ad_0<- f9(as.vector(psample[i,9]))
+  parsES$ad_1<- f10(as.vector(psample[i,10]))
+  parsES$R0  <- f11(as.vector(psample[i,11]))
+  parsES$kDH <- f12(as.vector(psample[i,12]))
   #yR0ES_0    <- f11(as.vector(psample[i,11]))
   #yR0ES_1    <- f12(as.vector(psample[i,12]))
   yM1ES_0    <- f13(as.vector(psample[i,13]))
@@ -1137,8 +1163,12 @@ for(i in 1:nsampleR0){
   #parsES$rODb = parsES$rODa*pars$rODboa
   parsES$h_0  = hMES_0*exp((age-age9)*hRES_0)
   parsES$h_1  = hMES_1*exp((age-age9)*hRES_1)
-  parsES$d_0  = dMES_0*exp((age-age9)*dRES_0) #2*parsES$h_0*pars$m_0
-  parsES$d_1  = dMES_1*exp((age-age9)*dRES_1) #2*parsES$h_1*pars$m_1
+  #parsES$d_0  = dMES_0*exp((age-age9)*dRES_0) #2*parsES$h_0*pars$m_0
+  #parsES$d_1  = dMES_1*exp((age-age9)*dRES_1) #2*parsES$h_1*pars$m_1
+  parsES$da_0 = parsES$h_0*pars$ma_0
+  parsES$da_1 = parsES$h_1*pars$ma_1
+  parsES$db_0 = parsES$h_0*pars$mb_0
+  parsES$db_1 = parsES$h_1*pars$mb_1
   parsES$y_0[3:9]  = yM1ES_0*exp((age[3:9]-age9)*yR1ES_0) #pars$y = c(liny[1:2],expy[1:7])
   parsES$y_1[3:9]  = yM1ES_1*exp((age[3:9]-age9)*yR1ES_1)
   parsES$Ea0  = parsES$Na0*parsES$pE0
@@ -1189,8 +1219,9 @@ cat("\n")
 ## MAP and quantile estimates
 #print(paste0("sdH Fixed: ", round(parsE$sdH,   3),    ". Expected: ", round(  pars$sdH,     3))) #sdH
 print(paste0("kH  Fixed: ", round(parsE$kH,    3),    ". Expected: ", round(  pars$kH,      3))) #kH
-print(paste0("kDH,kDO fix:",round(parsE$kDH,   3),    ". Expected: ", round(  pars$kDH,     3))) #kD
-print(paste0("R0    fix: ", round(parsE$R0,    3),    ". Expected: ", round(  pars$R0,      3))) #R0
+#print(paste0("kDH,kDO fix:",round(parsE$kDH,   3),    ". Expected: ", round(  pars$kDH,     3))) #kD
+#print(paste0("kDH,kDO fix:",round(parsE$kDH,   3),    ". Expected: ", round(  pars$kDH,     3))) #kD
+#print(paste0("R0    fix: ", round(parsE$R0,    3),    ". Expected: ", round(  pars$R0,      3))) #R0
 print(paste0("fu    fix: ", round(parsE$fu,    3),    ". Expected: ", round(  pars$fu,      3))) #pE0 #fu #yA
 
 for(i in 1:npar){
@@ -1200,8 +1231,8 @@ for(i in 1:npar){
         ". Expected: ", round(Expect,3))) }
 print(paste0("beta dep: ",", MAP: ", round(parsE$beta,3),", Med: ", round(betasample95[2],3),", CI: [",round(betasample95[1],3),",",round(betasample95[3],3),"]",
         ". Expected: ", round(pars$beta,3)))
-print(paste0("R0 fixed: ",", MAP: ", round(parsE$R0,3),  ", Med: ", round(R0sample95[2],3),  ", CI: [",round(R0sample95[1],3),  ",",round(R0sample95[3],3),"]",
-        ". Expected: ", round(pars$R0,3)))
+#print(paste0("R0 fixed: ",", MAP: ", round(parsE$R0,3),  ", Med: ", round(R0sample95[2],3),  ", CI: [",round(R0sample95[1],3),  ",",round(R0sample95[3],3),"]",
+#        ". Expected: ", round(pars$R0,3)))
 print(paste0("E0   dep: ", round(sum(parsE$Ea0), 0), ". Expected: ", round(sum(pars$Na0*pars$pE0)) ))
 print(paste0("Estimated proportion deaths outside hospital = ", round(parsE$ad/(1+parsE$ad),3)))
 print(paste0("Ha0_sum - input: ", sum(pars$Ha0)))
@@ -1276,6 +1307,27 @@ plot(pars$d_1*pars$ad, ylim=c(0,1),ylab="d_1",xlab=""); lines(parsE$d_1*parsE$ad
 plot(pars$m_0, ylim=c(0,1),ylab="m_0",xlab="age group"); lines(parsE$m_0, col=2, lwd=2)
 plot(pars$m_1, ylim=c(0,1),ylab="m_1",xlab="age group"); lines(parsE$m_1, col=2, lwd=2)
 invisible(dev.off())
+
+#0 Probability-age plots - log-lin
+filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_plots_probs_log")
+svglite(paste0(filenamepath,".svg")); 
+par(mfrow = c(4,2))
+par(mar = c(4, 4, 1, 4))  #bottom, left, top, right
+#h
+eps=0.0001
+plot(log10(eps+pars$h_0), ylim=log(c(eps,1)),ylab="log10 h_0",xlab=""); lines(log10(eps+parsE$h_0), col=2, lwd=2)
+plot(log10(eps+pars$h_1), ylim=log(c(eps,1)),ylab="log10 h_1",xlab=""); lines(log10(eps+parsE$h_1), col=2, lwd=2)
+#y  
+plot(log10(eps+pars$y_0), ylim=log(c(eps,1)),ylab="log10 y_0",xlab=""); lines(log10(eps+parsE$y_0), col=2, lwd=2)
+plot(log10(eps+pars$y_1), ylim=log(c(eps,1)),ylab="log10 y_1",xlab=""); lines(log10(eps+parsE$y_1), col=2, lwd=2)
+#d
+plot(log10(eps+pars$d_0*pars$ad), ylim=log(c(eps,1)),ylab="log10 d_0",xlab=""); lines(log10(eps+parsE$d_0*parsE$ad), col=2, lwd=2)  #parsE$ad=1 if parsE$d estimated
+plot(log10(eps+pars$d_1*pars$ad), ylim=log(c(eps,1)),ylab="log10 d_1",xlab=""); lines(log10(eps+parsE$d_1*parsE$ad), col=2, lwd=2)  #parsE$ad=1 if parsE$d estimated
+#m
+plot(log10(eps+pars$m_0), ylim=log(c(eps,1)),ylab="log10 m_0",xlab="age group"); lines(log10(eps+parsE$m_0), col=2, lwd=2)
+plot(log10(eps+pars$m_1), ylim=log(c(eps,1)),ylab="log10 m_1",xlab="age group");  lines(log10(eps+parsE$m_1), col=2, lwd=2)
+invisible(dev.off())
+
 ##screen
 par(mfrow = c(4,2))
 par(mar = c(4, 4, 1, 4))  #bottom, left, top, right
@@ -1707,7 +1759,8 @@ redact2<-function(x){ x[which(x<8)]=4; return(x)}
     geom_line (aes(x=Date,  y = zsample05, color="95% CrI")) +
     labs(x = "", y = 'Hospitalisations',   color = "") + #Legend") + 
     scale_color_manual(values = colors) +
-    theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_0) #,
+    theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_0) +
+    scale_x_date(breaks= breaks, date_labels= date_labels) 
   #axis.title.y       = element_text(color = 1),
   #axis.title.y.right = element_text(color = 1) ,
   #axis.text          = element_text(size = 16),
@@ -1738,7 +1791,8 @@ redact2<-function(x){ x[which(x<8)]=4; return(x)}
     geom_line (aes(x=Date,  y = wsample05, color="95% CrI")) +
     labs(x = "", y = 'Deaths in hospital', color = "") + #Legend") + 
     scale_color_manual(values = colors) +
-    theme(axis.title = element_text(size = 12, face = "bold")) #+  ggtitle(Title_0)
+    theme(axis.title = element_text(size = 12, face = "bold")) +#+  ggtitle(Title_0)
+    scale_x_date(breaks= breaks, date_labels= date_labels) 
   
   pw_1 <-ggplot(dwsample_1, aes(x=Date)) + 
     geom_ribbon(aes(ymin = wsample05, ymax = wsample95), fill = "grey70") +
@@ -1747,7 +1801,8 @@ redact2<-function(x){ x[which(x<8)]=4; return(x)}
     geom_line (aes(x=Date,  y = wsample05, color="95% CrI")) +
     labs(x = "", y = 'Deaths in hospital', color = "") + #Legend") + 
     scale_color_manual(values = colors) +
-    theme(axis.title = element_text(size = 12, face = "bold")) #+  ggtitle(Title_1)
+    theme(axis.title = element_text(size = 12, face = "bold")) + #+  ggtitle(Title_1)
+    scale_x_date(breaks= breaks, date_labels= date_labels) 
   #DO
   vdw_0_r5 = redact2(datD$vdw_0)  #redact
   vdw_0_r5 = r5(vdw_0_r5)            #round
@@ -1765,7 +1820,8 @@ redact2<-function(x){ x[which(x<8)]=4; return(x)}
     geom_line (aes(x=Date,  y = vsample05, color="95% CrI")) +
     labs(x = '', y = 'Deaths outside hospital', color = "") + 
     scale_color_manual(values = colors) +
-    theme(axis.title = element_text(size = 12, face = "bold")) #+  ggtitle(Title_0)
+    theme(axis.title = element_text(size = 12, face = "bold")) + #+  ggtitle(Title_0)
+    scale_x_date(breaks= breaks, date_labels= date_labels)
   
   pv_1 <-ggplot(dvsample_1, aes(x=Date)) + 
     geom_ribbon(aes(ymin = vsample05, ymax = vsample95), fill = "grey70") +
@@ -1774,7 +1830,8 @@ redact2<-function(x){ x[which(x<8)]=4; return(x)}
     geom_line (aes(x=Date,  y = vsample05, color="95% CrI")) +
     labs(x = '', y = 'Deaths outside hospital', color = "") + 
     scale_color_manual(values = colors) +
-    theme(axis.title = element_text(size = 12, face = "bold")) #+  ggtitle(Title_1)
+    theme(axis.title = element_text(size = 12, face = "bold")) +#+  ggtitle(Title_1)
+    scale_x_date(breaks= breaks, date_labels= date_labels) 
   
   gridExtra::grid.arrange(pz_0, pz_1, pw_0, pw_1, pv_0, pv_1, nrow = 3, ncol = 2)
   

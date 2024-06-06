@@ -22,7 +22,7 @@ ad   = pars$ad_0
 for (k in 1:9){ 
   h_k = pars$h_0[k]; 
   y_k = pars$y_0[k]; 
-  d_k = pars$d_0[k]*ad; 
+  d_k = pars$da_0[k]*ad; #a
   for (j in 1:9) {
       ngm1[j,k] = u[j]*cm1[j,k]*( y_k*( (1+fu*(rIO*d_k*orOD))/( rIR*(1-h_k-d_k) + rIH*(h_k) + rIO*(d_k) )) + fu*(1-y_k)/rUR) }}
 
