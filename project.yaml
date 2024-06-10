@@ -115,9 +115,9 @@ actions:
         txt022: output/modelling/J6_2period_NoP_Fit_summary_2.txt  
         svg031: output/modelling/J6_2period_NoP_Fit_MCMC_marginalPlot.svg
         svg131: output/modelling/J6_2period_NoP_Fit_MCMC_marginalTrace1_10jun24.svg
-        svg131: output/modelling/J6_2period_NoP_Fit_MCMC_marginalTrace2_10jun24.svg
-        svg131: output/modelling/J6_2period_NoP_Fit_MCMC_marginalTrace3_10jun24.svg
-        svg131: output/modelling/J6_2period_NoP_Fit_MCMC_marginalTrace4_10jun24.svg
+        svg132: output/modelling/J6_2period_NoP_Fit_MCMC_marginalTrace2_10jun24.svg
+        svg133: output/modelling/J6_2period_NoP_Fit_MCMC_marginalTrace3_10jun24.svg
+        svg134: output/modelling/J6_2period_NoP_Fit_MCMC_marginalTrace4_10jun24.svg
         
         #pdf031: output/modelling/J6_2period_NoP_Fit_MCMC_marginalPlot.pdf
         #svg032: output/modelling/J6_2period_NoP_Fit_MCMC_plotout_lastPage.svg
