@@ -49,86 +49,86 @@ actions:
       moderately_sensitive:
         #HDdata.R - only run if iplatform>0
         #H
-        csv010: output/HDsynthesis/J6_2period_NoP_Hdata_all_long.csv       
-        #csv011: output/HDsynthesis/J6_2period_NoP_Hdata_by_age.csv
-        #csv012: output/HDsynthesis/J6_2period_NoP_Hdata_by_age_long.csv
-        #csv013: output/HDsynthesis/J6_2period_NoP_Hdata_by_age_merged_long.csv
-        #csv014: output/HDsynthesis/J6_2period_NoP_Hdata_by_shi.csv
-        csv015: output/HDsynthesis/J6_2period_NoP_Hdata_by_shi_long.csv
-        #csv016: output/HDsynthesis/J6_2period_NoP_Hdata_s_by_age.csv
-        csv017: output/HDsynthesis/J6_2period_NoP_Hdata_s_by_age_long.csv
+        csv010: output/HDsynthesis/J6_2periodNoP_Hdata_all_long.csv       
+        #csv011: output/HDsynthesis/J6_2periodNoP_Hdata_by_age.csv
+        #csv012: output/HDsynthesis/J6_2periodNoP_Hdata_by_age_long.csv
+        #csv013: output/HDsynthesis/J6_2periodNoP_Hdata_by_age_merged_long.csv
+        #csv014: output/HDsynthesis/J6_2periodNoP_Hdata_by_shi.csv
+        csv015: output/HDsynthesis/J6_2periodNoP_Hdata_by_shi_long.csv
+        #csv016: output/HDsynthesis/J6_2periodNoP_Hdata_s_by_age.csv
+        csv017: output/HDsynthesis/J6_2periodNoP_Hdata_s_by_age_long.csv
         #DH
-        csv020: output/HDsynthesis/J6_2period_NoP_DHdata_all_long.csv
-        #csv021: output/HDsynthesis/J6_2period_NoP_DHdata_by_age.csv
-        #csv022: output/HDsynthesis/J6_2period_NoP_DHdata_by_age_long.csv        
-        #csv023: output/HDsynthesis/J6_2period_NoP_DHdata_by_age_merged_long.csv
-        #csv024: output/HDsynthesis/J6_2period_NoP_DHdata_by_shi.csv
-        csv025: output/HDsynthesis/J6_2period_NoP_DHdata_by_shi_long.csv
-        #csv026: output/HDsynthesis/J6_2period_NoP_DHdata_s_by_age.csv
-        csv027: output/HDsynthesis/J6_2period_NoP_DHdata_s_by_age_long.csv
+        csv020: output/HDsynthesis/J6_2periodNoP_DHdata_all_long.csv
+        #csv021: output/HDsynthesis/J6_2periodNoP_DHdata_by_age.csv
+        #csv022: output/HDsynthesis/J6_2periodNoP_DHdata_by_age_long.csv        
+        #csv023: output/HDsynthesis/J6_2periodNoP_DHdata_by_age_merged_long.csv
+        #csv024: output/HDsynthesis/J6_2periodNoP_DHdata_by_shi.csv
+        csv025: output/HDsynthesis/J6_2periodNoP_DHdata_by_shi_long.csv
+        #csv026: output/HDsynthesis/J6_2periodNoP_DHdata_s_by_age.csv
+        csv027: output/HDsynthesis/J6_2periodNoP_DHdata_s_by_age_long.csv
         #DO
-        csv030: output/HDsynthesis/J6_2period_NoP_DOdata_all_long.csv
-        #csv031: output/HDsynthesis/J6_2period_NoP_DOdata_by_age.csv
-        #csv032: output/HDsynthesis/J6_2period_NoP_DOdata_by_age_long.csv
-        #csv033: output/HDsynthesis/J6_2period_NoP_DOdata_by_age_merged_long.csv
-        #csv034: output/HDsynthesis/J6_2period_NoP_DOdata_by_shi.csv
-        csv035: output/HDsynthesis/J6_2period_NoP_DOdata_by_shi_long.csv
-        #csv036: output/HDsynthesis/J6_2period_NoP_DOdata_s_by_age.csv
-        csv037: output/HDsynthesis/J6_2period_NoP_DOdata_s_by_age_long.csv
+        csv030: output/HDsynthesis/J6_2periodNoP_DOdata_all_long.csv
+        #csv031: output/HDsynthesis/J6_2periodNoP_DOdata_by_age.csv
+        #csv032: output/HDsynthesis/J6_2periodNoP_DOdata_by_age_long.csv
+        #csv033: output/HDsynthesis/J6_2periodNoP_DOdata_by_age_merged_long.csv
+        #csv034: output/HDsynthesis/J6_2periodNoP_DOdata_by_shi.csv
+        csv035: output/HDsynthesis/J6_2periodNoP_DOdata_by_shi_long.csv
+        #csv036: output/HDsynthesis/J6_2periodNoP_DOdata_s_by_age.csv
+        csv037: output/HDsynthesis/J6_2periodNoP_DOdata_s_by_age_long.csv
         #REDACTION
-        csv701: output/HDsynthesis/J6_2period_NoP_Hdata_all_UNDERLIE.csv
-        csv702: output/HDsynthesis/J6_2period_NoP_Hdata_all_REDACTED.csv
-        csv703: output/HDsynthesis/J6_2period_NoP_Hdata_by_shi_UNDERLIE.csv
-        csv704: output/HDsynthesis/J6_2period_NoP_Hdata_by_shi_REDACTED.csv
-        csv705: output/HDsynthesis/J6_2period_NoP_Hdata_s_by_age_UNDERLIE.csv 
-        csv706: output/HDsynthesis/J6_2period_NoP_Hdata_s_by_age_REDACTED.csv
+        csv701: output/HDsynthesis/J6_2periodNoP_Hdata_all_UNDERLIE.csv
+        csv702: output/HDsynthesis/J6_2periodNoP_Hdata_all_REDACTED.csv
+        csv703: output/HDsynthesis/J6_2periodNoP_Hdata_by_shi_UNDERLIE.csv
+        csv704: output/HDsynthesis/J6_2periodNoP_Hdata_by_shi_REDACTED.csv
+        csv705: output/HDsynthesis/J6_2periodNoP_Hdata_s_by_age_UNDERLIE.csv 
+        csv706: output/HDsynthesis/J6_2periodNoP_Hdata_s_by_age_REDACTED.csv
         #
-        csv711: output/HDsynthesis/J6_2period_NoP_DHdata_all_UNDERLIE.csv
-        csv712: output/HDsynthesis/J6_2period_NoP_DHdata_all_REDACTED.csv
-        csv713: output/HDsynthesis/J6_2period_NoP_DHdata_by_shi_UNDERLIE.csv
-        csv714: output/HDsynthesis/J6_2period_NoP_DHdata_by_shi_REDACTED.csv
-        csv715: output/HDsynthesis/J6_2period_NoP_DHdata_s_by_age_UNDERLIE.csv
-        csv716: output/HDsynthesis/J6_2period_NoP_DHdata_s_by_age_REDACTED.csv
+        csv711: output/HDsynthesis/J6_2periodNoP_DHdata_all_UNDERLIE.csv
+        csv712: output/HDsynthesis/J6_2periodNoP_DHdata_all_REDACTED.csv
+        csv713: output/HDsynthesis/J6_2periodNoP_DHdata_by_shi_UNDERLIE.csv
+        csv714: output/HDsynthesis/J6_2periodNoP_DHdata_by_shi_REDACTED.csv
+        csv715: output/HDsynthesis/J6_2periodNoP_DHdata_s_by_age_UNDERLIE.csv
+        csv716: output/HDsynthesis/J6_2periodNoP_DHdata_s_by_age_REDACTED.csv
         #        
-        csv721: output/HDsynthesis/J6_2period_NoP_DOdata_all_REDACTED.csv
-        csv722: output/HDsynthesis/J6_2period_NoP_DOdata_all_UNDERLIE.csv
-        csv723: output/HDsynthesis/J6_2period_NoP_DOdata_by_shi_REDACTED.csv
-        csv724: output/HDsynthesis/J6_2period_NoP_DOdata_by_shi_UNDERLIE.csv 
-        csv725: output/HDsynthesis/J6_2period_NoP_DOdata_s_by_age_UNDERLIE.csv
-        csv726: output/HDsynthesis/J6_2period_NoP_DOdata_s_by_age_REDACTED.csv
+        csv721: output/HDsynthesis/J6_2periodNoP_DOdata_all_REDACTED.csv
+        csv722: output/HDsynthesis/J6_2periodNoP_DOdata_all_UNDERLIE.csv
+        csv723: output/HDsynthesis/J6_2periodNoP_DOdata_by_shi_REDACTED.csv
+        csv724: output/HDsynthesis/J6_2periodNoP_DOdata_by_shi_UNDERLIE.csv 
+        csv725: output/HDsynthesis/J6_2periodNoP_DOdata_s_by_age_UNDERLIE.csv
+        csv726: output/HDsynthesis/J6_2periodNoP_DOdata_s_by_age_REDACTED.csv
         #contacts
-        txt010: output/modelling/J6_2period_NoP_Contact_matrix_year-start-27Jan20_stats.txt
+        txt010: output/modelling/J6_2periodNoP_Contact_matrix_year-start-27Jan20_stats.txt
         #R0
-        csv040: output/modelling/J6_2period_NoP_Simul_R0_by_week.csv
-        svg010: output/modelling/J6_2period_NoP_Simul_R0_by_week.csv.svg
+        csv040: output/modelling/J6_2periodNoP_Simul_R0_by_week.csv
+        svg010: output/modelling/J6_2periodNoP_Simul_R0_by_week.csv.svg
         #simulation - only run if iplatform==0
-        #svg011: output/modelling/J6_2period_NoP_Simul_Infected_and_R0.pdf_1-3.svg
-        #svg012: output/modelling/J6_2period_NoP_Simul_Infected_and_R0.pdf_4-6.svg
-        #txt020: output/modelling/J6_2period_NoP_Simul_run.txt
+        #svg011: output/modelling/J6_2periodNoP_Simul_Infected_and_R0.pdf_1-3.svg
+        #svg012: output/modelling/J6_2periodNoP_Simul_Infected_and_R0.pdf_4-6.svg
+        #txt020: output/modelling/J6_2periodNoP_Simul_run.txt
         #fit
-        csv901: output/modelling/J6_2period_NoP_Fit_MCMC_mcmcChain1.csv
-        csv902: output/modelling/J6_2period_NoP_Fit_MCMC_mcmcChain2.csv
-        csv903: output/modelling/J6_2period_NoP_Fit_MCMC_mcmcChain3.csv
+        csv901: output/modelling/J6_2periodNoP_Fit_MCMC_mcmcChain1.csv
+        csv902: output/modelling/J6_2periodNoP_Fit_MCMC_mcmcChain2.csv
+        csv903: output/modelling/J6_2periodNoP_Fit_MCMC_mcmcChain3.csv
         #txt000: output/modelling/screen.txt
-        html01: output/modelling/J6_2period_NoP_Main_Fit_Report.html
-        txt021: output/modelling/J6_2period_NoP_Fit_summary_1.txt
-        txt022: output/modelling/J6_2period_NoP_Fit_summary_2.txt  
-        svg031: output/modelling/J6_2period_NoP_Fit_MCMC_marginalPlot.svg
-        svg131: output/modelling/J6_2period_NoP_Fit_MCMC_marginalTrace1_10jun24.svg
-        svg132: output/modelling/J6_2period_NoP_Fit_MCMC_marginalTrace2_10jun24.svg
-        svg133: output/modelling/J6_2period_NoP_Fit_MCMC_marginalTrace3_10jun24.svg
-        svg134: output/modelling/J6_2period_NoP_Fit_MCMC_marginalTrace4_10jun24.svg
+        html01: output/modelling/J6_2periodNoP_Main_Fit_Report.html
+        txt021: output/modelling/J6_2periodNoP_Fit_summary_1.txt
+        txt022: output/modelling/J6_2periodNoP_Fit_summary_2.txt  
+        svg031: output/modelling/J6_2periodNoP_Fit_MCMC_marginalPlot.svg
+        svg131: output/modelling/J6_2periodNoP_Fit_MCMC_marginalTrace1_10jun24.svg
+        svg132: output/modelling/J6_2periodNoP_Fit_MCMC_marginalTrace2_10jun24.svg
+        svg133: output/modelling/J6_2periodNoP_Fit_MCMC_marginalTrace3_10jun24.svg
+        svg134: output/modelling/J6_2periodNoP_Fit_MCMC_marginalTrace4_10jun24.svg
         
-        #pdf031: output/modelling/J6_2period_NoP_Fit_MCMC_marginalPlot.pdf
-        #svg032: output/modelling/J6_2period_NoP_Fit_MCMC_plotout_lastPage.svg
-        svg033: output/modelling/J6_2period_NoP_Fit_MCMC_correlationPlot.svg
-        svg034: output/modelling/J6_2period_NoP_Fit_MCMC_Overall.svg
-        svg035: output/modelling/J6_2period_NoP_Fit_MCMC_PosteriorSample.svg
-        svg095: output/modelling/J6_2period_NoP_Fit_MCMC_PosteriorSample_rounded.svg
-        svg037: output/modelling/J6_2period_NoP_Fit_MCMC_PosteriorSample_Prev_R0.svg
-        svg036: output/modelling/J6_2period_NoP_Fit_MCMC_AgeProfiles.svg
-        svg096: output/modelling/J6_2period_NoP_Fit_MCMC_AgeProfiles_rounded.svg
-        svg038: output/modelling/J6_2period_NoP_Fit_MCMC_plots_probs.svg
+        #pdf031: output/modelling/J6_2periodNoP_Fit_MCMC_marginalPlot.pdf
+        #svg032: output/modelling/J6_2periodNoP_Fit_MCMC_plotout_lastPage.svg
+        svg033: output/modelling/J6_2periodNoP_Fit_MCMC_correlationPlot.svg
+        svg034: output/modelling/J6_2periodNoP_Fit_MCMC_Overall.svg
+        svg035: output/modelling/J6_2periodNoP_Fit_MCMC_PosteriorSample.svg
+        svg095: output/modelling/J6_2periodNoP_Fit_MCMC_PosteriorSample_rounded.svg
+        svg037: output/modelling/J6_2periodNoP_Fit_MCMC_PosteriorSample_Prev_R0.svg
+        svg036: output/modelling/J6_2periodNoP_Fit_MCMC_AgeProfiles.svg
+        svg096: output/modelling/J6_2periodNoP_Fit_MCMC_AgeProfiles_rounded.svg
+        svg038: output/modelling/J6_2periodNoP_Fit_MCMC_plots_probs.svg
  
   
   HD_data_questions:
