@@ -391,12 +391,12 @@ g9  <- function(par)   { gI(par)}    #ge(par)}    #I
 #ad_1  #dM_1  
 f10 <- function(theta) { fI(theta)}; #fe(theta)}; #I
 g10 <- function(par)   { gI(par)}    #ge(par)}
-#R0    #dR_0  #yR0_0
-f11 <- function(theta) { fe(theta)}; #I #e
-g11 <- function(par)   { ge(par)}
-#kDH   #dR_1  #yR0_1
-f12 <- function(theta) { fp(theta)}; #I #e
-g12 <- function(par)   { gp(par)}
+#dR_0  #R0    #yR0_0
+f11 <- function(theta) { fI(theta)}; #e #I 
+g11 <- function(par)   { gI(par)}
+#dR_1  #kDH   #yR0_1
+f12 <- function(theta) { fI(theta)}; #e #I 
+g12 <- function(par)   { gI(par)}
 #yM1_0
 f13 <- function(theta) { fI(theta)};  #e 
 g13 <- function(par)   { gI(par)}
@@ -473,16 +473,16 @@ LogLikelihood <- function(theta){
   hM_1=      f6(theta[6])
   hR_0=      f7(theta[7])
   hR_1=      f8(theta[8])
-  #dM_0=      f9(theta[9])
-  #dM_1=      f10(theta[10])
-  #dR_0=      f11(theta[11])
-  #dR_1=      f12(theta[12])
-  pars$ad_0= f9(theta[9])  
-  pars$ad_1= f10(theta[10]) 
+  dM_0=      f9(theta[9])
+  dM_1=      f10(theta[10])
+  dR_0=      f11(theta[11])
+  dR_1=      f12(theta[12])
+  #pars$ad_0= f9(theta[9])  
+  #pars$ad_1= f10(theta[10]) 
   #yR0_0=     f11(theta[11]) 
   #yR0_1=     f12(theta[12])
-  pars$R0  = f11(theta[11])
-  pars$kDH = f12(theta[12])
+  #pars$R0  = f11(theta[11])
+  #pars$kDH = f12(theta[12])
   yM1_0=     f13(theta[13])
   yM1_1=     f14(theta[14])
   yR1_0=     f15(theta[15])
@@ -500,12 +500,12 @@ LogLikelihood <- function(theta){
   #pars$rODb = pars$rODa*pars$rODboa
   pars$h_0 = hM_0*exp((age-age9)*hR_0)
   pars$h_1 = hM_1*exp((age-age9)*hR_1)
-  #pars$d_0 = dM_0*exp((age-age9)*dR_0) #0.2*pars$h_0*pars$m_0  *pars$ad (default=1)
-  #pars$d_1 = dM_1*exp((age-age9)*dR_0) #0.2*pars$h_1*pars$m_1  *pars$ad (default=1)
-  pars$da_0 = pars$h_0*pars$ma_0
-  pars$da_1 = pars$h_1*pars$ma_1
-  pars$db_0 = pars$h_0*pars$mb_0
-  pars$db_1 = pars$h_1*pars$mb_1
+  pars$d_0 = dM_0*exp((age-age9)*dR_0) #0.2*pars$h_0*pars$m_0  *pars$ad (default=1)
+  pars$d_1 = dM_1*exp((age-age9)*dR_0) #0.2*pars$h_1*pars$m_1  *pars$ad (default=1)
+  #pars$da_0 = pars$h_0*pars$ma_0
+  #pars$da_1 = pars$h_1*pars$ma_1
+  #pars$db_0 = pars$h_0*pars$mb_0
+  #pars$db_1 = pars$h_1*pars$mb_1
   pars$y_0[3:9] = yM1_0*exp((age[3:9]-age9)*yR1_0)
   pars$y_1[3:9] = yM1_1*exp((age[3:9]-age9)*yR1_1)
   pars$Ea0   = pars$Na0*pars$pE0
@@ -721,9 +721,9 @@ LogLikelihood <- function(theta){
    sum(  dnbinom(x = vd8w_1, size = kDO,        mu   = MeanDO8_1,  log = T)) +
    sum(  dnbinom(x = vd9w_1, size = kDO,        mu   = MeanDO9_1,  log = T))
   
- ll = ll_0 + ll_1 +
+ ll = ll_0 + ll_1 #+
  ###Prevalence
-    0.25*sum(  dnorm(x = posi_data_perc*posi_d_to_m, sd = posi_sd_percT*posi_d_to_m, mean = MeanPosi_perc, log = T))
+    #0.25*sum(  dnorm(x = posi_data_perc*posi_d_to_m, sd = posi_sd_percT*posi_d_to_m, mean = MeanPosi_perc, log = T))
 
     return(ll)
 } #Likelihood
@@ -735,13 +735,13 @@ if (pset$iplatform==2){niter=200000} #150000} #120000}
 
         #1/rIR,     1/rIH,       1/rOD,       pE0,          hM,                         hR,                
 LOWER = c(tMin,     tMin2,       tMin2,       g4(pE0Min),   g5(hMMin),    g6(hMMin),    g7(hRMin),    g8(hRMin),
-        #ad,                     R0,          kDH           yM1,                        yR1,
-        g9(adMin),  g10(adMin),  g11(R0Min),  f12(g12(pkMin)),   g13(yM1Min),  g14(yM1Min),  g15(yR1Min),  g16(yR1Min));
+        #dM,                     dR,                        yM1,                        yR1,
+        g9(hMMin),  g10(hMMin),  g11(hRMin),  g12(hRMin),   g13(yM1Min),  g14(yM1Min),  g15(yR1Min),  g16(yR1Min));
 
-        #1/rIR,     1/rIH,       1/rOD,       pE0,           hM,                         hR,                
+        #1/rIR,     1/rIH,       1/rOD,       pE0,          hM,                         hR,                
 UPPER = c(tMax,     tMax2,       tMax2,       g4(pE0Max),   g5(hMMax),    g6(hMMax),    g7(hRMax),    g8(hRMax),
-        #ad,                     R0           kDH,                        yM1,                       yR1,
-        g9(adMax),  g10(adMax),  g11(R0Max),  f12(g12(pkMax)),   g13(yM1Max),  g14(yM1Max),  g15(yR1Max),  g16(yR1Max));
+        #dM,                     dR                         yM1,                        yR1,
+        g9(hMMax),  g10(hMMax),  g11(hRMax),  g12(hRMax),   g13(yM1Max),  g14(yM1Max),  g15(yR1Max),  g16(yR1Max));
 
 ######### parameters_J6_24apr24_rev
 hMbest_0= pars$hM_0 #0.3796 #0.3068 #0.4755 #0.3567 #pars$h[9]=0.4755
@@ -759,19 +759,19 @@ yMbest_1= pars$yM1_1 #0.1738 #0.1609 #0.69   #0.7689
 yRbest_0= pars$yR1_0 #0.0105 #0.016  #0.019
 yRbest_1= pars$yR1_1 #0.0151 #0.0115 #0.019
 
-adbest_0= 0.2 #pars$ad_0
-adbest_1= 0.2 #pars$ad_1
-R0best  = pars$R0
-kDHbest = pars$kDH
+#adbest_0= 0.2 #pars$ad_0
+#adbest_1= 0.2 #pars$ad_1
+#R0best  = pars$R0
+#kDHbest = pars$kDH
   
 BEST0 = c(1/pars$rIR, 1/pars$rIH, 1/pars$rOD, pars$pE0, #1/pars$rODa
          hMbest_0, hMbest_1, hRbest_0, hRbest_1,
-         adbest_0, adbest_1, R0best,   kDHbest,         #dMbest_0, dMbest_1, dRbest_0, dRbest_1, 
+         dMbest_0, dMbest_1, dRbest_0, dRbest_1, # adbest_0, adbest_1, R0best,   kDHbest,         # 
          yMbest_0, yMbest_1, yRbest_0, yRbest_1)
 
 BEST = c( g1(pars$rIR),  g2(pars$rIH),  g3(pars$rOD),  g4(pars$pE0),  #g3(pars$rODa) #currently: g() only affects par 4
           g5(hMbest_0),  g6(hMbest_1),  g7(hRbest_0),  g8(hRbest_1),
-          g9(adbest_0), g10(adbest_1), g11(R0best),   g12(kDHbest),  #g9(dMbest_0), g10(dMbest_1), g11(dRbest_0), g12(dRbest_1), 
+          g9(dMbest_0), g10(dMbest_1), g11(dRbest_0), g12(dRbest_1),  #g9(adbest_0), g10(adbest_1), g11(R0best),   g12(kDHbest),  # 
          g13(yMbest_0), g14(yMbest_1), g15(yRbest_0), g16(yRbest_1))
          
 #Uniform priors
@@ -782,7 +782,7 @@ BEST = c( g1(pars$rIR),  g2(pars$rIH),  g3(pars$rOD),  g4(pars$pE0),  #g3(pars$r
 #Beta priors
   Burnin = round(niter/2)+1  #round(niter/4)+1 #+1 as "burnin" is the start of effective sample
   PRIOR <- createBetaPrior(4,4,lower = LOWER, upper = UPPER) #createBetaPrior(3,3,lower = LOWER, upper = UPPER
-  setup  = createBayesianSetup(likelihood=LogLikelihood, prior =PRIOR, best=BEST) #NULL) #parallel = T,
+  setup  = createBayesianSetup(likelihood=LogLikelihood, prior =PRIOR) #, best=BEST) #NULL) #parallel = T,
   settings = list (iterations = niter, burnin = Burnin, message=T) #F) 
 
 ## Bayesian sample
@@ -815,6 +815,36 @@ tout3 <- system.time(out3 <- runMCMC(bayesianSetup=setup, settings=settings) )
 }
 
 
+## SAVE MCMC chain objects for OC and for outside reconstruction
+filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_mcmcChain")
+for (i in 1:3) { #default: nchain=3
+  c=coda::as.mcmc(out$chain[[i]])
+  write.csv(data.frame(c), file=paste0(filenamepath,i,".csv")) 
+}
+
+## CHAIN diagnostics, split in 4-par sets
+npar = length(LOWER)
+
+#pdf filenamepathAll
+filenamepathAll = paste0(output_dir,"/",pset$File_fit_output0,"_All")
+if (pset$iplatform<2) {pdf(paste0(filenamepathAll,".pdf"))}
+
+#parname=paste0("p",1:npar)
+J=unique(ceiling((1:npar)/4))
+Ja=unique(4*(floor((1:npar-1)/4))+1) #npar external
+Jb=unique(4*(ceiling((1:npar)/4)))  #npar external
+out2=out
+
+filenamepath    = paste0(output_dir,"/",pset$File_fit_output0,"_marginalTrace")
+for (j in seq_along(J)){
+  for(ic in 1:3) {
+    out2$chain[[ic]] <- out$chain[[ic]][,c(Ja[j]:Jb[j])] }
+  plot(out2$chain); 
+  svg(paste0(filenamepath,j,".svg")); plot(out2$chain); dev.off() }
+#if (pset$iplatform<2) {dev.off()}; #dev.off()
+
+
+
 ## MAP Estimates  ##############################################################
 print("MAP..."); cat("\n")
 parsE     <- pars     #pars setup initially
@@ -831,16 +861,16 @@ hME_0     <- f5(as.vector(MAPE$parametersMAP[5]))
 hME_1     <- f6(as.vector(MAPE$parametersMAP[6]))
 hRE_0     <- f7(as.vector(MAPE$parametersMAP[7]))
 hRE_1     <- f8(as.vector(MAPE$parametersMAP[8]))
-#dME_0     <- f9(as.vector(MAPE$parametersMAP[9]))
-#dME_1     <- f10(as.vector(MAPE$parametersMAP[10]))
-#dRE_0     <- f11(as.vector(MAPE$parametersMAP[11]))
-#dRE_1     <- f12(as.vector(MAPE$parametersMAP[12]))
-parsE$ad_0<- f9(as.vector(MAPE$parametersMAP[9]))
-parsE$ad_1<- f10(as.vector(MAPE$parametersMAP[10]))
+dME_0     <- f9(as.vector(MAPE$parametersMAP[9]))
+dME_1     <- f10(as.vector(MAPE$parametersMAP[10]))
+dRE_0     <- f11(as.vector(MAPE$parametersMAP[11]))
+dRE_1     <- f12(as.vector(MAPE$parametersMAP[12]))
+#parsE$ad_0<- f9(as.vector(MAPE$parametersMAP[9]))
+#parsE$ad_1<- f10(as.vector(MAPE$parametersMAP[10]))
 #yR0E_0    <- f11(as.vector(MAPE$parametersMAP[11]))
 #yR0E_1    <- f12(as.vector(MAPE$parametersMAP[12]))
-parsE$R0  <- f11(as.vector(MAPE$parametersMAP[11]))
-parsE$kDH <- f12(as.vector(MAPE$parametersMAP[12]))
+#parsE$R0  <- f11(as.vector(MAPE$parametersMAP[11]))
+#parsE$kDH <- f12(as.vector(MAPE$parametersMAP[12]))
 yM1E_0    <- f13(as.vector(MAPE$parametersMAP[13]))
 yM1E_1    <- f14(as.vector(MAPE$parametersMAP[14]))
 yR1E_0    <- f15(as.vector(MAPE$parametersMAP[15]))
@@ -855,13 +885,12 @@ yR1E_1    <- f16(as.vector(MAPE$parametersMAP[16]))
 #parsE$rODb= parsE$rODa*pars$rODboa
 parsE$h_0 = hME_0*exp((age-age9)*hRE_0)
 parsE$h_1 = hME_1*exp((age-age9)*hRE_1)
-#parsE$d_0 = dME_0*exp((age-age9)*dRE_0) #2*parsE$h_0*pars$m_0
-#parsE$d_1 = dME_1*exp((age-age9)*dRE_1) #2*parsE$h_1*pars$m_1
-parsE$da_0 = parsE$h_0*pars$ma_0
-parsE$da_1 = parsE$h_1*pars$ma_1
-parsE$db_0 = parsE$h_0*pars$mb_0
-parsE$db_1 = parsE$h_1*pars$mb_1
-
+parsE$d_0 = dME_0*exp((age-age9)*dRE_0) #2*parsE$h_0*pars$m_0
+parsE$d_1 = dME_1*exp((age-age9)*dRE_1) #2*parsE$h_1*pars$m_1
+#parsE$da_0 = parsE$h_0*pars$ma_0
+#parsE$da_1 = parsE$h_1*pars$ma_1
+#parsE$db_0 = parsE$h_0*pars$mb_0
+#parsE$db_1 = parsE$h_1*pars$mb_1
 parsE$y_0[3:9] = yM1E_0*exp((age[3:9]-age9)*yR1E_0)
 parsE$y_1[3:9] = yM1E_1*exp((age[3:9]-age9)*yR1E_1)
 parsE$Ea0   = parsE$Na0*parsE$pE0
@@ -911,7 +940,7 @@ psample = getSample(out, parametersOnly = T, start=StartSampChainPostBurn, end= 
 # Parameter stats
 Pname=c("rIR  ",  "rIH  ",  "rOD  ", "pE0  ",
         "hM_0 ",  "hM_1 ",  "hR_0 ", "hR_1 ",  
-        "ad_0 ",  "ad_1 ",  "R0 ",   "kDO ",
+        "dM_0 ",  "dM_1 ",  "dR_0 ", "dR_1 ", #"ad_0 ",  "ad_1 ",  "R0 ",   "kDO ",
         "yM1_0",  "yM1_1",  "yR1_0", "yR1_1")
 Pnamei=c("1/rIR", "1/rIH",  "1/rOD",  Pname[4:npar])
 
@@ -974,14 +1003,14 @@ for(i in 1:nsample){
   hMES_1     <- f6(as.vector(psample[i,6]))
   hRES_0     <- f7(as.vector(psample[i,7]))
   hRES_1     <- f8(as.vector(psample[i,8]))
-  #dMES_0     <- f9(as.vector(psample[i,9]))
-  #dMES_1     <- f10(as.vector(psample[i,10]))
-  #dRES_0     <- f11(as.vector(psample[i,11]))
-  #dRES_1     <- f12(as.vector(psample[i,12]))
-  parsES$ad_0<- f9(as.vector(psample[i,9]))
-  parsES$ad_1<- f10(as.vector(psample[i,10]))
-  parsES$R0  <- f11(as.vector(psample[i,11]))
-  parsES$kDH <- f12(as.vector(psample[i,12]))
+  dMES_0     <- f9(as.vector(psample[i,9]))
+  dMES_1     <- f10(as.vector(psample[i,10]))
+  dRES_0     <- f11(as.vector(psample[i,11]))
+  dRES_1     <- f12(as.vector(psample[i,12]))
+  #parsES$ad_0<- f9(as.vector(psample[i,9]))
+  #parsES$ad_1<- f10(as.vector(psample[i,10]))
+  #parsES$R0  <- f11(as.vector(psample[i,11]))
+  #parsES$kDH <- f12(as.vector(psample[i,12]))
   #yR0ES_0    <- f11(as.vector(psample[i,11]))
   #yR0ES_1    <- f12(as.vector(psample[i,12]))
   yM1ES_0    <- f13(as.vector(psample[i,13]))
@@ -998,12 +1027,12 @@ for(i in 1:nsample){
   #parsES$rODb = parsES$rODa*pars$rODboa
   parsES$h_0  = hMES_0*exp((age-age9)*hRES_0)
   parsES$h_1  = hMES_1*exp((age-age9)*hRES_1)
-  #parsES$d_0  = dMES_0*exp((age-age9)*dRES_0) #2*parsES$h_0*pars$m_0
-  #parsES$d_1  = dMES_1*exp((age-age9)*dRES_1) #2*parsES$h_1*pars$m_1
-  parsES$da_0 = parsES$h_0*pars$ma_0
-  parsES$da_1 = parsES$h_1*pars$ma_1
-  parsES$db_0 = parsES$h_0*pars$mb_0
-  parsES$db_1 = parsES$h_1*pars$mb_1
+  parsES$d_0  = dMES_0*exp((age-age9)*dRES_0) #2*parsES$h_0*pars$m_0
+  parsES$d_1  = dMES_1*exp((age-age9)*dRES_1) #2*parsES$h_1*pars$m_1
+  #parsES$da_0 = parsES$h_0*pars$ma_0
+  #parsES$da_1 = parsES$h_1*pars$ma_1
+  #parsES$db_0 = parsES$h_0*pars$mb_0
+  #parsES$db_1 = parsES$h_1*pars$mb_1
   parsES$y_0[3:9] = yM1ES_0*exp((age[3:9]-age9)*yR1ES_0)
   parsES$y_1[3:9] = yM1ES_1*exp((age[3:9]-age9)*yR1ES_1)
   parsES$Ea0  = parsES$Na0*parsES$pE0
@@ -1139,14 +1168,14 @@ for(i in 1:nsampleR0){
   hMES_1     <- f6(as.vector(psample[i,6]))
   hRES_0     <- f7(as.vector(psample[i,7]))
   hRES_1     <- f8(as.vector(psample[i,8]))
-  #dMES_0     <- f9(as.vector(psample[i,9]))
-  #dMES_1     <- f10(as.vector(psample[i,10]))
-  #dRES_0     <- f11(as.vector(psample[i,11]))
-  #dRES_1     <- f12(as.vector(psample[i,12]))
-  parsES$ad_0<- f9(as.vector(psample[i,9]))
-  parsES$ad_1<- f10(as.vector(psample[i,10]))
-  parsES$R0  <- f11(as.vector(psample[i,11]))
-  parsES$kDH <- f12(as.vector(psample[i,12]))
+  dMES_0     <- f9(as.vector(psample[i,9]))
+  dMES_1     <- f10(as.vector(psample[i,10]))
+  dRES_0     <- f11(as.vector(psample[i,11]))
+  dRES_1     <- f12(as.vector(psample[i,12]))
+  #parsES$ad_0<- f9(as.vector(psample[i,9]))
+  #parsES$ad_1<- f10(as.vector(psample[i,10]))
+  #parsES$R0  <- f11(as.vector(psample[i,11]))
+  #parsES$kDH <- f12(as.vector(psample[i,12]))
   #yR0ES_0    <- f11(as.vector(psample[i,11]))
   #yR0ES_1    <- f12(as.vector(psample[i,12]))
   yM1ES_0    <- f13(as.vector(psample[i,13]))
@@ -1163,12 +1192,12 @@ for(i in 1:nsampleR0){
   #parsES$rODb = parsES$rODa*pars$rODboa
   parsES$h_0  = hMES_0*exp((age-age9)*hRES_0)
   parsES$h_1  = hMES_1*exp((age-age9)*hRES_1)
-  #parsES$d_0  = dMES_0*exp((age-age9)*dRES_0) #2*parsES$h_0*pars$m_0
-  #parsES$d_1  = dMES_1*exp((age-age9)*dRES_1) #2*parsES$h_1*pars$m_1
-  parsES$da_0 = parsES$h_0*pars$ma_0
-  parsES$da_1 = parsES$h_1*pars$ma_1
-  parsES$db_0 = parsES$h_0*pars$mb_0
-  parsES$db_1 = parsES$h_1*pars$mb_1
+  parsES$d_0  = dMES_0*exp((age-age9)*dRES_0) #2*parsES$h_0*pars$m_0
+  parsES$d_1  = dMES_1*exp((age-age9)*dRES_1) #2*parsES$h_1*pars$m_1
+  #parsES$da_0 = parsES$h_0*pars$ma_0
+  #parsES$da_1 = parsES$h_1*pars$ma_1
+  #parsES$db_0 = parsES$h_0*pars$mb_0
+  #parsES$db_1 = parsES$h_1*pars$mb_1
   parsES$y_0[3:9]  = yM1ES_0*exp((age[3:9]-age9)*yR1ES_0) #pars$y = c(liny[1:2],expy[1:7])
   parsES$y_1[3:9]  = yM1ES_1*exp((age[3:9]-age9)*yR1ES_1)
   parsES$Ea0  = parsES$Na0*parsES$pE0
@@ -1197,6 +1226,7 @@ for(it in 1:ntimes) {
 
 
 ##Averted events
+if (!is.element(pset$iplatform,1) & length(idataH)==length(idataDH) ){
 cat("\n");
 cat("Averted events \n")
 print(paste0("Averted Hosp_1: ", round(dHosp95_1[2],0), "[",round(dHosp95_1[1],0),",",round(dHosp95_1[3],0),"]"))
@@ -1204,6 +1234,7 @@ print(paste0("Averted Hosp:   ", round(dHosp95[2],0),   "[",round(dHosp95[1],  0
 print(paste0("Averted Mort_1: ", round(dMort95_1[2],0), "[",round(dMort95_1[1],0),",",round(dMort95_1[3],0),"]"))
 print(paste0("Averted Mort:   ", round(dMort95[2],0),   "[",round(dMort95[1],  0),",",round(dMort95[3],  0),"]"))
 cat("\n");
+}
 ##Averted events
 
 
@@ -1219,9 +1250,8 @@ cat("\n")
 ## MAP and quantile estimates
 #print(paste0("sdH Fixed: ", round(parsE$sdH,   3),    ". Expected: ", round(  pars$sdH,     3))) #sdH
 print(paste0("kH  Fixed: ", round(parsE$kH,    3),    ". Expected: ", round(  pars$kH,      3))) #kH
-#print(paste0("kDH,kDO fix:",round(parsE$kDH,   3),    ". Expected: ", round(  pars$kDH,     3))) #kD
-#print(paste0("kDH,kDO fix:",round(parsE$kDH,   3),    ". Expected: ", round(  pars$kDH,     3))) #kD
-#print(paste0("R0    fix: ", round(parsE$R0,    3),    ". Expected: ", round(  pars$R0,      3))) #R0
+print(paste0("kDH,kDO fix:",round(parsE$kDH,   3),    ". Expected: ", round(  pars$kDH,     3))) #kD
+print(paste0("R0    fix: ", round(parsE$R0,    3),    ". Expected: ", round(  pars$R0,      3))) #R0
 print(paste0("fu    fix: ", round(parsE$fu,    3),    ". Expected: ", round(  pars$fu,      3))) #pE0 #fu #yA
 
 for(i in 1:npar){
@@ -1276,12 +1306,13 @@ print(paste0("Da0_sum - input: ", sum(pars$Da0)))
 #print(paste0("E0    dep: ", round(sum(parsE$Ea0), 0), ". Expected: ", round(sum(pars$Na0*pars$pE0)) ))
 #print(paste0("Estimated proportion deaths outside hospital = ", round(parsE$ad/(1+parsE$ad),3)))
 
+if (!is.element(pset$iplatform,1) & length(idataH)==length(idataDH) ){
 cat("\n");
 print(paste0("Averted Hosp_1: ", round(dHosp95_1[2],0), "[",round(dHosp95_1[1],0),",",round(dHosp95_1[3],0),"]"))
 print(paste0("Averted Hosp:   ", round(dHosp95[2],0),   "[",round(dHosp95[1],  0),",",round(dHosp95[3],  0),"]"))
 print(paste0("Averted Mort_1: ", round(dMort95_1[2],0), "[",round(dMort95_1[1],0),",",round(dMort95_1[3],0),"]"))
 print(paste0("Averted Mort:   ", round(dMort95[2],0),   "[",round(dMort95[1],  0),",",round(dMort95[3],  0),"]"))
-
+}
 cat("\n");
 print(summary(out)); 
 cat("\n")
@@ -1295,56 +1326,56 @@ svglite(paste0(filenamepath,".svg"));
 par(mfrow = c(4,2))
 par(mar = c(4, 4, 1, 4))  #bottom, left, top, right
 #h
-plot(pars$h_0, ylim=c(0,1),ylab="h_0",xlab=""); lines(parsE$h_0, col=2, lwd=2)
-plot(pars$h_1, ylim=c(0,1),ylab="h_1",xlab=""); lines(parsE$h_1, col=2, lwd=2)
+plot(pars$h, ylim=c(0,1),ylab="h_0",xlab=""); lines(parsE$h_0, col=2, lwd=2) #plot(pars$h_0,
+plot(pars$h, ylim=c(0,1),ylab="h_1",xlab=""); lines(parsE$h_1, col=2, lwd=2) #plot(pars$h_1
 #y  
-plot(pars$y_0, ylim=c(0,1),ylab="y_0",xlab=""); lines(parsE$y_0, col=2, lwd=2)
-plot(pars$y_1, ylim=c(0,1),ylab="y_1",xlab=""); lines(parsE$y_1, col=2, lwd=2)
+plot(pars$y, ylim=c(0,1),ylab="y_0",xlab=""); lines(parsE$y_0, col=2, lwd=2) #plot(pars$y_0
+plot(pars$y, ylim=c(0,1),ylab="y_1",xlab=""); lines(parsE$y_1, col=2, lwd=2) #plot(pars$y_1
 #d
-plot(pars$d_0*pars$ad, ylim=c(0,1),ylab="d_0",xlab=""); lines(parsE$d_0*parsE$ad, col=2, lwd=2)  #parsE$ad=1 if parsE$d estimated
-plot(pars$d_1*pars$ad, ylim=c(0,1),ylab="d_1",xlab=""); lines(parsE$d_1*parsE$ad, col=2, lwd=2)  #parsE$ad=1 if parsE$d estimated
+plot(0.2*pars$h*pars$m_0, ylim=c(0,1),ylab="d_0",xlab=""); lines(parsE$d_0*parsE$ad, col=2, lwd=2)  #plot(pars$d_0*pars$ad
+plot(0.2*pars$h*pars$m_1, ylim=c(0,1),ylab="d_1",xlab=""); lines(parsE$d_1*parsE$ad, col=2, lwd=2)  #plot(pars$d_1*pars$ad
 #m
 plot(pars$m_0, ylim=c(0,1),ylab="m_0",xlab="age group"); lines(parsE$m_0, col=2, lwd=2)
 plot(pars$m_1, ylim=c(0,1),ylab="m_1",xlab="age group"); lines(parsE$m_1, col=2, lwd=2)
 invisible(dev.off())
 
 #0 Probability-age plots - log-lin
-filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_plots_probs_log")
-svglite(paste0(filenamepath,".svg")); 
-par(mfrow = c(4,2))
-par(mar = c(4, 4, 1, 4))  #bottom, left, top, right
-#h
-eps=0.0001
-plot(log10(eps+pars$h_0), ylim=log(c(eps,1)),ylab="log10 h_0",xlab=""); lines(log10(eps+parsE$h_0), col=2, lwd=2)
-plot(log10(eps+pars$h_1), ylim=log(c(eps,1)),ylab="log10 h_1",xlab=""); lines(log10(eps+parsE$h_1), col=2, lwd=2)
-#y  
-plot(log10(eps+pars$y_0), ylim=log(c(eps,1)),ylab="log10 y_0",xlab=""); lines(log10(eps+parsE$y_0), col=2, lwd=2)
-plot(log10(eps+pars$y_1), ylim=log(c(eps,1)),ylab="log10 y_1",xlab=""); lines(log10(eps+parsE$y_1), col=2, lwd=2)
-#d
-plot(log10(eps+pars$d_0*pars$ad), ylim=log(c(eps,1)),ylab="log10 d_0",xlab=""); lines(log10(eps+parsE$d_0*parsE$ad), col=2, lwd=2)  #parsE$ad=1 if parsE$d estimated
-plot(log10(eps+pars$d_1*pars$ad), ylim=log(c(eps,1)),ylab="log10 d_1",xlab=""); lines(log10(eps+parsE$d_1*parsE$ad), col=2, lwd=2)  #parsE$ad=1 if parsE$d estimated
-#m
-plot(log10(eps+pars$m_0), ylim=log(c(eps,1)),ylab="log10 m_0",xlab="age group"); lines(log10(eps+parsE$m_0), col=2, lwd=2)
-plot(log10(eps+pars$m_1), ylim=log(c(eps,1)),ylab="log10 m_1",xlab="age group");  lines(log10(eps+parsE$m_1), col=2, lwd=2)
-invisible(dev.off())
+#filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_plots_probs_log")
+#svglite(paste0(filenamepath,".svg")); 
+#par(mfrow = c(4,2))
+#par(mar = c(4, 4, 1, 4))  #bottom, left, top, right
+##h
+#eps=0.0001
+#plot(log10(eps+pars$h_0), ylim=log(c(eps,1)),ylab="log10 h_0",xlab=""); lines(log10(eps+parsE$h_0), col=2, lwd=2)
+#plot(log10(eps+pars$h_1), ylim=log(c(eps,1)),ylab="log10 h_1",xlab=""); lines(log10(eps+parsE$h_1), col=2, lwd=2)
+##y  
+#plot(log10(eps+pars$y_0), ylim=log(c(eps,1)),ylab="log10 y_0",xlab=""); lines(log10(eps+parsE$y_0), col=2, lwd=2)
+#plot(log10(eps+pars$y_1), ylim=log(c(eps,1)),ylab="log10 y_1",xlab=""); lines(log10(eps+parsE$y_1), col=2, lwd=2)
+##d
+#plot(log10(eps+pars$d_0*pars$ad), ylim=log(c(eps,1)),ylab="log10 d_0",xlab=""); lines(log10(eps+parsE$d_0*parsE$ad), col=2, lwd=2)  #parsE$ad=1 if parsE$d estimated
+#plot(log10(eps+pars$d_1*pars$ad), ylim=log(c(eps,1)),ylab="log10 d_1",xlab=""); lines(log10(eps+parsE$d_1*parsE$ad), col=2, lwd=2)  #parsE$ad=1 if parsE$d estimated
+##m
+#plot(log10(eps+pars$m_0), ylim=log(c(eps,1)),ylab="log10 m_0",xlab="age group"); lines(log10(eps+parsE$m_0), col=2, lwd=2)
+#plot(log10(eps+pars$m_1), ylim=log(c(eps,1)),ylab="log10 m_1",xlab="age group");  lines(log10(eps+parsE$m_1), col=2, lwd=2)
+#invisible(dev.off())
 
 ##screen
 par(mfrow = c(4,2))
 par(mar = c(4, 4, 1, 4))  #bottom, left, top, right
 #h
-plot(pars$h_0, ylim=c(0,1),ylab="h_0",xlab=""); lines(parsE$h_0, col=2, lwd=2)
-plot(pars$h_1, ylim=c(0,1),ylab="h_1",xlab=""); lines(parsE$h_1, col=2, lwd=2)
+plot(pars$h, ylim=c(0,1),ylab="h_0",xlab=""); lines(parsE$h_0, col=2, lwd=2) #plot(pars$h_0,
+plot(pars$h, ylim=c(0,1),ylab="h_1",xlab=""); lines(parsE$h_1, col=2, lwd=2) #plot(pars$h_1
+
 #y  
-plot(pars$y_0, ylim=c(0,1),ylab="y_0",xlab=""); lines(parsE$y_0, col=2, lwd=2)
-plot(pars$y_1, ylim=c(0,1),ylab="y_1",xlab=""); lines(parsE$y_1, col=2, lwd=2)
+plot(pars$y, ylim=c(0,1),ylab="y_0",xlab=""); lines(parsE$y_0, col=2, lwd=2) #plot(pars$y_0
+plot(pars$y, ylim=c(0,1),ylab="y_1",xlab=""); lines(parsE$y_1, col=2, lwd=2) #plot(pars$y_1
+
 #d
-plot(pars$d_0*pars$ad, ylim=c(0,1),ylab="d_0",xlab=""); lines(parsE$d_0*parsE$ad, col=2, lwd=2)  #parsE$ad=1 if parsE$d estimated
-plot(pars$d_1*pars$ad, ylim=c(0,1),ylab="d_1",xlab=""); lines(parsE$d_1*parsE$ad, col=2, lwd=2)  #parsE$ad=1 if parsE$d estimated
+plot(0.2*pars$h*pars$m_0, ylim=c(0,1),ylab="d_0",xlab=""); lines(parsE$d_0*parsE$ad, col=2, lwd=2)  #plot(pars$d_0*pars$ad
+plot(0.2*pars$h*pars$m_1, ylim=c(0,1),ylab="d_1",xlab=""); lines(parsE$d_1*parsE$ad, col=2, lwd=2)  #plot(pars$d_1*pars$ad
 #m
 plot(pars$m_0, ylim=c(0,1),ylab="m_0",xlab="age group"); lines(parsE$m_0, col=2, lwd=2)
 plot(pars$m_1, ylim=c(0,1),ylab="m_1",xlab="age group"); lines(parsE$m_1, col=2, lwd=2)
-
-
 
 print("Summary 2..."); cat("\n")
 sink(file = paste0(output_dir,"/",pset$File_fit_summary_2),append=FALSE,split=FALSE) #append=TRUE,split=FALSE)
@@ -1551,18 +1582,18 @@ datDOa_1<- tibble(datT,
 par(mar=c(0.5, 1, 1, 1)) #shows axis scale better #par(mar =c(0,0,0,0)) # c(0.5, 1, 1, 1)) #Par(mar = c(2, 2, 1, 1))  #bottom, left, top, right
 #p<-marginalPlot(out); print(p)
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_marginalPlot")
-if (pset$iplatform<2){ 
-  pdf(paste0(filenamepath,".pdf")); marginalPlot(out); invisible(dev.off())     }
+#if (pset$iplatform<2){ 
+#  pdf(paste0(filenamepath,".pdf")); marginalPlot(out); invisible(dev.off())     }
 if(length(UPPER)<17){
   svglite(paste0(filenamepath,".svg")); marginalPlot(out); invisible(dev.off()) } else {
   svglite(paste0(filenamepath,".svg")); plot(1:10); invisible(dev.off())        }
 
-#2-3 trace
-par(mar = c(2, 2, 1, 1)) ##bottom, left, top, right
-p<-plot(out); print(p)
-filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_plotout_lastPage")
-if (pset$iplatform==0){
-  svglite(paste0(filenamepath,".svg")); plot(out); invisible(dev.off())         }
+#2-3 trace #NB replaced by out2
+#par(mar = c(2, 2, 1, 1)) ##bottom, left, top, right
+#p<-plot(out); print(p)
+#filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_plotout_lastPage")
+#if (pset$iplatform==0){
+#  svglite(paste0(filenamepath,".svg")); plot(out); invisible(dev.off())         }
 
 #4 correlations
 par(mar = c(0,0,0,0)) #par(mar = c(2, 2, 1, 1))
@@ -1728,11 +1759,15 @@ invisible(dev.off())
 
 
 
-#6b Plot posterior samples - DATA ROUNDED TO NEAREST 5
-r5<- function(x){ return( round(x/5)*5)}
-redact <-function(x){ x[which(x<8)]="REDACTED"; return(x)}
+#6b Plot posterior samples - DATA ROUNDED TO MID 6
+#roundmid_any <- function(x, to=6){
+#  # like round_any, but centers on (integer) midpoint of the rounding points
+#  ceiling(x/to)*to - (floor(to/2)*(x!=0)) }
+rm6 <- function(x){ ceiling(x/6)*6 - (floor(6/2)*(x!=0))   }
+r5  <- function(x){ return( round(x/5)*5)   }
+#redact <-function(x){ x[which(x<8)]="REDACTED"; return(x)}
 ##assuming we revert "REDACTED" to 4 (sort of intermediate between 0 and 8)
-redact2<-function(x){ x[which(x<8)]=4; return(x)}
+#redact2<-function(x){ x[which(x<8)]=4; return(x)}
 
   ##
   filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_PosteriorSample_rounded")
@@ -1743,14 +1778,16 @@ redact2<-function(x){ x[which(x<8)]=4; return(x)}
   zMAX = rep(range(c(zsample_0,zsample_1))[2],length(Datessample))
   
   #H
-  zdw_0_r5 = redact2(datH$zdw_0)  #redact
-  zdw_0_r5 = r5(zdw_0_r5)            #round
-  zdw_1_r5 = redact2(datH$zdw_1)  #redact
-  zdw_1_r5 = r5(zdw_1_r5)            #round
+  #zdw_0_r5 = redact2(datH$zdw_0)  #redact
+  #zdw_0_r5 = r5(zdw_0_r5)         #round
+  #zdw_1_r5 = redact2(datH$zdw_1)  #redact
+  #zdw_1_r5 = r5(zdw_1_r5)         #round
+  zdw_0_r6 = rm6(datH$zdw_0)       #round mid-6
+  zdw_1_r6 = rm6(datH$zdw_1)       #round mid-6
   dzsample_0<- tibble(Date=Datessample, Datez=datH$Datesz, zsample05=zsample95_0[,1],
-                      zsample95=zsample95_0[,3], zMAP=mE$byw_0$Hw[imodelH], zdw=zdw_0_r5)
+                      zsample95=zsample95_0[,3], zMAP=mE$byw_0$Hw[imodelH], zdw=zdw_0_r6)
   dzsample_1<- tibble(Date=Datessample, Datez=datH$Datesz, zsample05=zsample95_1[,1], 
-                      zsample95=zsample95_1[,3], zMAP=mE$byw_1$Hw[imodelH], zdw=zdw_1_r5)
+                      zsample95=zsample95_1[,3], zMAP=mE$byw_1$Hw[imodelH], zdw=zdw_1_r6)
   
   pz_0<-ggplot(dzsample_0, aes(x=Date)) + 
     geom_ribbon(aes(ymin = zsample05, ymax = zsample95), fill = "grey70") +
@@ -1773,16 +1810,19 @@ redact2<-function(x){ x[which(x<8)]=4; return(x)}
     geom_line (aes(x=Date,  y = zsample05, color="95% CrI")) +
     labs(x = "", y = 'Hospitalisations',   color = "") + #Legend") + 
     scale_color_manual(values = colors) +
-    theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_1)
+    theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_1) +
+    scale_x_date(breaks= breaks, date_labels= date_labels) 
   #DH
-  wdw_0_r5 = redact2(datD$wdw_0)  #redact
-  wdw_0_r5 = r5(wdw_0_r5)            #round
-  wdw_1_r5 = redact2(datD$wdw_1)  #redact
-  wdw_1_r5 = r5(wdw_1_r5)            #round
+  #wdw_0_r5 = redact2(datD$wdw_0)  #redact
+  #wdw_0_r5 = r5(wdw_0_r5)         #round
+  #wdw_1_r5 = redact2(datD$wdw_1)  #redact
+  #wdw_1_r5 = r5(wdw_1_r5)         #round
+  wdw_0_r6 = rm6(datD$wdw_0)       #round mid-6
+  wdw_1_r6 = rm6(datD$wdw_1)       #round mid-6
   dwsample_0<- tibble(Date=Datessample, Datew=datD$Datesw, wsample05=wsample95_0[,1], 
-                      wsample95=wsample95_0[,3], wMAP=mE$byw_0$DHw[imodelDH], wdw=wdw_0_r5)
+                      wsample95=wsample95_0[,3], wMAP=mE$byw_0$DHw[imodelDH], wdw=wdw_0_r6)
   dwsample_1<- tibble(Date=Datessample, Datew=datD$Datesw, wsample05=wsample95_1[,1], 
-                      wsample95=wsample95_1[,3], wMAP=mE$byw_1$DHw[imodelDH], wdw=wdw_1_r5)
+                      wsample95=wsample95_1[,3], wMAP=mE$byw_1$DHw[imodelDH], wdw=wdw_1_r6)
   
   pw_0 <-ggplot(dwsample_0, aes(x=Date)) + 
     geom_ribbon(aes(ymin = wsample05, ymax = wsample95), fill = "grey70") +
@@ -1804,14 +1844,16 @@ redact2<-function(x){ x[which(x<8)]=4; return(x)}
     theme(axis.title = element_text(size = 12, face = "bold")) + #+  ggtitle(Title_1)
     scale_x_date(breaks= breaks, date_labels= date_labels) 
   #DO
-  vdw_0_r5 = redact2(datD$vdw_0)  #redact
-  vdw_0_r5 = r5(vdw_0_r5)            #round
-  vdw_1_r5 = redact2(datD$vdw_1)  #redact
-  vdw_1_r5 = r5(vdw_1_r5)            #round
+  #vdw_0_r5 = redact2(datD$vdw_0)  #redact
+  #vdw_0_r5 = r5(vdw_0_r5)         #round
+  #vdw_1_r5 = redact2(datD$vdw_1)  #redact
+  #vdw_1_r5 = r5(vdw_1_r5)         #round
+  vdw_0_r6 = rm6(datD$vdw_0)       #round mid-6
+  vdw_1_r6 = rm6(datD$vdw_1)       #round mid-6
   dvsample_0<- tibble(Date=Datessample, Datev=datD$Datesv, vsample05=vsample95_0[,1], 
-                      vsample95=vsample95_0[,3], vMAP=mE$byw_0$DOw[imodelDO], vdw=vdw_0_r5)
+                      vsample95=vsample95_0[,3], vMAP=mE$byw_0$DOw[imodelDO], vdw=vdw_0_r6)
   dvsample_1<- tibble(Date=Datessample, Datev=datD$Datesv, vsample05=vsample95_1[,1], 
-                      vsample95=vsample95_1[,3], vMAP=mE$byw_1$DOw[imodelDO], vdw=vdw_1_r5)
+                      vsample95=vsample95_1[,3], vMAP=mE$byw_1$DOw[imodelDO], vdw=vdw_1_r6)
   
   pv_0 <-ggplot(dvsample_0, aes(x=Date)) + 
     geom_ribbon(aes(ymin = vsample05, ymax = vsample95), fill = "grey70") +
@@ -1905,6 +1947,7 @@ pH_0 <- ggplot() +
     labs(x = "", y = Yname[1], color = "") + #Legend") + 
     scale_color_manual(values = colors) +
     theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_0) +
+    scale_x_date(breaks= breaks, date_labels= date_labels) +
     geom_line (data=datHa_0, aes(x=Dates,y=H1w, color = "0-4")) +
     geom_line (data=datHa_0, aes(x=Dates,y=H2w, color = "05-11")) +
     geom_line (data=datHa_0, aes(x=Dates,y=H3w, color = "12-17")) +
@@ -1927,6 +1970,7 @@ pH_1 <- ggplot() +
     labs(x = "", y = Yname[1], color = "") + #Legend") + 
     scale_color_manual(values = colors) +
     theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_1) +
+    scale_x_date(breaks= breaks, date_labels= date_labels) +
     geom_line (data=datHa_1, aes(x=Dates,y=H1w, color = "0-4")) +
     geom_line (data=datHa_1, aes(x=Dates,y=H2w, color = "05-11")) +
     geom_line (data=datHa_1, aes(x=Dates,y=H3w, color = "12-17")) +
@@ -1951,6 +1995,7 @@ pDH_0 <- ggplot() +
     labs(x = "", y = Yname[2], color = "Age group") + #Legend") + 
     scale_color_manual(values = colors) +
     theme(axis.title = element_text(size = 12, face = "bold")) +  #ggtitle(Title_0) +
+    scale_x_date(breaks= breaks, date_labels= date_labels) +
     geom_line (data=datDHa_0, aes(x=Dates,y=DH1w, color = "0-4")) +
     geom_line (data=datDHa_0, aes(x=Dates,y=DH2w, color = "05-11")) +
     geom_line (data=datDHa_0, aes(x=Dates,y=DH3w, color = "12-17")) +
@@ -1973,6 +2018,7 @@ pDH_1 <- ggplot() +
     labs(x = "", y = Yname[2], color = "Age group") + #Legend") + 
     scale_color_manual(values = colors) +
     theme(axis.title = element_text(size = 12, face = "bold")) +  #ggtitle(Title_1) +
+    scale_x_date(breaks= breaks, date_labels= date_labels) +
     geom_line (data=datDHa_1, aes(x=Dates,y=DH1w, color = "0-4")) +
     geom_line (data=datDHa_1, aes(x=Dates,y=DH2w, color = "05-11")) +
     geom_line (data=datDHa_1, aes(x=Dates,y=DH3w, color = "12-17")) +
@@ -1997,6 +2043,7 @@ pDO_0 <- ggplot() +
     labs(x = 'Date', y = Yname[3], color = "") + #Legend") + 
     scale_color_manual(values = colors) +
     theme(axis.title = element_text(size = 12, face = "bold")) +  #ggtitle(Title_0) +
+    scale_x_date(breaks= breaks, date_labels= date_labels) +
     geom_line (data=datDOa_0, aes(x=Dates,y=DO1w, color = "0-4")) +
     geom_line (data=datDOa_0, aes(x=Dates,y=DO2w, color = "05-11")) +
     geom_line (data=datDOa_0, aes(x=Dates,y=DO3w, color = "12-17")) +
@@ -2019,6 +2066,7 @@ pDO_1 <- ggplot() +
     labs(x = 'Date', y = Yname[3], color = "") + #Legend") + 
     scale_color_manual(values = colors) +
     theme(axis.title = element_text(size = 12, face = "bold")) +  #ggtitle(Title_1 +
+    scale_x_date(breaks= breaks, date_labels= date_labels) +
     geom_line (data=datDOa_1, aes(x=Dates,y=DO1w, color = "0-4")) +
     geom_line (data=datDOa_1, aes(x=Dates,y=DO2w, color = "05-11")) +
     geom_line (data=datDOa_1, aes(x=Dates,y=DO3w, color = "12-17")) +
@@ -2047,52 +2095,71 @@ invisible(dev.off())
 
 
 
-##7b age profiles - DATA ROUNDED TO NEAREST 5
+##7b age profiles - DATA ROUNDED TO MID 6
   Yname = c('Hospitalisations *', 'Deaths in hospital *', 'Deaths outside hospital *')
   if (LOG==1) {Yname = c('log10 Hospitalisations *', 'log10 Deaths in hospital *', 'log10 Deaths outside hospital *')}
-  #* data rounded to nearest 5
+  #* data rounded to mid-6
   #H
-  H1d_0_r5 = redact2(YEXP(datHa_0$H1d,1))  #redact after reversing LOG10
-  H1d_1_r5 = redact2(YEXP(datHa_1$H1d,1))  #redact
-  H2d_0_r5 = redact2(YEXP(datHa_0$H2d,1))  #redact
-  H2d_1_r5 = redact2(YEXP(datHa_1$H2d,1))  #redact
-  H3d_0_r5 = redact2(YEXP(datHa_0$H3d,1))  #redact
-  H3d_1_r5 = redact2(YEXP(datHa_1$H3d,1))  #redact
-  H4d_0_r5 = redact2(YEXP(datHa_0$H4d,1))  #redact
-  H4d_1_r5 = redact2(YEXP(datHa_1$H4d,1))  #redact
-  H5d_0_r5 = redact2(YEXP(datHa_0$H5d,1))  #redact
-  H5d_1_r5 = redact2(YEXP(datHa_1$H5d,1))  #redact
-  H6d_0_r5 = redact2(YEXP(datHa_0$H6d,1))  #redact
-  H6d_1_r5 = redact2(YEXP(datHa_1$H6d,1))  #redact
-  H7d_0_r5 = redact2(YEXP(datHa_0$H7d,1))  #redact
-  H7d_1_r5 = redact2(YEXP(datHa_1$H7d,1))  #redact
-  H8d_0_r5 = redact2(YEXP(datHa_0$H8d,1))  #redact
-  H8d_1_r5 = redact2(YEXP(datHa_1$H8d,1))  #redact
-  H9d_0_r5 = redact2(YEXP(datHa_0$H9d,1))  #redact
-  H9d_1_r5 = redact2(YEXP(datHa_1$H9d,1))  #redact
-  H1d_0_r5 = YLOG(r5(H1d_0_r5),1)          #round and LOG
-  H1d_1_r5 = YLOG(r5(H1d_1_r5),1)          #round
-  H2d_0_r5 = YLOG(r5(H2d_0_r5),1)          #round
-  H2d_1_r5 = YLOG(r5(H2d_1_r5),1)          #round
-  H3d_0_r5 = YLOG(r5(H3d_0_r5),1)          #round
-  H3d_1_r5 = YLOG(r5(H3d_1_r5),1)          #round
-  H4d_0_r5 = YLOG(r5(H4d_0_r5),1)          #round
-  H4d_1_r5 = YLOG(r5(H4d_1_r5),1)          #round
-  H5d_0_r5 = YLOG(r5(H5d_0_r5),1)          #round
-  H5d_1_r5 = YLOG(r5(H5d_1_r5),1)          #round
-  H6d_0_r5 = YLOG(r5(H6d_0_r5),1)          #round
-  H6d_1_r5 = YLOG(r5(H6d_1_r5),1)          #round
-  H7d_0_r5 = YLOG(r5(H7d_0_r5),1)          #round
-  H7d_1_r5 = YLOG(r5(H7d_1_r5),1)          #round
-  H8d_0_r5 = YLOG(r5(H8d_0_r5),1)          #round
-  H8d_1_r5 = YLOG(r5(H8d_1_r5),1)          #round
-  H9d_0_r5 = YLOG(r5(H9d_0_r5),1)          #round
-  H9d_1_r5 = YLOG(r5(H9d_1_r5),1)          #round
+  #H1d_0_r5 = redact2(YEXP(datHa_0$H1d,1))  #redact after reversing LOG10
+  #H1d_1_r5 = redact2(YEXP(datHa_1$H1d,1))  #redact
+  #H2d_0_r5 = redact2(YEXP(datHa_0$H2d,1))  #redact
+  #H2d_1_r5 = redact2(YEXP(datHa_1$H2d,1))  #redact
+  #H3d_0_r5 = redact2(YEXP(datHa_0$H3d,1))  #redact
+  #H3d_1_r5 = redact2(YEXP(datHa_1$H3d,1))  #redact
+  #H4d_0_r5 = redact2(YEXP(datHa_0$H4d,1))  #redact
+  #H4d_1_r5 = redact2(YEXP(datHa_1$H4d,1))  #redact
+  #H5d_0_r5 = redact2(YEXP(datHa_0$H5d,1))  #redact
+  #H5d_1_r5 = redact2(YEXP(datHa_1$H5d,1))  #redact
+  #H6d_0_r5 = redact2(YEXP(datHa_0$H6d,1))  #redact
+  #H6d_1_r5 = redact2(YEXP(datHa_1$H6d,1))  #redact
+  #H7d_0_r5 = redact2(YEXP(datHa_0$H7d,1))  #redact
+  #H7d_1_r5 = redact2(YEXP(datHa_1$H7d,1))  #redact
+  #H8d_0_r5 = redact2(YEXP(datHa_0$H8d,1))  #redact
+  #H8d_1_r5 = redact2(YEXP(datHa_1$H8d,1))  #redact
+  #H9d_0_r5 = redact2(YEXP(datHa_0$H9d,1))  #redact
+  #H9d_1_r5 = redact2(YEXP(datHa_1$H9d,1))  #redact
+  #H1d_0_r5 = YLOG(r5(H1d_0_r5),1)          #round and LOG
+  #H1d_1_r5 = YLOG(r5(H1d_1_r5),1)          #round
+  #H2d_0_r5 = YLOG(r5(H2d_0_r5),1)          #round
+  #H2d_1_r5 = YLOG(r5(H2d_1_r5),1)          #round
+  #H3d_0_r5 = YLOG(r5(H3d_0_r5),1)          #round
+  #H3d_1_r5 = YLOG(r5(H3d_1_r5),1)          #round
+  #H4d_0_r5 = YLOG(r5(H4d_0_r5),1)          #round
+  #H4d_1_r5 = YLOG(r5(H4d_1_r5),1)          #round
+  #H5d_0_r5 = YLOG(r5(H5d_0_r5),1)          #round
+  #H5d_1_r5 = YLOG(r5(H5d_1_r5),1)          #round
+  #H6d_0_r5 = YLOG(r5(H6d_0_r5),1)          #round
+  #H6d_1_r5 = YLOG(r5(H6d_1_r5),1)          #round
+  #H7d_0_r5 = YLOG(r5(H7d_0_r5),1)          #round
+  #H7d_1_r5 = YLOG(r5(H7d_1_r5),1)          #round
+  #H8d_0_r5 = YLOG(r5(H8d_0_r5),1)          #round
+  #H8d_1_r5 = YLOG(r5(H8d_1_r5),1)          #round
+  #H9d_0_r5 = YLOG(r5(H9d_0_r5),1)          #round
+  #H9d_1_r5 = YLOG(r5(H9d_1_r5),1)          #round
+  H1d_0_r6 = YLOG(rm6(YEXP(datHa_0$H1d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  H2d_0_r6 = YLOG(rm6(YEXP(datHa_0$H2d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  H3d_0_r6 = YLOG(rm6(YEXP(datHa_0$H3d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  H4d_0_r6 = YLOG(rm6(YEXP(datHa_0$H4d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  H5d_0_r6 = YLOG(rm6(YEXP(datHa_0$H5d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  H6d_0_r6 = YLOG(rm6(YEXP(datHa_0$H6d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  H7d_0_r6 = YLOG(rm6(YEXP(datHa_0$H7d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  H8d_0_r6 = YLOG(rm6(YEXP(datHa_0$H8d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  H9d_0_r6 = YLOG(rm6(YEXP(datHa_0$H9d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  H1d_1_r6 = YLOG(rm6(YEXP(datHa_1$H1d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  H2d_1_r6 = YLOG(rm6(YEXP(datHa_1$H2d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  H3d_1_r6 = YLOG(rm6(YEXP(datHa_1$H3d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  H4d_1_r6 = YLOG(rm6(YEXP(datHa_1$H4d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  H5d_1_r6 = YLOG(rm6(YEXP(datHa_1$H5d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  H6d_1_r6 = YLOG(rm6(YEXP(datHa_1$H6d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  H7d_1_r6 = YLOG(rm6(YEXP(datHa_1$H7d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  H8d_1_r6 = YLOG(rm6(YEXP(datHa_1$H8d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  H9d_1_r6 = YLOG(rm6(YEXP(datHa_1$H9d,1)),1) #reverse LOG10, round mid-6, and LOG10
 
   pH_0 <- ggplot() +
     labs(x = "", y = Yname[1], color = "") + #Legend") + 
     scale_color_manual(values = colors) +
     theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_0) +
+    scale_x_date(breaks= breaks, date_labels= date_labels) +
     geom_line (data=datHa_0, aes(x=Dates,y=H1w, color = "0-4")) +
     geom_line (data=datHa_0, aes(x=Dates,y=H2w, color = "05-11")) +
     geom_line (data=datHa_0, aes(x=Dates,y=H3w, color = "12-17")) +
@@ -2102,19 +2169,20 @@ invisible(dev.off())
     geom_line (data=datHa_0, aes(x=Dates,y=H7w, color = "50-59")) +
     geom_line (data=datHa_0, aes(x=Dates,y=H8w, color = "60-69")) +
     geom_line (data=datHa_0, aes(x=Dates,y=H9w, color = "70+")) +
-    geom_point(data=datHa_0, aes(x=Dates,y=H1d_0_r5, color = "0-4")) +
-    geom_point(data=datHa_0, aes(x=Dates,y=H2d_0_r5, color = "05-11")) +
-    geom_point(data=datHa_0, aes(x=Dates,y=H3d_0_r5, color = "12-17")) +
-    geom_point(data=datHa_0, aes(x=Dates,y=H4d_0_r5, color = "18-29")) +
-    geom_point(data=datHa_0, aes(x=Dates,y=H5d_0_r5, color = "30-39")) +
-    geom_point(data=datHa_0, aes(x=Dates,y=H6d_0_r5, color = "40-49")) +
-    geom_point(data=datHa_0, aes(x=Dates,y=H7d_0_r5, color = "50-59")) +
-    geom_point(data=datHa_0, aes(x=Dates,y=H8d_0_r5, color = "60-69")) +
-    geom_point(data=datHa_0, aes(x=Dates,y=H9d_0_r5, color = "70+"))
+    geom_point(data=datHa_0, aes(x=Dates,y=H1d_0_r6, color = "0-4")) +
+    geom_point(data=datHa_0, aes(x=Dates,y=H2d_0_r6, color = "05-11")) +
+    geom_point(data=datHa_0, aes(x=Dates,y=H3d_0_r6, color = "12-17")) +
+    geom_point(data=datHa_0, aes(x=Dates,y=H4d_0_r6, color = "18-29")) +
+    geom_point(data=datHa_0, aes(x=Dates,y=H5d_0_r6, color = "30-39")) +
+    geom_point(data=datHa_0, aes(x=Dates,y=H6d_0_r6, color = "40-49")) +
+    geom_point(data=datHa_0, aes(x=Dates,y=H7d_0_r6, color = "50-59")) +
+    geom_point(data=datHa_0, aes(x=Dates,y=H8d_0_r6, color = "60-69")) +
+    geom_point(data=datHa_0, aes(x=Dates,y=H9d_0_r6, color = "70+"))
   pH_1 <- ggplot() +
     labs(x = "", y = Yname[1], color = "") + #Legend") + 
     scale_color_manual(values = colors) +
     theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_1) +
+    scale_x_date(breaks= breaks, date_labels= date_labels) +
     geom_line (data=datHa_1, aes(x=Dates,y=H1w, color = "0-4")) +
     geom_line (data=datHa_1, aes(x=Dates,y=H2w, color = "05-11")) +
     geom_line (data=datHa_1, aes(x=Dates,y=H3w, color = "12-17")) +
@@ -2124,58 +2192,78 @@ invisible(dev.off())
     geom_line (data=datHa_1, aes(x=Dates,y=H7w, color = "50-59")) +
     geom_line (data=datHa_1, aes(x=Dates,y=H8w, color = "60-69")) +
     geom_line (data=datHa_1, aes(x=Dates,y=H9w, color = "70+")) +
-    geom_point(data=datHa_1, aes(x=Dates,y=H1d_1_r5, color = "0-4")) +
-    geom_point(data=datHa_1, aes(x=Dates,y=H2d_1_r5, color = "05-11")) +
-    geom_point(data=datHa_1, aes(x=Dates,y=H3d_1_r5, color = "12-17")) +
-    geom_point(data=datHa_1, aes(x=Dates,y=H4d_1_r5, color = "18-29")) +
-    geom_point(data=datHa_1, aes(x=Dates,y=H5d_1_r5, color = "30-39")) +
-    geom_point(data=datHa_1, aes(x=Dates,y=H6d_1_r5, color = "40-49")) +
-    geom_point(data=datHa_1, aes(x=Dates,y=H7d_1_r5, color = "50-59")) +
-    geom_point(data=datHa_1, aes(x=Dates,y=H8d_1_r5, color = "60-69")) +
-    geom_point(data=datHa_1, aes(x=Dates,y=H9d_1_r5, color = "70+"))
+    geom_point(data=datHa_1, aes(x=Dates,y=H1d_1_r6, color = "0-4")) +
+    geom_point(data=datHa_1, aes(x=Dates,y=H2d_1_r6, color = "05-11")) +
+    geom_point(data=datHa_1, aes(x=Dates,y=H3d_1_r6, color = "12-17")) +
+    geom_point(data=datHa_1, aes(x=Dates,y=H4d_1_r6, color = "18-29")) +
+    geom_point(data=datHa_1, aes(x=Dates,y=H5d_1_r6, color = "30-39")) +
+    geom_point(data=datHa_1, aes(x=Dates,y=H6d_1_r6, color = "40-49")) +
+    geom_point(data=datHa_1, aes(x=Dates,y=H7d_1_r6, color = "50-59")) +
+    geom_point(data=datHa_1, aes(x=Dates,y=H8d_1_r6, color = "60-69")) +
+    geom_point(data=datHa_1, aes(x=Dates,y=H9d_1_r6, color = "70+"))
   
   #DH
-  DH1d_0_r5 = redact2(YEXP(datDHa_0$DH1d,1))  #redact after reversing LOG10
-  DH1d_1_r5 = redact2(YEXP(datDHa_1$DH1d,1))  #redact
-  DH2d_0_r5 = redact2(YEXP(datDHa_0$DH2d,1))  #redact
-  DH2d_1_r5 = redact2(YEXP(datDHa_1$DH2d,1))  #redact
-  DH3d_0_r5 = redact2(YEXP(datDHa_0$DH3d,1))  #redact
-  DH3d_1_r5 = redact2(YEXP(datDHa_1$DH3d,1))  #redact
-  DH4d_0_r5 = redact2(YEXP(datDHa_0$DH4d,1))  #redact
-  DH4d_1_r5 = redact2(YEXP(datDHa_1$DH4d,1))  #redact
-  DH5d_0_r5 = redact2(YEXP(datDHa_0$DH5d,1))  #redact
-  DH5d_1_r5 = redact2(YEXP(datDHa_1$DH5d,1))  #redact
-  DH6d_0_r5 = redact2(YEXP(datDHa_0$DH6d,1))  #redact
-  DH6d_1_r5 = redact2(YEXP(datDHa_1$DH6d,1))  #redact
-  DH7d_0_r5 = redact2(YEXP(datDHa_0$DH7d,1))  #redact
-  DH7d_1_r5 = redact2(YEXP(datDHa_1$DH7d,1))  #redact
-  DH8d_0_r5 = redact2(YEXP(datDHa_0$DH8d,1))  #redact
-  DH8d_1_r5 = redact2(YEXP(datDHa_1$DH8d,1))  #redact
-  DH9d_0_r5 = redact2(YEXP(datDHa_0$DH9d,1))  #redact
-  DH9d_1_r5 = redact2(YEXP(datDHa_1$DH9d,1))  #redact
-  DH1d_0_r5 = YLOG(r5(DH1d_0_r5),1)          #round and LOG
-  DH1d_1_r5 = YLOG(r5(DH1d_1_r5),1)          #round
-  DH2d_0_r5 = YLOG(r5(DH2d_0_r5),1)          #round
-  DH2d_1_r5 = YLOG(r5(DH2d_1_r5),1)          #round
-  DH3d_0_r5 = YLOG(r5(DH3d_0_r5),1)          #round
-  DH3d_1_r5 = YLOG(r5(DH3d_1_r5),1)          #round
-  DH4d_0_r5 = YLOG(r5(DH4d_0_r5),1)          #round
-  DH4d_1_r5 = YLOG(r5(DH4d_1_r5),1)          #round
-  DH5d_0_r5 = YLOG(r5(DH5d_0_r5),1)          #round
-  DH5d_1_r5 = YLOG(r5(DH5d_1_r5),1)          #round
-  DH6d_0_r5 = YLOG(r5(DH6d_0_r5),1)          #round
-  DH6d_1_r5 = YLOG(r5(DH6d_1_r5),1)          #round
-  DH7d_0_r5 = YLOG(r5(DH7d_0_r5),1)          #round
-  DH7d_1_r5 = YLOG(r5(DH7d_1_r5),1)          #round
-  DH8d_0_r5 = YLOG(r5(DH8d_0_r5),1)          #round
-  DH8d_1_r5 = YLOG(r5(DH8d_1_r5),1)          #round
-  DH9d_0_r5 = YLOG(r5(DH9d_0_r5),1)          #round
-  DH9d_1_r5 = YLOG(r5(DH9d_1_r5),1)          #round
-  
+  #DH1d_0_r5 = redact2(YEXP(datDHa_0$DH1d,1))  #redact after reversing LOG10
+  #DH1d_1_r5 = redact2(YEXP(datDHa_1$DH1d,1))  #redact
+  #DH2d_0_r5 = redact2(YEXP(datDHa_0$DH2d,1))  #redact
+  #DH2d_1_r5 = redact2(YEXP(datDHa_1$DH2d,1))  #redact
+  #DH3d_0_r5 = redact2(YEXP(datDHa_0$DH3d,1))  #redact
+  #DH3d_1_r5 = redact2(YEXP(datDHa_1$DH3d,1))  #redact
+  #DH4d_0_r5 = redact2(YEXP(datDHa_0$DH4d,1))  #redact
+  #DH4d_1_r5 = redact2(YEXP(datDHa_1$DH4d,1))  #redact
+  #DH5d_0_r5 = redact2(YEXP(datDHa_0$DH5d,1))  #redact
+  #DH5d_1_r5 = redact2(YEXP(datDHa_1$DH5d,1))  #redact
+  #DH6d_0_r5 = redact2(YEXP(datDHa_0$DH6d,1))  #redact
+  #DH6d_1_r5 = redact2(YEXP(datDHa_1$DH6d,1))  #redact
+  #DH7d_0_r5 = redact2(YEXP(datDHa_0$DH7d,1))  #redact
+  #DH7d_1_r5 = redact2(YEXP(datDHa_1$DH7d,1))  #redact
+  #DH8d_0_r5 = redact2(YEXP(datDHa_0$DH8d,1))  #redact
+  #DH8d_1_r5 = redact2(YEXP(datDHa_1$DH8d,1))  #redact
+  #DH9d_0_r5 = redact2(YEXP(datDHa_0$DH9d,1))  #redact
+  #DH9d_1_r5 = redact2(YEXP(datDHa_1$DH9d,1))  #redact
+  #DH1d_0_r5 = YLOG(r5(DH1d_0_r5),1)          #round and LOG
+  #DH1d_1_r5 = YLOG(r5(DH1d_1_r5),1)          #round
+  #DH2d_0_r5 = YLOG(r5(DH2d_0_r5),1)          #round
+  #DH2d_1_r5 = YLOG(r5(DH2d_1_r5),1)          #round
+  #DH3d_0_r5 = YLOG(r5(DH3d_0_r5),1)          #round
+  #DH3d_1_r5 = YLOG(r5(DH3d_1_r5),1)          #round
+  #DH4d_0_r5 = YLOG(r5(DH4d_0_r5),1)          #round
+  #DH4d_1_r5 = YLOG(r5(DH4d_1_r5),1)          #round
+  #DH5d_0_r5 = YLOG(r5(DH5d_0_r5),1)          #round
+  #DH5d_1_r5 = YLOG(r5(DH5d_1_r5),1)          #round
+  #DH6d_0_r5 = YLOG(r5(DH6d_0_r5),1)          #round
+  #DH6d_1_r5 = YLOG(r5(DH6d_1_r5),1)          #round
+  #DH7d_0_r5 = YLOG(r5(DH7d_0_r5),1)          #round
+  #DH7d_1_r5 = YLOG(r5(DH7d_1_r5),1)          #round
+  #DH8d_0_r5 = YLOG(r5(DH8d_0_r5),1)          #round
+  #DH8d_1_r5 = YLOG(r5(DH8d_1_r5),1)          #round
+  #DH9d_0_r5 = YLOG(r5(DH9d_0_r5),1)          #round
+  #DH9d_1_r5 = YLOG(r5(DH9d_1_r5),1)          #round
+  #DH1d_0_r5 = redact2(YEXP(datDHa_0$DH1d,1))  #redact after reversing LOG10
+  DH1d_0_r6 = YLOG(rm6(YEXP(datDHa_0$DH1d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DH2d_0_r6 = YLOG(rm6(YEXP(datDHa_0$DH2d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DH3d_0_r6 = YLOG(rm6(YEXP(datDHa_0$DH3d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DH4d_0_r6 = YLOG(rm6(YEXP(datDHa_0$DH4d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DH5d_0_r6 = YLOG(rm6(YEXP(datDHa_0$DH5d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DH6d_0_r6 = YLOG(rm6(YEXP(datDHa_0$DH6d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DH7d_0_r6 = YLOG(rm6(YEXP(datDHa_0$DH7d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DH8d_0_r6 = YLOG(rm6(YEXP(datDHa_0$DH8d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DH9d_0_r6 = YLOG(rm6(YEXP(datDHa_0$DH9d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DH1d_1_r6 = YLOG(rm6(YEXP(datDHa_1$DH1d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DH2d_1_r6 = YLOG(rm6(YEXP(datDHa_1$DH2d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DH3d_1_r6 = YLOG(rm6(YEXP(datDHa_1$DH3d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DH4d_1_r6 = YLOG(rm6(YEXP(datDHa_1$DH4d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DH5d_1_r6 = YLOG(rm6(YEXP(datDHa_1$DH5d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DH6d_1_r6 = YLOG(rm6(YEXP(datDHa_1$DH6d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DH7d_1_r6 = YLOG(rm6(YEXP(datDHa_1$DH7d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DH8d_1_r6 = YLOG(rm6(YEXP(datDHa_1$DH8d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DH9d_1_r6 = YLOG(rm6(YEXP(datDHa_1$DH9d,1)),1) #reverse LOG10, round mid-6, and LOG10
+ 
   pDH_0 <- ggplot() +
     labs(x = "", y = Yname[2], color = "Age group") + #Legend") + 
     scale_color_manual(values = colors) +
     theme(axis.title = element_text(size = 12, face = "bold")) +  #ggtitle(Title_0) +
+    scale_x_date(breaks= breaks, date_labels= date_labels) +
     geom_line (data=datDHa_0, aes(x=Dates,y=DH1w, color = "0-4")) +
     geom_line (data=datDHa_0, aes(x=Dates,y=DH2w, color = "05-11")) +
     geom_line (data=datDHa_0, aes(x=Dates,y=DH3w, color = "12-17")) +
@@ -2185,19 +2273,20 @@ invisible(dev.off())
     geom_line (data=datDHa_0, aes(x=Dates,y=DH7w, color = "50-59")) +
     geom_line (data=datDHa_0, aes(x=Dates,y=DH8w, color = "60-69")) +
     geom_line (data=datDHa_0, aes(x=Dates,y=DH9w, color = "70+")) +
-    geom_point(data=datDHa_0, aes(x=Dates,y=DH1d_0_r5, color = "0-4")) +
-    geom_point(data=datDHa_0, aes(x=Dates,y=DH2d_0_r5, color = "05-11")) +
-    geom_point(data=datDHa_0, aes(x=Dates,y=DH3d_0_r5, color = "12-17")) +
-    geom_point(data=datDHa_0, aes(x=Dates,y=DH4d_0_r5, color = "18-29")) +
-    geom_point(data=datDHa_0, aes(x=Dates,y=DH5d_0_r5, color = "30-39")) +
-    geom_point(data=datDHa_0, aes(x=Dates,y=DH6d_0_r5, color = "40-49")) +
-    geom_point(data=datDHa_0, aes(x=Dates,y=DH7d_0_r5, color = "50-59")) +
-    geom_point(data=datDHa_0, aes(x=Dates,y=DH8d_0_r5, color = "60-69")) +
-    geom_point(data=datDHa_0, aes(x=Dates,y=DH9d_0_r5, color = "70+"))  
+    geom_point(data=datDHa_0, aes(x=Dates,y=DH1d_0_r6, color = "0-4")) +
+    geom_point(data=datDHa_0, aes(x=Dates,y=DH2d_0_r6, color = "05-11")) +
+    geom_point(data=datDHa_0, aes(x=Dates,y=DH3d_0_r6, color = "12-17")) +
+    geom_point(data=datDHa_0, aes(x=Dates,y=DH4d_0_r6, color = "18-29")) +
+    geom_point(data=datDHa_0, aes(x=Dates,y=DH5d_0_r6, color = "30-39")) +
+    geom_point(data=datDHa_0, aes(x=Dates,y=DH6d_0_r6, color = "40-49")) +
+    geom_point(data=datDHa_0, aes(x=Dates,y=DH7d_0_r6, color = "50-59")) +
+    geom_point(data=datDHa_0, aes(x=Dates,y=DH8d_0_r6, color = "60-69")) +
+    geom_point(data=datDHa_0, aes(x=Dates,y=DH9d_0_r6, color = "70+"))  
   pDH_1 <- ggplot() +
     labs(x = "", y = Yname[2], color = "Age group") + #Legend") + 
     scale_color_manual(values = colors) +
     theme(axis.title = element_text(size = 12, face = "bold")) +  #ggtitle(Title_1) +
+    scale_x_date(breaks= breaks, date_labels= date_labels) +
     geom_line (data=datDHa_1, aes(x=Dates,y=DH1w, color = "0-4")) +
     geom_line (data=datDHa_1, aes(x=Dates,y=DH2w, color = "05-11")) +
     geom_line (data=datDHa_1, aes(x=Dates,y=DH3w, color = "12-17")) +
@@ -2207,58 +2296,77 @@ invisible(dev.off())
     geom_line (data=datDHa_1, aes(x=Dates,y=DH7w, color = "50-59")) +
     geom_line (data=datDHa_1, aes(x=Dates,y=DH8w, color = "60-69")) +
     geom_line (data=datDHa_1, aes(x=Dates,y=DH9w, color = "70+")) +
-    geom_point(data=datDHa_1, aes(x=Dates,y=DH1d_1_r5, color = "0-4")) +
-    geom_point(data=datDHa_1, aes(x=Dates,y=DH2d_1_r5, color = "05-11")) +
-    geom_point(data=datDHa_1, aes(x=Dates,y=DH3d_1_r5, color = "12-17")) +
-    geom_point(data=datDHa_1, aes(x=Dates,y=DH4d_1_r5, color = "18-29")) +
-    geom_point(data=datDHa_1, aes(x=Dates,y=DH5d_1_r5, color = "30-39")) +
-    geom_point(data=datDHa_1, aes(x=Dates,y=DH6d_1_r5, color = "40-49")) +
-    geom_point(data=datDHa_1, aes(x=Dates,y=DH7d_1_r5, color = "50-59")) +
-    geom_point(data=datDHa_1, aes(x=Dates,y=DH8d_1_r5, color = "60-69")) +
-    geom_point(data=datDHa_1, aes(x=Dates,y=DH9d_1_r5, color = "70+"))  
+    geom_point(data=datDHa_1, aes(x=Dates,y=DH1d_1_r6, color = "0-4")) +
+    geom_point(data=datDHa_1, aes(x=Dates,y=DH2d_1_r6, color = "05-11")) +
+    geom_point(data=datDHa_1, aes(x=Dates,y=DH3d_1_r6, color = "12-17")) +
+    geom_point(data=datDHa_1, aes(x=Dates,y=DH4d_1_r6, color = "18-29")) +
+    geom_point(data=datDHa_1, aes(x=Dates,y=DH5d_1_r6, color = "30-39")) +
+    geom_point(data=datDHa_1, aes(x=Dates,y=DH6d_1_r6, color = "40-49")) +
+    geom_point(data=datDHa_1, aes(x=Dates,y=DH7d_1_r6, color = "50-59")) +
+    geom_point(data=datDHa_1, aes(x=Dates,y=DH8d_1_r6, color = "60-69")) +
+    geom_point(data=datDHa_1, aes(x=Dates,y=DH9d_1_r6, color = "70+"))  
   
   #DO
-  DO1d_0_r5 = redact2(YEXP(datDOa_0$DO1d,1))  #redact after reversing LOG10
-  DO1d_1_r5 = redact2(YEXP(datDOa_1$DO1d,1))  #redact
-  DO2d_0_r5 = redact2(YEXP(datDOa_0$DO2d,1))  #redact
-  DO2d_1_r5 = redact2(YEXP(datDOa_1$DO2d,1))  #redact
-  DO3d_0_r5 = redact2(YEXP(datDOa_0$DO3d,1))  #redact
-  DO3d_1_r5 = redact2(YEXP(datDOa_1$DO3d,1))  #redact
-  DO4d_0_r5 = redact2(YEXP(datDOa_0$DO4d,1))  #redact
-  DO4d_1_r5 = redact2(YEXP(datDOa_1$DO4d,1))  #redact
-  DO5d_0_r5 = redact2(YEXP(datDOa_0$DO5d,1))  #redact
-  DO5d_1_r5 = redact2(YEXP(datDOa_1$DO5d,1))  #redact
-  DO6d_0_r5 = redact2(YEXP(datDOa_0$DO6d,1))  #redact
-  DO6d_1_r5 = redact2(YEXP(datDOa_1$DO6d,1))  #redact
-  DO7d_0_r5 = redact2(YEXP(datDOa_0$DO7d,1))  #redact
-  DO7d_1_r5 = redact2(YEXP(datDOa_1$DO7d,1))  #redact
-  DO8d_0_r5 = redact2(YEXP(datDOa_0$DO8d,1))  #redact
-  DO8d_1_r5 = redact2(YEXP(datDOa_1$DO8d,1))  #redact
-  DO9d_0_r5 = redact2(YEXP(datDOa_0$DO9d,1))  #redact
-  DO9d_1_r5 = redact2(YEXP(datDOa_1$DO9d,1))  #redact
-  DO1d_0_r5 = YLOG(r5(DO1d_0_r5),1)          #round and LOG
-  DO1d_1_r5 = YLOG(r5(DO1d_1_r5),1)          #round
-  DO2d_0_r5 = YLOG(r5(DO2d_0_r5),1)          #round
-  DO2d_1_r5 = YLOG(r5(DO2d_1_r5),1)          #round
-  DO3d_0_r5 = YLOG(r5(DO3d_0_r5),1)          #round
-  DO3d_1_r5 = YLOG(r5(DO3d_1_r5),1)          #round
-  DO4d_0_r5 = YLOG(r5(DO4d_0_r5),1)          #round
-  DO4d_1_r5 = YLOG(r5(DO4d_1_r5),1)          #round
-  DO5d_0_r5 = YLOG(r5(DO5d_0_r5),1)          #round
-  DO5d_1_r5 = YLOG(r5(DO5d_1_r5),1)          #round
-  DO6d_0_r5 = YLOG(r5(DO6d_0_r5),1)          #round
-  DO6d_1_r5 = YLOG(r5(DO6d_1_r5),1)          #round
-  DO7d_0_r5 = YLOG(r5(DO7d_0_r5),1)          #round
-  DO7d_1_r5 = YLOG(r5(DO7d_1_r5),1)          #round
-  DO8d_0_r5 = YLOG(r5(DO8d_0_r5),1)          #round
-  DO8d_1_r5 = YLOG(r5(DO8d_1_r5),1)          #round
-  DO9d_0_r5 = YLOG(r5(DO9d_0_r5),1)          #round
-  DO9d_1_r5 = YLOG(r5(DO9d_1_r5),1)          #round
+  #DO1d_0_r5 = redact2(YEXP(datDOa_0$DO1d,1))  #redact after reversing LOG10
+  #DO1d_1_r5 = redact2(YEXP(datDOa_1$DO1d,1))  #redact
+  #DO2d_0_r5 = redact2(YEXP(datDOa_0$DO2d,1))  #redact
+  #DO2d_1_r5 = redact2(YEXP(datDOa_1$DO2d,1))  #redact
+  #DO3d_0_r5 = redact2(YEXP(datDOa_0$DO3d,1))  #redact
+  #DO3d_1_r5 = redact2(YEXP(datDOa_1$DO3d,1))  #redact
+  #DO4d_0_r5 = redact2(YEXP(datDOa_0$DO4d,1))  #redact
+  #DO4d_1_r5 = redact2(YEXP(datDOa_1$DO4d,1))  #redact
+  #DO5d_0_r5 = redact2(YEXP(datDOa_0$DO5d,1))  #redact
+  #DO5d_1_r5 = redact2(YEXP(datDOa_1$DO5d,1))  #redact
+  #DO6d_0_r5 = redact2(YEXP(datDOa_0$DO6d,1))  #redact
+  #DO6d_1_r5 = redact2(YEXP(datDOa_1$DO6d,1))  #redact
+  #DO7d_0_r5 = redact2(YEXP(datDOa_0$DO7d,1))  #redact
+  #DO7d_1_r5 = redact2(YEXP(datDOa_1$DO7d,1))  #redact
+  #DO8d_0_r5 = redact2(YEXP(datDOa_0$DO8d,1))  #redact
+  #DO8d_1_r5 = redact2(YEXP(datDOa_1$DO8d,1))  #redact
+  #DO9d_0_r5 = redact2(YEXP(datDOa_0$DO9d,1))  #redact
+  #DO9d_1_r5 = redact2(YEXP(datDOa_1$DO9d,1))  #redact
+  #DO1d_0_r5 = YLOG(r5(DO1d_0_r5),1)          #round and LOG
+  #DO1d_1_r5 = YLOG(r5(DO1d_1_r5),1)          #round
+  #DO2d_0_r5 = YLOG(r5(DO2d_0_r5),1)          #round
+  #DO2d_1_r5 = YLOG(r5(DO2d_1_r5),1)          #round
+  #DO3d_0_r5 = YLOG(r5(DO3d_0_r5),1)          #round
+  #DO3d_1_r5 = YLOG(r5(DO3d_1_r5),1)          #round
+  #DO4d_0_r5 = YLOG(r5(DO4d_0_r5),1)          #round
+  #DO4d_1_r5 = YLOG(r5(DO4d_1_r5),1)          #round
+  #DO5d_0_r5 = YLOG(r5(DO5d_0_r5),1)          #round
+  #DO5d_1_r5 = YLOG(r5(DO5d_1_r5),1)          #round
+  #DO6d_0_r5 = YLOG(r5(DO6d_0_r5),1)          #round
+  #DO6d_1_r5 = YLOG(r5(DO6d_1_r5),1)          #round
+  #DO7d_0_r5 = YLOG(r5(DO7d_0_r5),1)          #round
+  #DO7d_1_r5 = YLOG(r5(DO7d_1_r5),1)          #round
+  #DO8d_0_r5 = YLOG(r5(DO8d_0_r5),1)          #round
+  #DO8d_1_r5 = YLOG(r5(DO8d_1_r5),1)          #round
+  #DO9d_0_r5 = YLOG(r5(DO9d_0_r5),1)          #round
+  #DO9d_1_r5 = YLOG(r5(DO9d_1_r5),1)          #round
+  DO1d_0_r6 = YLOG(rm6(YEXP(datDOa_0$DO1d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DO2d_0_r6 = YLOG(rm6(YEXP(datDOa_0$DO2d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DO3d_0_r6 = YLOG(rm6(YEXP(datDOa_0$DO3d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DO4d_0_r6 = YLOG(rm6(YEXP(datDOa_0$DO4d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DO5d_0_r6 = YLOG(rm6(YEXP(datDOa_0$DO5d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DO6d_0_r6 = YLOG(rm6(YEXP(datDOa_0$DO6d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DO7d_0_r6 = YLOG(rm6(YEXP(datDOa_0$DO7d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DO8d_0_r6 = YLOG(rm6(YEXP(datDOa_0$DO8d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DO9d_0_r6 = YLOG(rm6(YEXP(datDOa_0$DO9d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DO1d_1_r6 = YLOG(rm6(YEXP(datDOa_1$DO1d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DO2d_1_r6 = YLOG(rm6(YEXP(datDOa_1$DO2d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DO3d_1_r6 = YLOG(rm6(YEXP(datDOa_1$DO3d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DO4d_1_r6 = YLOG(rm6(YEXP(datDOa_1$DO4d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DO5d_1_r6 = YLOG(rm6(YEXP(datDOa_1$DO5d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DO6d_1_r6 = YLOG(rm6(YEXP(datDOa_1$DO6d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DO7d_1_r6 = YLOG(rm6(YEXP(datDOa_1$DO7d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DO8d_1_r6 = YLOG(rm6(YEXP(datDOa_1$DO8d,1)),1) #reverse LOG10, round mid-6, and LOG10
+  DO9d_1_r6 = YLOG(rm6(YEXP(datDOa_1$DO9d,1)),1) #reverse LOG10, round mid-6, and LOG10
 
   pDO_0 <- ggplot() +
     labs(x = 'Date', y = Yname[3], color = "") + #Legend") + 
     scale_color_manual(values = colors) +
     theme(axis.title = element_text(size = 12, face = "bold")) +  #ggtitle(Title_0) +
+    scale_x_date(breaks= breaks, date_labels= date_labels) +
     geom_line (data=datDOa_0, aes(x=Dates,y=DO1w, color = "0-4")) +
     geom_line (data=datDOa_0, aes(x=Dates,y=DO2w, color = "05-11")) +
     geom_line (data=datDOa_0, aes(x=Dates,y=DO3w, color = "12-17")) +
@@ -2268,19 +2376,20 @@ invisible(dev.off())
     geom_line (data=datDOa_0, aes(x=Dates,y=DO7w, color = "50-59")) +
     geom_line (data=datDOa_0, aes(x=Dates,y=DO8w, color = "60-69")) +
     geom_line (data=datDOa_0, aes(x=Dates,y=DO9w, color = "70+")) +
-    geom_point(data=datDOa_0, aes(x=Dates,y=DO1d_0_r5, color = "0-4")) +
-    geom_point(data=datDOa_0, aes(x=Dates,y=DO2d_0_r5, color = "05-11")) +
-    geom_point(data=datDOa_0, aes(x=Dates,y=DO3d_0_r5, color = "12-17")) +
-    geom_point(data=datDOa_0, aes(x=Dates,y=DO4d_0_r5, color = "18-29")) +
-    geom_point(data=datDOa_0, aes(x=Dates,y=DO5d_0_r5, color = "30-39")) +
-    geom_point(data=datDOa_0, aes(x=Dates,y=DO6d_0_r5, color = "40-49")) +
-    geom_point(data=datDOa_0, aes(x=Dates,y=DO7d_0_r5, color = "50-59")) +
-    geom_point(data=datDOa_0, aes(x=Dates,y=DO8d_0_r5, color = "60-69")) +
-    geom_point(data=datDOa_0, aes(x=Dates,y=DO9d_0_r5, color = "70+"))  
+    geom_point(data=datDOa_0, aes(x=Dates,y=DO1d_0_r6, color = "0-4")) +
+    geom_point(data=datDOa_0, aes(x=Dates,y=DO2d_0_r6, color = "05-11")) +
+    geom_point(data=datDOa_0, aes(x=Dates,y=DO3d_0_r6, color = "12-17")) +
+    geom_point(data=datDOa_0, aes(x=Dates,y=DO4d_0_r6, color = "18-29")) +
+    geom_point(data=datDOa_0, aes(x=Dates,y=DO5d_0_r6, color = "30-39")) +
+    geom_point(data=datDOa_0, aes(x=Dates,y=DO6d_0_r6, color = "40-49")) +
+    geom_point(data=datDOa_0, aes(x=Dates,y=DO7d_0_r6, color = "50-59")) +
+    geom_point(data=datDOa_0, aes(x=Dates,y=DO8d_0_r6, color = "60-69")) +
+    geom_point(data=datDOa_0, aes(x=Dates,y=DO9d_0_r6, color = "70+"))  
   pDO_1 <- ggplot() +
     labs(x = 'Date', y = Yname[3], color = "") + #Legend") + 
     scale_color_manual(values = colors) +
     theme(axis.title = element_text(size = 12, face = "bold")) +  #ggtitle(Title_1 +
+    scale_x_date(breaks= breaks, date_labels= date_labels) +
     geom_line (data=datDOa_1, aes(x=Dates,y=DO1w, color = "0-4")) +
     geom_line (data=datDOa_1, aes(x=Dates,y=DO2w, color = "05-11")) +
     geom_line (data=datDOa_1, aes(x=Dates,y=DO3w, color = "12-17")) +
@@ -2290,15 +2399,15 @@ invisible(dev.off())
     geom_line (data=datDOa_1, aes(x=Dates,y=DO7w, color = "50-59")) +
     geom_line (data=datDOa_1, aes(x=Dates,y=DO8w, color = "60-69")) +
     geom_line (data=datDOa_1, aes(x=Dates,y=DO9w, color = "70+")) +
-    geom_point(data=datDOa_1, aes(x=Dates,y=DO1d_1_r5, color = "0-4")) +
-    geom_point(data=datDOa_1, aes(x=Dates,y=DO2d_1_r5, color = "05-11")) +
-    geom_point(data=datDOa_1, aes(x=Dates,y=DO3d_1_r5, color = "12-17")) +
-    geom_point(data=datDOa_1, aes(x=Dates,y=DO4d_1_r5, color = "18-29")) +
-    geom_point(data=datDOa_1, aes(x=Dates,y=DO5d_1_r5, color = "30-39")) +
-    geom_point(data=datDOa_1, aes(x=Dates,y=DO6d_1_r5, color = "40-49")) +
-    geom_point(data=datDOa_1, aes(x=Dates,y=DO7d_1_r5, color = "50-59")) +
-    geom_point(data=datDOa_1, aes(x=Dates,y=DO8d_1_r5, color = "60-69")) +
-    geom_point(data=datDOa_1, aes(x=Dates,y=DO9d_1_r5, color = "70+"))
+    geom_point(data=datDOa_1, aes(x=Dates,y=DO1d_1_r6, color = "0-4")) +
+    geom_point(data=datDOa_1, aes(x=Dates,y=DO2d_1_r6, color = "05-11")) +
+    geom_point(data=datDOa_1, aes(x=Dates,y=DO3d_1_r6, color = "12-17")) +
+    geom_point(data=datDOa_1, aes(x=Dates,y=DO4d_1_r6, color = "18-29")) +
+    geom_point(data=datDOa_1, aes(x=Dates,y=DO5d_1_r6, color = "30-39")) +
+    geom_point(data=datDOa_1, aes(x=Dates,y=DO6d_1_r6, color = "40-49")) +
+    geom_point(data=datDOa_1, aes(x=Dates,y=DO7d_1_r6, color = "50-59")) +
+    geom_point(data=datDOa_1, aes(x=Dates,y=DO8d_1_r6, color = "60-69")) +
+    geom_point(data=datDOa_1, aes(x=Dates,y=DO9d_1_r6, color = "70+"))
   
   gridExtra::grid.arrange(pH_0, pH_1, pDH_0, pDH_1, pDO_0, pDO_1, nrow = 3, ncol = 2)
   
@@ -2326,6 +2435,8 @@ invisible(dev.off())
 #}
 
 
+#pdf filenamepathAll
+if (pset$iplatform<2) {dev.off()} #dev.off()
 
 
 

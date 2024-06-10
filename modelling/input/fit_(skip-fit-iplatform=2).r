@@ -15,10 +15,21 @@ sink()
 ## svg Plots
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_marginalPlot")
 svglite(paste0(filenamepath,".svg")); print(plot(1:10,1:10)); invisible(dev.off())
-##
-filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_plotout_lastPage")
-svglite(paste0(filenamepath,".svg")); print(plot(1:10,1:10)); invisible(dev.off())
-##
+
+## svg Plots
+filenamepath    = paste0(output_dir,"/",pset$File_fit_output0,"_marginalTrace")
+svglite(paste0(filenamepath,"1",".svg")); print(plot(1:10,1:10)); invisible(dev.off())
+svglite(paste0(filenamepath,"2",".svg")); print(plot(1:10,1:10)); invisible(dev.off())
+svglite(paste0(filenamepath,"3",".svg")); print(plot(1:10,1:10)); invisible(dev.off())
+svglite(paste0(filenamepath,"4",".svg")); print(plot(1:10,1:10)); invisible(dev.off())
+
+## mcmc csv
+filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_mcmcChain")
+for (i in 1:3) { #default: nchain=3
+  write.csv(data.frame(1:10), file=paste0(filenamepath,i,".csv")) 
+}
+
+## svg Plots
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_correlationPlot")
 svglite(paste0(filenamepath,".svg")); print(plot(1:10,1:10)); invisible(dev.off())
 ##
@@ -46,17 +57,10 @@ svglite(paste0(filenamepath,".svg")); print(plot(1:10,1:10)); invisible(dev.off(
 #if (!is.element(pset$iplatform,1)){
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_plots_probs")
 svglite(paste0(filenamepath,".svg")); print(plot(1:10,1:10)); invisible(dev.off())
-##
-filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_plots_probs_log")
-svglite(paste0(filenamepath,".svg")); print(plot(1:10,1:10)); invisible(dev.off())
+
 ##
 filenamepath = paste0(output_dir,"/",pset$File_fit_summary0,"_1")
 svglite(paste0(filenamepath,".svg")); print(plot(1:10,1:10)); invisible(dev.off())
 filenamepath = paste0(output_dir,"/",pset$File_fit_summary0,"_2")
 svglite(paste0(filenamepath,".svg")); print(plot(1:10,1:10)); invisible(dev.off())
-##
-#filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_variables")
-#svglite(paste0(filenamepath,".svg")); print(plot(1:10,1:10)); invisible(dev.off())
 
-## output from main.Rmh
-## html01: output/modelling/J5_Main_Fit_Report.html

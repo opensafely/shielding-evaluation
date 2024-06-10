@@ -4,7 +4,7 @@ library(rmarkdown)
 print("input Rmd \n")
 print(paste0(getwd(),"/main.Rmd"))
 
-jobno = "J6_2per_m_d_" #as in: pset$Job <= main <= setup.r
+jobno = "J6_2periodNoP_" #as in: pset$Job <= main <= setup.r
    
 rmarkdown::render(input       = paste0(getwd(),"/main.Rmd"), clean = T,  
                   output_dir  = paste0(getwd(),"/output/modelling"),  #same as in main 
