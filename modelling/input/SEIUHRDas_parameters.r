@@ -112,6 +112,7 @@ pars <- within(pars, {
 #pars <- within(pars, {
   #update
   #input_dir  <- getwd() #paste0(getwd(),"/modelling/input"))#
-  source(paste0(input_dir,"/parameters_J6_24apr24_rev.r"))
+   source(paste0(input_dir,"/parameters_J6_10jun24.r"))
+  #source(paste0(input_dir,"/parameters_J6_24apr24_rev.r"))
   #source(paste0(input_dir,"/parameters_J6_23may24.r"))
 #})

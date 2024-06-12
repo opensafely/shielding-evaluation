@@ -51,11 +51,13 @@ pc1 <- function(x)  { return(round(100*x,1))}
 pc2 <- function(x)  { return(round(100*x,2))}
 rd2 <- function(x)  { return(round(x,2))}
 rd3 <- function(x)  { return(round(x,3))}
-tr  <- function(x)  {x = if(x<8) "<8" else x; return(x)}
-pct1 <- function(n,N) {
-   x = if(n<8 & N>7) as.character(paste0("<",eval(round(100*(8/N),1)),"%")) else if(n<8 & N<8) as.character(paste0("NA")) else paste0(pc1(n/N),'%'); return(x)}
-frt2 <- function(n,N) {
-   x = if(n<8 & N>7) as.character(paste0("<",eval(round((8/N),1)))) else if(n<8 & N<8) as.character(paste0("NA")) else paste0(rd2(n/N)); return(x)}
+
+#roundmid_any <- function(x, to=6){
+#  # like round_any, but centers on (integer) midpoint of the rounding points
+#  ceiling(x/to)*to - (floor(to/2)*(x!=0)) }
+rm6 <- function(x){ ceiling(x/6)*6 - (floor(6/2)*(x!=0))   }
+r5  <- function(x){ return( round(x/5)*5)   }
+
 
 ######## Week frequencies
 frqs <- function(data, vars, name){
@@ -345,8 +347,8 @@ datH     <- dat      %>% rename(Week=weekH, Date=dateH, Freq=freqH)           %>
   w0     <- datH     %>% write.csv(.,file=paste0(filepart,"_all_UNDERLIE.csv"))                  #output data
   #if(sum(datH$LowCount)>0){
   print(paste0(filename,"_all, low counts: ", sum(datH$LowCount)))
-  w1     <- datH     %>% mutate(Freq     = ifelse(Freq<8,Freq_cutoff,Freq))   %>%
-                         write.csv(.,file=paste0(filepart,"_all_REDACTED.csv"))               }#}#output data
+  w1     <- datH     %>% mutate(Freq     = rm6(Freq))                         %>%
+                         write.csv(.,file=paste0(filepart,"_all_ROUNDED.csv"))                }#}#output data
 #Long-pivot, FULL including data and 0s (i.e. missing data, no reporting) - no ageg merging
 nweek = max(range(c(48))) #,range(DAT$weekH,na.rm=T),range(DAT$weekD,na.rm=T))))
 print(paste0("nweek = ", nweek))
@@ -372,8 +374,8 @@ datHa    <- dat        %>% rename(Week=weekH, Date=dateH, Freq=freqHa, Ageg=ageg
   w0     <- datHa      %>% write.csv(.,file=paste0(filepart,"_by_age_UNDERLIE.csv"))             #output data
   #if(sum(datHa$LowCount)>0){
   print(paste0(filename,"_by_age, low counts: ", sum(datHa$LowCount)))
-  w1     <- datHa      %>% mutate(Freq     = ifelse(Freq<8,Freq_cutoff,Freq))   %>%
-                           write.csv(.,file=paste0(filepart,"_by_age_REDACTED.csv"))          }#}#output data
+  w1     <- datHa      %>% mutate(Freq     = rm6(Freq))   %>%
+                           write.csv(.,file=paste0(filepart,"_all_ROUNDED.csv"))              }#}#output data
 #Long-pivot, FULL including data and 0s (i.e. missing data, no reporting) - no ageg merging
 datHa_l  <- Longdf_a(1,9,nweek,"H") %>%                                                          #fit data
             Include_dat_a(., dat, "H", "NOMERGE")  %>% #datHa_l; print(datHa_l[which(datHa_l$freqHa>0),]) 
@@ -402,8 +404,8 @@ datHa_m  <- dat      %>% rename(Week=weekH, Date=dateH, Freq=freqHa, Ageg=ageg2)
   w0     <- datHa_m  %>% write.csv(.,file=paste0(filepart,"_by_age_merged_UNDERLIE.csv"))        #output data
   #if(sum(datHa_m$LowCount)>0){
   print(paste0(filename,"_by_age_merged, low counts: ", sum(datHa_m$LowCount)))
-  w1     <-datHa_m   %>% mutate(Freq     = ifelse(Freq<8,Freq_cutoff,Freq))   %>%
-                         write.csv(.,file=paste0(filepart,"_by_age_merged_REDACTED.csv"))     }#}#output data
+  w1     <-datHa_m   %>% mutate(Freq     = rm6(Freq))   %>%
+                         write.csv(.,file=paste0(filepart,"_by_age_merged_ROUNDED.csv"))      }#}#output data
 #Long-pivot, MERGED including data and 0s (i.e. missing data, no reporting) - merged agegs
 datHa_m_l<- Longdf_a(lageg,nageg,nweek,"H") %>%
             Include_dat_a(., dat, "H", "MERGE") %>% 
@@ -428,8 +430,8 @@ datHs    <- dat        %>% rename(Week=weekH, Date=dateH, Freq=freqHs, Shield=sh
   w0     <- datHs      %>% write.csv(.,file=paste0(filepart,"_by_shi_UNDERLIE.csv"))             #output data
   #if(sum(datHs$LowCount)>0){
   print(paste0(filename,"_by_shi, low counts: ", sum(datHs$LowCount)))
-  w1     <- datHs      %>% mutate(Freq     = ifelse(Freq<8,Freq_cutoff,Freq))   %>%
-                           write.csv(.,file=paste0(filepart,"_by_shi_REDACTED.csv"))          }#}#output data
+  w1     <- datHs      %>% mutate(Freq     = rm6(Freq))   %>%
+                           write.csv(.,file=paste0(filepart,"_by_shi_ROUNDED.csv"))          }#}#output data
 #Long-pivot, FULL including data and 0s (i.e. missing data, no reporting) - no ageg merging
 datHs_l  <- Longdf_s(1,9,nweek,"H") %>%                                                          #fit data
             Include_dat_s(., dat, "H", "NOMERGE")  %>% #datHs_l; print(datHs_l[which(datHs_l$freqHs>0),]) 
@@ -461,8 +463,8 @@ datHas   <- dat        %>% rename(Week=weekH, Date=dateH, Freq=freqHas, Ageg=age
   w0     <- datHas     %>% write.csv(.,file=paste0(filepart,"_s_by_age_UNDERLIE.csv"))           #output data
   #if(sum(datHas$LowCount)>0){
   print(paste0(filename,"_s_by_age, low counts: ", sum(datHas$LowCount)))
-  w1     <- datHas     %>% mutate(Freq     = ifelse(Freq<8,Freq_cutoff,Freq))   %>%
-                           write.csv(.,file=paste0(filepart,"_s_by_age_REDACTED.csv"))        }#}#output data
+  w1     <- datHas     %>% mutate(Freq     = rm6(Freq))   %>%
+                           write.csv(.,file=paste0(filepart,"_s_by_age_ROUNDED.csv"))        }#}#output data
 #Long-pivot, FULL including data and 0s (i.e. missing data, no reporting) - no ageg merging
 datHas_l <- Longdf_as(1,9,nweek,"H") %>%                                                         #fit data
             Include_dat_as(., dat, "H", "NOMERGE")  %>% #datHas_l; print(datHas_l[which(datHas_l$freqHas>0),]) 
@@ -490,7 +492,7 @@ datHR<- dat %>% rename(Week=weekH, Date=dateH, Freq=freqH)                      
 if (Option_WriteOutC_all==1 & Option_ForceExclusion==0){
 datw <- dat %>% write.csv(.,file=paste0(filepart,"_all_UNDERLIE.csv"))                           #output data
 datw <- dat %>% mutate(freqH = ifelse(freqH<8,Freq_cutoff,freqH)) %>%
-                write.csv(.,file=paste0(filepart,"_all_REDACTED.csv"))                          }#output data
+                write.csv(.,file=paste0(filepart,"_all_ROUNDED.csv"))                           }#output data
 #by_age
 dat  <-dat1 %>% frqs(c(weekH, age_cat), "freqHa") %>% 
                 select(ageg, weekH, dateH, freqHa, age_cat) %>% 
@@ -505,7 +507,7 @@ datHRa<-dat %>% rename(Week=weekH, Date=dateH, Freq=freqHa)                     
 if (Option_WriteOutC_age==1 & Option_ForceExclusion==0){
 datw <- dat %>% write.csv(.,file=paste0(filepart,"_by_age_UNDERLIE.csv"))                        #output data
 datw <- dat %>% mutate(freqHa = ifelse(freqHa<8,Freq_cutoff,freqHa)) %>%
-                write.csv(.,file=paste0(filepart,"_by_age_REDACTED.csv"))                       }#output data
+                write.csv(.,file=paste0(filepart,"_by_age_ROUNDED.csv"))                        }#output data
 #by_shield
 dat <- dat1 %>% frqs(c(weekH, shield), "freqHs") %>% 
                 select(shield, weekH, dateH, freqHs) %>% 
@@ -520,7 +522,7 @@ datHRs<-dat %>% rename(Week=weekH, Date=dateH, Freq=freqHs, Shield=shield)      
 if (Option_WriteOutC_age==1 & Option_ForceExclusion==0){
 datw <- dat %>% write.csv(.,file=paste0(filepart,"_by_shi_UNDERLIE.csv"))                        #output data
 datw <- dat %>% mutate(freqHs = ifelse(freqHs<8,Freq_cutoff,freqHs)) %>%
-                write.csv(.,file=paste0(filepart,"_by_shi_REDACTED.csv"))                       }#output data
+                write.csv(.,file=paste0(filepart,"_by_shi_ROUNDED.csv"))                        }#output data
 
 ### Plots 2.4, 2.5 by shielding cohort
 #shi_by_age
@@ -543,7 +545,7 @@ datHRas<- dat %>% rename(Week=weekH, Date=dateH, Freq=freqHas, Shield=shield)   
 if (Option_WriteOutC_age==1 & Option_ForceExclusion==0){
 datw   <- dat %>% write.csv(.,file=paste0(filepart,"_s_by_age_UNDERLIE.csv"))                    #output data
 datw   <- dat %>% mutate(freqHas = ifelse(freqHas<8,Freq_cutoff,freqHas)) %>%
-                  write.csv(.,file=paste0(filepart,"_s_by_age_REDACTED.csv"))                   }#output data
+                  write.csv(.,file=paste0(filepart,"_s_by_age_ROUNDED.csv"))                    }#output data
 
                  
 ### DATA 3 Deaths in Hospital by week, age, and shielding ######################
@@ -566,8 +568,8 @@ datDH    <- dat      %>% rename(Week=weekD, Date=dateD, Freq=freqD) %>%         
   w0     <- datDH    %>% write.csv(.,file=paste0(filepart,"_all_UNDERLIE.csv"))                  #output data
   #if(sum(datDH$LowCount)>0){
   print(paste0(filename,"_all, low counts: ", sum(datDH$LowCount)))
-  w1     <- datDH    %>% mutate(Freq     = ifelse(Freq<8,Freq_cutoff,Freq)) %>%
-                         write.csv(.,file=paste0(filepart,"_all_REDACTED.csv"))                 }#}#output data
+  w1     <- datDH    %>% mutate(Freq     = rm6(Freq)) %>%
+                         write.csv(.,file=paste0(filepart,"_all_ROUNDED.csv"))                  }#}#output data
 #Long-pivot, FULL including data and 0s (i.e. missing data, no reporting) - no ageg merging
 datDH_l <- Longdf(nweek,"D") %>%
            Include_dat(., dat, "D") %>% 
@@ -591,8 +593,8 @@ datDHa   <-dat       %>% rename(Week=weekD, Date=dateD, Freq=freqDa, Ageg=ageg) 
   w0     <- datDHa   %>% write.csv(.,file=paste0(filepart,"_by_age_UNDERLIE.csv"))               #output data                   
   #if(sum(datDHa$LowCount)>0){
   print(paste0(filename,"_by_age, low counts: ", sum(datDHa$LowCount)))
-  w1     <- datDHa   %>% mutate(Freq     = ifelse(Freq<8,Freq_cutoff,Freq)) %>%
-                         write.csv(.,file=paste0(filepart,"_by_age_REDACTED.csv"))            }#}#output data
+  w1     <- datDHa   %>% mutate(Freq     = rm6(Freq)) %>%
+                         write.csv(.,file=paste0(filepart,"_by_age_ROUNDED.csv"))             }#}#output data
 #Long-pivot, FULL including data and 0s (i.e. missing data, no reporting) - no ageg merging
 datDHa_l <- Longdf_a(1,9,nweek,"D") %>%
             Include_dat_a(., dat, "D", "NOMERGE") %>%
@@ -621,8 +623,8 @@ datDHa_m <- dat      %>% rename(Week=weekD, Date=weekD, Freq=freqDa, Ageg=ageg2)
   w0     <- datDHa_m %>% write.csv(.,file=paste0(filepart,"_by_age_merged_UNDERLIE.csv"))        #output data
   #if(sum(datDHa_m$LowCount)>0){
   print(paste0(filename,"_by_age_merged, low counts: ", sum(datDHa_m$LowCount)))
-  w1     <- datDHa_m %>% mutate(Freq     = ifelse(Freq<8,Freq_cutoff,Freq)) %>%
-                         write.csv(.,file=paste0(filepart,"_by_age_merged_REDACTED.csv"))     }#}#output data
+  w1     <- datDHa_m %>% mutate(Freq     = rm6(Freq)) %>%
+                         write.csv(.,file=paste0(filepart,"_by_age_merged_ROUNDED.csv"))      }#}#output data
 #Long-pivot, MERGED including data and 0s (i.e. missing data, no reporting - merged agegs
 datDHa_m_l<- Longdf_a(lageg,nageg,nweek,"D") %>%
              Include_dat_a(., dat, "D", "MERGED") %>%
@@ -647,8 +649,8 @@ datDHs   <-dat       %>% rename(Week=weekD, Date=dateD, Freq=freqDs, Shield=shie
   w0     <- datDHs   %>% write.csv(.,file=paste0(filepart,"_by_shi_UNDERLIE.csv"))               #output data
   #if(sum(datDHs$LowCount)>0){
   print(paste0(filename,"_by_shi, low counts: ", sum(datDHs$LowCount)))
-  w1     <- datDHs   %>% mutate(Freq     = ifelse(Freq<8,Freq_cutoff,Freq)) %>%
-                         write.csv(.,file=paste0(filepart,"_by_shi_REDACTED.csv"))            }#}#output data
+  w1     <- datDHs   %>% mutate(Freq     = rm6(Freq)) %>%
+                         write.csv(.,file=paste0(filepart,"_by_shi_ROUNDED.csv"))             }#}#output data
 #Long-pivot, FULL including data and 0s (i.e. missing data, no reporting) - no ageg merging
 datDHs_l <- Longdf_s(1,9,nweek,"D") %>%                                                          #fit data
             Include_dat_s(., dat, "D", "NOMERGE")  %>% #datHs_l; print(datHs_l[which(datHs_l$freqHs>0),]) 
@@ -678,8 +680,8 @@ datDHas  <- dat      %>% rename(Week=weekD, Date=dateD, Freq=freqDas, Ageg=ageg,
   w0     <- datDHas %>% write.csv(.,file=paste0(filepart,"_s_by_age_UNDERLIE.csv"))                   #output data
   #if(sum(datDHas$LowCount)>0){
   print(paste0(filename,"_s_by_age, low counts: ", sum(datDHas$LowCount)))
-  w1     <- datDHas %>% mutate(Freq     = ifelse(Freq<8,Freq_cutoff,Freq)) %>%
-                        write.csv(.,file=paste0(filepart,"_s_by_age_REDACTED.csv"))                  }#}#output data
+  w1     <- datDHas %>% mutate(Freq     = rm6(Freq)) %>%
+                        write.csv(.,file=paste0(filepart,"_s_by_age_ROUNDED.csv"))                  }#}#output data
 #Long-pivot, FULL including data and 0s (i.e. missing data, no reporting) - no ageg merging
 datDHas_l<- Longdf_as(1,9,nweek,"D") %>%
             Include_dat_as(., dat, "D", "NOMERGE") %>%
@@ -710,8 +712,8 @@ if (Option_WriteOutC_all==1){
   w0     <- datDO    %>% write.csv(.,file=paste0(filepart,"_all_UNDERLIE.csv"))                   #output data
   #if(sum(datDO$LowCount)>0){
   print(paste0(filename,"_all, low counts: ", sum(datDO$LowCount)))
-  w1     <- datDO    %>% mutate(Freq     = ifelse(Freq<8,Freq_cutoff,Freq)) %>%
-                         write.csv(.,file=paste0(filepart,"_all_REDACTED.csv"))                }#}#output data
+  w1     <- datDO    %>% mutate(Freq     = rm6(Freq)) %>%
+                         write.csv(.,file=paste0(filepart,"_all_ROUNDED.csv"))                 }#}#output data
 #Long-pivot, FULL including data and 0s (i.e. missing data, no reporting) - no ageg merging
 datDO_l  <- Longdf(nweek,"D") %>%
             Include_dat(., dat, "D") %>%  
@@ -735,8 +737,8 @@ datDOa  <-dat        %>% rename(Week=weekD, Date=dateD, Freq=freqDa, Ageg=ageg) 
   w0    <- datDOa    %>% write.csv(.,file=paste0(filepart,"_by_age_UNDERLIE.csv"))                #output data                   
   #if(sum(datDOa$LowCount)>0){
   print(paste0(filename,"_by_age, low counts: ", sum(datDOa$LowCount)))
-  w1    <- datDOa    %>% mutate(Freq     = ifelse(Freq<8,Freq_cutoff,Freq)) %>%
-                         write.csv(.,file=paste0(filepart,"_by_age_REDACTED.csv"))               }#}#output data
+  w1    <- datDOa    %>% mutate(Freq     = rm6(Freq)) %>%
+                         write.csv(.,file=paste0(filepart,"_by_age_ROUNDED.csv"))                }#}#output data
 #Long-pivot, FULL including data and 0s (i.e. missing data, no reporting) - no ageg merging
 datDOa_l<- Longdf_a(1,9,nweek,"D") %>%
            Include_dat_a(., dat, "D", "NOMERGE") %>%
@@ -765,8 +767,8 @@ datDOa_m <- dat      %>% rename(Week=weekD, Date=weekD, Freq=freqDa, Ageg=ageg2)
   w0     <- datDOa_m %>% write.csv(.,file=paste0(filepart,"_by_age_merged_UNDERLIE.csv"))        #output data
   #if(sum(datDOa_m$LowCount)>0){
   print(paste0(filename,"_by_age_merged, low counts: ", sum(datDOa_m$LowCount)))
-  w1     <- datDOa_m %>% mutate(Freq     = ifelse(Freq<8,Freq_cutoff,Freq)) %>%
-                         write.csv(.,file=paste0(filepart,"_by_age_merged_REDACTED.csv"))     }#}#output data
+  w1     <- datDOa_m %>% mutate(Freq     = rm6(Freq)) %>%
+                         write.csv(.,file=paste0(filepart,"_by_age_merged_ROUNDED.csv"))      }#}#output data
 #Long-pivot, MERGED including data and 0s (i.e. missing data, no reporting - merged agegs
 datDOa_m_l<-Longdf_a(lageg,nageg,nweek,"D") %>%
             Include_dat_a(., dat, "D", "MERGED") %>% 
@@ -791,8 +793,8 @@ datDOs   <- dat      %>% rename(Week=weekD, Date=dateD, Freq=freqDs, Shield=shie
   w0     <- datDOs   %>% write.csv(.,file=paste0(filepart,"_by_shi_UNDERLIE.csv"))               #output data
   #if(sum(datDOs$LowCount)>0){
   print(paste0(filename,"_by_shi, low counts: ", sum(datDOs$LowCount)))
-  w1     <- datDOs   %>% mutate(Freq     = ifelse(Freq<8,Freq_cutoff,Freq)) %>%
-                         write.csv(.,file=paste0(filepart,"_by_shi_REDACTED.csv"))              }#}#output data
+  w1     <- datDOs   %>% mutate(Freq     = rm6(Freq)) %>%
+                         write.csv(.,file=paste0(filepart,"_by_shi_ROUNDED.csv"))              }#}#output data
 #Long-pivot, FULL including data and 0s (i.e. missing data, no reporting) - no ageg merging
 datDOs_l <- Longdf_s(1,9,nweek,"D") %>%
             Include_dat_s(., dat, "D", "NOMERGE") %>% 
@@ -823,8 +825,8 @@ datDOas  <- dat      %>% rename(Week=weekD, Date=dateD, Freq=freqDas, Ageg=ageg,
   w0     <- datDOas  %>% write.csv(.,file=paste0(filepart,"_s_by_age_UNDERLIE.csv"))                   #output data
   #if(sum(datDOas$LowCount)>0){
   print(paste0(filename,"_s_by_age, low counts: ", sum(datDOas$LowCount)))
-  w1     <- datDOas  %>% mutate(Freq     = ifelse(Freq<8,Freq_cutoff,Freq)) %>%
-                         write.csv(.,file=paste0(filepart,"_s_by_age_REDACTED.csv"))                }#}#output data  
+  w1     <- datDOas  %>% mutate(Freq     = rm6(Freq)) %>%
+                         write.csv(.,file=paste0(filepart,"_s_by_age_ROUNDED.csv"))                 }#}#output data  
 #Long-pivot, FULL including data and 0s (i.e. missing data, no reporting) - no ageg merging
 datDOas_l<- Longdf_as(1,9,nweek,"D") %>%
             Include_dat_as(., dat, "D", "NOMERGE") %>%
