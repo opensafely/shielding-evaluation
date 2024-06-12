@@ -826,7 +826,7 @@ datDOas  <- dat      %>% rename(Week=weekD, Date=dateD, Freq=freqDas, Ageg=ageg,
   #if(sum(datDOas$LowCount)>0){
   print(paste0(filename,"_s_by_age, low counts: ", sum(datDOas$LowCount)))
   w1     <- datDOas  %>% mutate(Freq     = rm6(Freq)) %>%
-                         write.csv(.,file=paste0(filepart,"_s_by_age_REDACTED.csv"))                }#}#output data  
+                         write.csv(.,file=paste0(filepart,"_s_by_age_ROUNDED.csv"))                 }#}#output data  
 #Long-pivot, FULL including data and 0s (i.e. missing data, no reporting) - no ageg merging
 datDOas_l<- Longdf_as(1,9,nweek,"D") %>%
             Include_dat_as(., dat, "D", "NOMERGE") %>%
