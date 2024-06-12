@@ -361,7 +361,7 @@ gs <- function(par)  {  return(theta = sqrt(par))    }
 ge <- function(par)  {  return(theta = log(par))     }
 gl <- function(par)  {  return(theta = exp(par))     }
 
-#pars$rIR
+#pars$rEI #pars$rIR
 f1  <- function(theta) { fi(theta)}; 
 g1  <- function(par)   { gi(par)}
 #pars$rIH
@@ -417,6 +417,7 @@ age9 = age[9]
 age1 = age[1]
 age3 = age[3]
 
+tMax0    = 5  #20 #10
 tMax     = 10 #20 #10
 tMax2    = 30 #50 #30
 tMin     = 1  #
@@ -465,7 +466,7 @@ LogLikelihood <- function(theta){
   ###         MAP      parsE$, 
   ###         sample   parsES$
   ### Proposed parameters
-  pars$rIR = f1(theta[1])
+  pars$rEI = f1(theta[1])
   pars$rIH = f2(theta[2])
   pars$rOD = f3(theta[3]) #pars$rODa= f3(theta[3])
   pars$pE0 = f4(theta[4])
@@ -506,8 +507,10 @@ LogLikelihood <- function(theta){
   #pars$da_1 = pars$h_1*pars$ma_1
   #pars$db_0 = pars$h_0*pars$mb_0
   #pars$db_1 = pars$h_1*pars$mb_1
-  pars$y_0[3:9] = yM1_0*exp((age[3:9]-age9)*yR1_0)
-  pars$y_1[3:9] = yM1_1*exp((age[3:9]-age9)*yR1_1)
+  pars$y_0[1:9] = yM1_0*exp((age[1:9]-age9)*yR1_0)
+  pars$y_1[1:9] = yM1_1*exp((age[1:9]-age9)*yR1_1)
+  #pars$y_0[3:9] = yM1_0*exp((age[3:9]-age9)*yR1_0)
+  #pars$y_1[3:9] = yM1_1*exp((age[3:9]-age9)*yR1_1)
   pars$Ea0   = pars$Na0*pars$pE0
   pars$Sa0   = pars$Na0 - pars$Ea0 - pars$Ia0 - pars$Ua0 - pars$Ha0 - pars$Oa0 - pars$Ra0 - pars$Da0   
   pars$beta  = BETA(pars) #BETA_0(pars)
@@ -733,13 +736,13 @@ LogLikelihood <- function(theta){
 niter = 30000#120000#30000#6000#60000#15000#6000#3000#30000#60000
 if (pset$iplatform==2){niter=200000} #150000} #120000}
 
-        #1/rIR,     1/rIH,       1/rOD,       pE0,          hM,                         hR,                
+        #1/rEI,     1/rIH,       1/rOD,       pE0,          hM,                         hR,                
 LOWER = c(tMin,     tMin2,       tMin2,       g4(pE0Min),   g5(hMMin),    g6(hMMin),    g7(hRMin),    g8(hRMin),
         #dM,                     dR,                        yM1,                        yR1,
         g9(hMMin),  g10(hMMin),  g11(hRMin),  g12(hRMin),   g13(yM1Min),  g14(yM1Min),  g15(yR1Min),  g16(yR1Min));
 
-        #1/rIR,     1/rIH,       1/rOD,       pE0,          hM,                         hR,                
-UPPER = c(tMax,     tMax2,       tMax2,       g4(pE0Max),   g5(hMMax),    g6(hMMax),    g7(hRMax),    g8(hRMax),
+        #1/rEI,     1/rIH,       1/rOD,       pE0,          hM,                         hR,                
+UPPER = c(tMax0,    tMax2,       tMax2,       g4(pE0Max),   g5(hMMax),    g6(hMMax),    g7(hRMax),    g8(hRMax),
         #dM,                     dR                         yM1,                        yR1,
         g9(hMMax),  g10(hMMax),  g11(hRMax),  g12(hRMax),   g13(yM1Max),  g14(yM1Max),  g15(yR1Max),  g16(yR1Max));
 
@@ -764,12 +767,12 @@ yRbest_1= pars$yR1_1 #0.0151 #0.0115 #0.019
 #R0best  = pars$R0
 #kDHbest = pars$kDH
   
-BEST0 = c(1/pars$rIR, 1/pars$rIH, 1/pars$rOD, pars$pE0, #1/pars$rODa
+BEST0 = c(1/pars$rEI, 1/pars$rIH, 1/pars$rOD, pars$pE0, #1/pars$rODa
          hMbest_0, hMbest_1, hRbest_0, hRbest_1,
          dMbest_0, dMbest_1, dRbest_0, dRbest_1, # adbest_0, adbest_1, R0best,   kDHbest,         # 
          yMbest_0, yMbest_1, yRbest_0, yRbest_1)
 
-BEST = c( g1(pars$rIR),  g2(pars$rIH),  g3(pars$rOD),  g4(pars$pE0),  #g3(pars$rODa) #currently: g() only affects par 4
+BEST = c( g1(pars$rEI),  g2(pars$rIH),  g3(pars$rOD),  g4(pars$pE0),  #g3(pars$rODa) #currently: g() only affects par 4
           g5(hMbest_0),  g6(hMbest_1),  g7(hRbest_0),  g8(hRbest_1),
           g9(dMbest_0), g10(dMbest_1), g11(dRbest_0), g12(dRbest_1),  #g9(adbest_0), g10(adbest_1), g11(R0best),   g12(kDHbest),  # 
          g13(yMbest_0), g14(yMbest_1), g15(yRbest_0), g16(yRbest_1))
@@ -816,31 +819,42 @@ tout3 <- system.time(out3 <- runMCMC(bayesianSetup=setup, settings=settings) )
 
 
 ## SAVE MCMC chain objects for OC and for outside reconstruction
+## -thinned (x7)
+library(coda)
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_mcmcChain")
-for (i in 1:3) { #default: nchain=3
-  c=coda::as.mcmc(out$chain[[i]])
-  write.csv(data.frame(c), file=paste0(filenamepath,i,".csv")) 
+# thinned indices
+y  <- out$chain[[1]]
+i7 <- seq(seq_along(y[,1])[1]+6,seq_along(y[,1])[length(y[,1])],7)
+# thinned mcmc object and csv writing
+out2=out
+for (ic in 1:3) { #default: nchain=3
+  out2$chain[[ic]] <- coda::as.mcmc(out$chain[[ic]][i7,])
+  write.csv(data.frame(out2$chain[[ic]]), file=paste0(filenamepath,ic,".csv")) 
 }
 
-## CHAIN diagnostics, split in 4-par sets
+## CHAINS diagnostics -split in 4-par sets
 npar = length(LOWER)
 
-#pdf filenamepathAll
+# pdf filenamepathAll - start ##################################################
 filenamepathAll = paste0(output_dir,"/",pset$File_fit_output0,"_All")
 if (pset$iplatform<2) {pdf(paste0(filenamepathAll,".pdf"))}
 
-#parname=paste0("p",1:npar)
+# parname=paste0("p",1:npar)
+# column sets
 J=unique(ceiling((1:npar)/4))
-Ja=unique(4*(floor((1:npar-1)/4))+1) #npar external
-Jb=unique(4*(ceiling((1:npar)/4)))  #npar external
-out2=out
+Ja=unique(4*(floor((1:npar-1)/4))+1)  #npar external
+Jb=unique(4*(ceiling((1:npar)/4)))    #npar external
 
+# narrower-column mcmc object
+out3=out2
 filenamepath    = paste0(output_dir,"/",pset$File_fit_output0,"_marginalTrace")
-for (j in seq_along(J)){
+for (icolset in seq_along(J)){
   for(ic in 1:3) {
-    out2$chain[[ic]] <- out$chain[[ic]][,c(Ja[j]:Jb[j])] }
-  plot(out2$chain); 
-  svg(paste0(filenamepath,j,".svg")); plot(out2$chain); dev.off() }
+    out3$chain[[ic]] <- coda::as.mcmc(out2$chain[[ic]][,c(Ja[icolset]:Jb[icolset])]) }
+# object plotting and svg writing
+  par(mar = c(2, 2, 1, 1)) ##bottom, left, top, right #default: par("mar") #[1] 5.1 4.1 4.1 2.1
+  plot(out3$chain); 
+  svg(paste0(filenamepath,icolset,".svg")); plot(out3$chain); dev.off() }
 #if (pset$iplatform<2) {dev.off()}; #dev.off()
 
 
@@ -853,7 +867,7 @@ MAPE      <- MAP(out) #pars estimated
 ###         proposal pars$
 ###         MAP      parsE$, 
 ###         sample   parsES$
-parsE$rIR <- f1(as.vector(MAPE$parametersMAP[1]))
+parsE$rEI <- f1(as.vector(MAPE$parametersMAP[1]))
 parsE$rIH <- f2(as.vector(MAPE$parametersMAP[2]))
 parsE$rOD <- f3(as.vector(MAPE$parametersMAP[3])) #parsE$rODa
 parsE$pE0 <- f4(as.vector(MAPE$parametersMAP[4]))
@@ -891,8 +905,10 @@ parsE$d_1 = dME_1*exp((age-age9)*dRE_1) #2*parsE$h_1*pars$m_1
 #parsE$da_1 = parsE$h_1*pars$ma_1
 #parsE$db_0 = parsE$h_0*pars$mb_0
 #parsE$db_1 = parsE$h_1*pars$mb_1
-parsE$y_0[3:9] = yM1E_0*exp((age[3:9]-age9)*yR1E_0)
-parsE$y_1[3:9] = yM1E_1*exp((age[3:9]-age9)*yR1E_1)
+parsE$y_0[1:9] = yM1E_0*exp((age[1:9]-age9)*yR1E_0)
+parsE$y_1[1:9] = yM1E_1*exp((age[1:9]-age9)*yR1E_1)
+#parsE$y_0[3:9] = yM1E_0*exp((age[3:9]-age9)*yR1E_0)
+#parsE$y_1[3:9] = yM1E_1*exp((age[3:9]-age9)*yR1E_1)
 parsE$Ea0   = parsE$Na0*parsE$pE0
 parsE$Sa0   = parsE$Na0 - parsE$Ea0 - parsE$Ia0 - parsE$Ua0 - parsE$Ha0 - parsE$Oa0 - parsE$Ra0 - parsE$Da0   
 parsE$beta  = BETA(parsE) #BETA_0(parsE)
@@ -938,17 +954,17 @@ psample = getSample(out, parametersOnly = T, start=StartSampChainPostBurn, end= 
 #dim(psample) #= c(nsample, npar)
 #
 # Parameter stats
-Pname=c("rIR  ",  "rIH  ",  "rOD  ", "pE0  ",
+Pname=c("rEI  ",  "rIH  ",  "rOD  ", "pE0  ",
         "hM_0 ",  "hM_1 ",  "hR_0 ", "hR_1 ",  
         "dM_0 ",  "dM_1 ",  "dR_0 ", "dR_1 ", #"ad_0 ",  "ad_1 ",  "R0 ",   "kDO ",
         "yM1_0",  "yM1_1",  "yR1_0", "yR1_1")
-Pnamei=c("1/rIR", "1/rIH",  "1/rOD",  Pname[4:npar])
+Pnamei=c("1/rEI", "1/rIH",  "1/rOD",  Pname[4:npar])
 
 ##Full sample quantiles
 Pq=matrix(0,npar,3)
 PMAP=rep(0,npar)
-q1=0.025
-q2=0.975
+q1=0.015 #0.025
+q2=0.985 #0.975
 Pq <- t(getCredibleIntervals(getSample(out),c(q1,0.5,q2))) #Pq[ip,1:3] #getCredibleIntervals[1:3,ip]
 ##transformations
 #1:3 - time - keep as is
@@ -995,7 +1011,7 @@ dMort     = rep(0,times=nsample)
 ###         MAP      parsE$, 
 ###         sample   parsES$
 for(i in 1:nsample){
-  parsES$rIR <- f1(as.vector(psample[i,1])) 
+  parsES$rEI <- f1(as.vector(psample[i,1])) 
   parsES$rIH <- f2(as.vector(psample[i,2]))
   parsES$rOD <- f3(as.vector(psample[i,3])) #parsES$rODa
   parsES$pE0 <- f4(as.vector(psample[i,4]))
@@ -1033,8 +1049,10 @@ for(i in 1:nsample){
   #parsES$da_1 = parsES$h_1*pars$ma_1
   #parsES$db_0 = parsES$h_0*pars$mb_0
   #parsES$db_1 = parsES$h_1*pars$mb_1
-  parsES$y_0[3:9] = yM1ES_0*exp((age[3:9]-age9)*yR1ES_0)
-  parsES$y_1[3:9] = yM1ES_1*exp((age[3:9]-age9)*yR1ES_1)
+  parsES$y_0[1:9] = yM1ES_0*exp((age[1:9]-age9)*yR1ES_0)
+  parsES$y_1[1:9] = yM1ES_1*exp((age[1:9]-age9)*yR1ES_1)
+  #parsES$y_0[3:9] = yM1ES_0*exp((age[3:9]-age9)*yR1ES_0)
+  #parsES$y_1[3:9] = yM1ES_1*exp((age[3:9]-age9)*yR1ES_1)
   parsES$Ea0  = parsES$Na0*parsES$pE0
   parsES$Sa0  = parsES$Na0 - parsES$Ea0 - parsES$Ia0 - parsES$Ua0 - parsES$Ha0 - parsES$Oa0 - parsES$Ra0 - parsES$Da0 
   parsES$beta = BETA(parsES) #BETA_0(parsES)
@@ -1160,7 +1178,7 @@ nsampleR0 = min(750,nsample) #shorter as calling R0_0()
 R0weeksample = matrix(0,ntimes,nsampleR0)
 R0sample     = rep(0,times=nsampleR0) #in case R0 is estimated
 for(i in 1:nsampleR0){
-  parsES$rIR <- f1(as.vector(psample[i,1])) 
+  parsES$rEI <- f1(as.vector(psample[i,1])) 
   parsES$rIH <- f2(as.vector(psample[i,2]))
   parsES$rOD <- f3(as.vector(psample[i,3])) #parsES$rODa
   parsES$pE0 <- f4(as.vector(psample[i,4]))
@@ -1198,8 +1216,10 @@ for(i in 1:nsampleR0){
   #parsES$da_1 = parsES$h_1*pars$ma_1
   #parsES$db_0 = parsES$h_0*pars$mb_0
   #parsES$db_1 = parsES$h_1*pars$mb_1
-  parsES$y_0[3:9]  = yM1ES_0*exp((age[3:9]-age9)*yR1ES_0) #pars$y = c(liny[1:2],expy[1:7])
-  parsES$y_1[3:9]  = yM1ES_1*exp((age[3:9]-age9)*yR1ES_1)
+  parsES$y_0[1:9] = yM1ES_0*exp((age[1:9]-age9)*yR1ES_0)
+  parsES$y_1[1:9] = yM1ES_1*exp((age[1:9]-age9)*yR1ES_1)
+  #parsES$y_0[3:9]  = yM1ES_0*exp((age[3:9]-age9)*yR1ES_0) #pars$y = c(liny[1:2],expy[1:7])
+  #parsES$y_1[3:9]  = yM1ES_1*exp((age[3:9]-age9)*yR1ES_1)
   parsES$Ea0  = parsES$Na0*parsES$pE0
   parsES$Sa0  = parsES$Na0 - parsES$Ea0 - parsES$Ia0 - parsES$Ua0 - parsES$Ha0 - parsES$Oa0 - parsES$Ra0 - parsES$Da0 
   parsES$beta = BETA(parsES) #BETA_0(parsES)
@@ -1253,6 +1273,7 @@ print(paste0("kH  Fixed: ", round(parsE$kH,    3),    ". Expected: ", round(  pa
 print(paste0("kDH,kDO fix:",round(parsE$kDH,   3),    ". Expected: ", round(  pars$kDH,     3))) #kD
 print(paste0("R0    fix: ", round(parsE$R0,    3),    ". Expected: ", round(  pars$R0,      3))) #R0
 print(paste0("fu    fix: ", round(parsE$fu,    3),    ". Expected: ", round(  pars$fu,      3))) #pE0 #fu #yA
+print(paste0("1/rIR fix: ", round(1/parsE$rIR, 3),    ". Expected: ", round(1/pars$rIR,     3))) #rIR
 
 for(i in 1:npar){
   Expect=BEST0[i] #eval(parse(text = paste0("pars$",eval(parse(text = paste0("Pname[",i,"]"))))))
