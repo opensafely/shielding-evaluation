@@ -29,8 +29,9 @@ for (i in 1:ntcontact) { #1:52
   rIO = pars$rIO #est
   rOD = pars$rOD #est
   orOD= 1/rOD
-  rUR = pars$rUR
+  orUR= 1/pars$rUR
   fu  = pars$fu
+  fuO = pars$fuO
   ad  = pars$ad_0
   for (i in 1:ntcontact) { #1:52
     for (k in 1:9){ 
@@ -38,7 +39,7 @@ for (i in 1:ntcontact) { #1:52
       h_k=pars$h_0[k]; 
       d_k=pars$d_0[k]*ad; #d_k=pars$da_0[k]*ad; #a
       for (j in 1:9) {
-            ngm[j,k,i] = beta0*u[j]*cm_0[j,k,i]*( y_k*( (1+fu*(rIO*d_k*orOD))/( rIR*(1-h_k-d_k) + rIH*(h_k) + rIO*(d_k) )) + fu*(1-y_k)/rUR) }}
+            ngm[j,k,i] = beta0*u[j]*cm_0[j,k,i]*( y_k*( (1+fuO*(rIO*d_k*orOD))/( rIR*(1-h_k-d_k) + rIH*(h_k) + rIO*(d_k) )) + fu*(1-y_k)*orUR) }}
   R0_week[i] = max(Re(eigen(ngm[,,i])[[1]])) } #max eigenvalue of NGM
 
 ## if pars$R0 is given
