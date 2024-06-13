@@ -81,6 +81,7 @@ pars <- within(pars, {
     rC     <- 1/8.5           #rate of loss of positivity, Russell et al; Davies Lancet ID
     R0     <- 1.8 #2.23       #2020-wild-type basic reproduction rate, Knock et al 2021
     fu     <- 0.5             #relative transmission of U group 
+    fuO    <- 0#fu#             #relative transmission in O stage in ItoD (DO)
     beta   <- 1               #transmission rate between two given individuals
     Npopcoh<- 24.02*1e6       #cohort size
     Npop   <- 56.55*1e6       #ONS-England population size mid 2020 
@@ -116,3 +117,4 @@ pars <- within(pars, {
   #source(paste0(input_dir,"/parameters_J6_24apr24_rev.r"))
   #source(paste0(input_dir,"/parameters_J6_23may24.r"))
 #})
+#pars$rOD = 1/(10.606+5)

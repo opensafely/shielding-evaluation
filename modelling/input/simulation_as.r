@@ -301,7 +301,50 @@ p1 <- ggplot(datM, aes(x = Weeks)) +
   scale_color_manual(values = colors) + ylim(0,max(datM$PH_mod*N)*1.2) + 
   ggtitle(Title_a)
 
-#panel 2
+#panel 2 - log of panel 1
+LOGY<-function(y){log10(y+1)}
+
+pl1_0 <- ggplot(datM, aes(x = Weeks)) +
+  #geom_point(aes(y = LOGY(Dataz_0),    color =  'H_data'), size = 1.2, pch = 1) +
+  geom_line (aes(y = LOGY(PH_mod_0*N), color =  'H_pred')) +
+  #geom_point(aes(y = LOGY(Dataw_0),    color = 'DH_data'), size = 1.2, pch = 2) +
+  geom_line (aes(y = LOGY(PDH_mod_0*N),color = 'DH_pred')) +
+  #geom_point(aes(y = LOGY(Datav_0),    color = 'DO_data'), size = 1.2, pch = 2) +
+  geom_line (aes(y = LOGY(PDO_mod_0*N),color = 'DO_pred')) +
+  #geom_line (aes(y = PInf_0/100, color = 'Pinf/100')) +
+  labs(x = 'Weeks', y = 'Weekly incidence', color = "") + 
+  theme(legend.position = "none") +
+  scale_color_manual(values = colors) + ylim(0,LOGY(max(datM$PH_mod*N))*1.2) + 
+  ggtitle(Title_0)
+
+pl1_1 <- ggplot(datM, aes(x = Weeks)) +
+  #geom_point(aes(y = LOGY(Dataz_1),    color =  'H_data'), size = 1.2, pch = 1) +
+  geom_line (aes(y = LOGY(PH_mod_1*N), color =  'H_pred')) +
+  #geom_point(aes(y = LOGY(Dataw_1),    color = 'DH_data'), size = 1.2, pch = 2) +
+  geom_line (aes(y = LOGY(PDH_mod_1*N),color = 'DH_pred')) +
+  #geom_point(aes(y = LOGY(Datav_1),    color = 'DO_data'), size = 1.2, pch = 2) +
+  geom_line (aes(y = LOGY(PDO_mod_1*N),color = 'DO_pred')) +
+  #geom_line (aes(y = PInf_0/100, color = 'Pinf/100')) +
+  labs(x = 'Weeks', y = 'Weekly incidence', color = "") +
+  theme(legend.position = "none") +
+  scale_color_manual(values = colors) + ylim(0,LOGY(max(datM$PH_mod_1*N))*1.2) + 
+  ggtitle(Title_1)
+
+pl1 <- ggplot(datM, aes(x = Weeks)) +
+  #geom_point(aes(y = LOGY(Dataz),    color =  'H_data'), size = 1.2, pch = 1) +
+  geom_line (aes(y = LOGY(PH_mod*N), color =  'H_pred')) +
+  #geom_point(aes(y = LOGY(Dataw),    color = 'DH_data'), size = 1.2, pch = 2) +
+  geom_line (aes(y = LOGY(PDH_mod*N),color = 'DH_pred')) +
+  #geom_point(aes(y = LOGY(Datav),    color = 'DO_data'), size = 1.2, pch = 2) +
+  geom_line (aes(y = LOGY(PDO_mod*N),color = 'DO_pred')) +
+  #geom_line (aes(y = PInf/100, color = 'Pinf/100')) +
+  labs(x = 'Weeks', y = 'Weekly incidence', color = "") +  
+  #theme(legend.position = "none") +
+  scale_color_manual(values = colors) + ylim(0,LOGY(max(datM$PH_mod*N))*1.2) + 
+  ggtitle(Title_a)
+
+
+#panel 3
 xx <- quantile(datM$Weeks,0.6)[[1]]; yy = max(datM$PInf)*0.9; y2 = max(datM$PInf)*0.6;
 colors <- c("Pinf" = "red", "Psus/100" = "green", "Prec/100" = "blue", 
             "Dinf" = "black", "PH_mod" = "orange", "PDH_mod" = "magenta")
@@ -337,22 +380,22 @@ p2  <- ggplot(datM, aes(x = Weeks)) +
   scale_color_manual(values = colors) + ylim(0,max(datM$PInf)*1.2)
 
 
-#panel 3
-
-p3_0 <-  ggplot(datM, aes(x= Weeks)) +
-  geom_point(aes(y=R0)) +
-  geom_line (aes(y=rep(1,nd)),col='red') +
-  labs(x = 'Weeks', y = 'R0') 
-
-p3_1 <-  ggplot(datM, aes(x= Weeks)) +
-  geom_point(aes(y=R0)) +
-  geom_line (aes(y=rep(1,nd)),col='red') +
-  labs(x = 'Weeks', y = 'R0') 
-
-p3 <-  ggplot(datM, aes(x= Weeks)) +
-  geom_point(aes(y=R0)) +
-  geom_line (aes(y=rep(1,nd)),col='red') +
-  labs(x = 'Weeks', y = 'R0') 
+#panel 3 (R0) - replaced - use the other sgv
+#
+#p3_0 <-  ggplot(datM, aes(x= Weeks)) +
+#  geom_point(aes(y=R0)) +
+#  geom_line (aes(y=rep(1,nd)),col='red') +
+#  labs(x = 'Weeks', y = 'R0')
+#
+#p3_1 <-  ggplot(datM, aes(x= Weeks)) +
+#  geom_point(aes(y=R0)) +
+#  geom_line (aes(y=rep(1,nd)),col='red') +
+#  labs(x = 'Weeks', y = 'R0') 
+#
+#p3 <-  ggplot(datM, aes(x= Weeks)) +
+#  geom_point(aes(y=R0)) +
+#  geom_line (aes(y=rep(1,nd)),col='red') +
+#  labs(x = 'Weeks', y = 'R0') 
 
 #gridExtra::grid.arrange(p1, p1_0, p1_1, p2, p2_0, p2_1, p3, p3_0, p3_1, nrow = 3, ncol=3)
 
@@ -442,8 +485,8 @@ p6 <- p6 + labs(x = 'Weeks', y = 'Deaths outside hospital by age', color = "")+ 
 #svg
 svglite(file = paste0(output_dir,"/",pset$File_model_sim_plots,"_1-3.svg")); 
   gridExtra::grid.arrange(p1_0, p1_1, p1, 
-                          p2_0, p2_1, p2,
-                          p3_0, p3_1, p3, nrow = 3, ncol=3)
+                          pl1_0,pl1_1,pl1,
+                          p2_0, p2_1, p2, nrow = 3, ncol=3)
 invisible(dev.off())
 svglite(file = paste0(output_dir,"/",pset$File_model_sim_plots,"_4-6.svg")); 
   gridExtra::grid.arrange(p4_0, p4_1, p4, 
