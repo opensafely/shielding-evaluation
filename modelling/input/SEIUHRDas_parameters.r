@@ -81,7 +81,7 @@ pars <- within(pars, {
     rC     <- 1/8.5           #rate of loss of positivity, Russell et al; Davies Lancet ID
     R0     <- 1.8 #2.23       #2020-wild-type basic reproduction rate, Knock et al 2021
     fu     <- 0.5             #relative transmission of U group 
-    fuO    <- 0#fu#             #relative transmission in O stage in ItoD (DO)
+    fuO    <- fu#0#             #relative transmission in O stage in ItoD (DO)
     beta   <- 1               #transmission rate between two given individuals
     Npopcoh<- 24.02*1e6       #cohort size
     Npop   <- 56.55*1e6       #ONS-England population size mid 2020 
@@ -100,7 +100,7 @@ pars <- within(pars, {
     k      <- 1#10#1#5#1           #dispersion/shape parameter of NB likelihood (and noise if simulating) 
     kH     <- k               #dispersion/shape parameter - hospitalisations
     kDH    <- k               #dispersion/shape parameter - deaths in hospital 
-    kDO    <- k               #dispersion/shape parameter - deaths outside hospital 
+    kDO    <- 2#k               #dispersion/shape parameter - deaths outside hospital 
     sdH    <- 0.67 #jobs est  #scaling factor of sd for H across age groups
     cmdim1 <- na
     cmdim2 <- na

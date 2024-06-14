@@ -495,7 +495,7 @@ LogLikelihood <- function(theta){
   sdH =      pars$sdH #0.67 #theta[8]
   kH  =      pars$kH  #1
   kDH =      pars$kDH
-  kDO =      kDH
+  kDO =      pars$kDO #kDH
   #Dependent parameters
   #pars$rODb = pars$rODa*pars$rODboa
   pars$h_0 = hM_0*exp((age-age9)*hR_0)
@@ -721,9 +721,9 @@ LogLikelihood <- function(theta){
    sum(  dnbinom(x = vd8w_1, size = kDO,        mu   = MeanDO8_1,  log = T)) +
    sum(  dnbinom(x = vd9w_1, size = kDO,        mu   = MeanDO9_1,  log = T))
   
- ll = ll_0 + ll_1 +
+ ll = ll_0 + ll_1 #+
  ###Prevalence
-    0.25*sum(  dnorm(x = posi_data_perc*posi_d_to_m, sd = posi_sd_percT*posi_d_to_m, mean = MeanPosi_perc, log = T))
+    #0.25*sum(  dnorm(x = posi_data_perc*posi_d_to_m, sd = posi_sd_percT*posi_d_to_m, mean = MeanPosi_perc, log = T))
 
     return(ll)
 } #Likelihood
