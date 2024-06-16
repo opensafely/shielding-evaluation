@@ -1999,115 +1999,105 @@ invisible(dev.off())
     #date_labels = "%d/%m/%y" # "%D") # "%M-%Y")
 
     #y   #ysample95_0[2] median
-    DF_0 <- tibble(Age=Age, sample05=ysample95_0[,1], sample95=ysample95_0[,3], MAP=parsE$y_0, DAT=pars$y_0)
-    DF_1 <- tibble(Age=Age, sample05=ysample95_1[,1], sample95=ysample95_1[,3], MAP=parsE$y_1, DAT=pars$y_1)
-    py_0<-ggplot(DF_0, aes(x=Age)) + 
-      geom_ribbon(aes(ymin = sample05, ymax = sample95), fill = "grey70") +
-      geom_point(aes(x=Age,  y = DAT,      color="Data")) +
-      geom_line (aes(x=Age,  y = MAP,      color="MAP")) +
-      geom_line (aes(x=Age,  y = sample05, color="95% CrI")) +
-      labs(x = "", y = 'probability y_0',   color = "") + #Legend") + 
-      scale_color_manual(values = colors) +
+    DF_0 <- tibble(Age=Age, s05=ysample95_0[,1], s95=ysample95_0[,3], MAP=parsE$y_0, DAT=pars$y_0)
+    DF_1 <- tibble(Age=Age, s05=ysample95_1[,1], s95=ysample95_1[,3], MAP=parsE$y_1, DAT=pars$y_1)
+    py_0<-ggplot(data=DF_0, aes(x=Age, group=1)) +   #"group=1" because x var is charactrer/factor
+      geom_ribbon(aes(ymin = s05, ymax = s95), fill = "grey70") +
+      geom_point(aes( y = DAT,      color="Data")) +
+      geom_line (aes( y = MAP,      color="MAP")) +
+      geom_line (aes( y = s05,      color="95% CrI")) +
+      labs(x = "", y = 'prob y_0',   color = "") + #Legend") + 
+      scale_color_manual(values = colors) + ylim(0, 1) + 
       theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_0) #+
-      #scale_x_date(breaks= breaks, date_labels= date_labels) 
-    py_1<-ggplot(DF_1, aes(x=Age)) + 
-      geom_ribbon(aes(ymin = sample05, ymax = sample95), fill = "grey70") +
-      geom_point(aes(x=Age,  y = DAT,      color="Data")) +
-      geom_line (aes(x=Age,  y = MAP,      color="MAP")) +
-      geom_line (aes(x=Age,  y = sample05, color="95% CrI")) +
-      labs(x = "", y = 'probability y_1',   color = "") + #Legend") + 
-      scale_color_manual(values = colors) +
+    py_1<-ggplot(data=DF_1, aes(x=Age, group=1)) + 
+      geom_ribbon(aes(ymin = s05, ymax = s95), fill = "grey70") +
+      geom_point(aes( y = DAT,      color="Data")) +
+      geom_line (aes( y = MAP,      color="MAP")) +
+      geom_line (aes( y = s05,      color="95% CrI")) +
+      labs(x = "", y = 'prob y_1',   color = "") + #Legend") + 
+      scale_color_manual(values = colors) + ylim(0, 1) + 
       theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_1) #+
-      #scale_x_date(breaks= breaks, date_labels= date_labels)
 
     #h   #hsample95_0[2] median
-    DF_0 <- tibble(Age=Age, sample05=hsample95_0[,1], sample95=hsample95_0[,3], MAP=parsE$h_0, DAT=pars$h_0)
-    DF_1 <- tibble(Age=Age, sample05=hsample95_1[,1], sample95=hsample95_1[,3], MAP=parsE$h_1, DAT=pars$h_1)
-    ph_0<-ggplot(DF_0, aes(x=Age)) + 
-      geom_ribbon(aes(ymin = sample05, ymax = sample95), fill = "grey70") +
-      geom_point(aes(x=Age,  y = DAT,      color="Data")) +
-      geom_line (aes(x=Age,  y = MAP,      color="MAP")) +
-      geom_line (aes(x=Age,  y = sample05, color="95% CrI")) +
-      labs(x = "", y = 'probability h_0',   color = "") + #Legend") + 
-      scale_color_manual(values = colors) +
-      theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_0) #+
-    #scale_x_date(breaks= breaks, date_labels= date_labels) 
-    ph_1<-ggplot(DF_1, aes(x=Age)) + 
-      geom_ribbon(aes(ymin = sample05, ymax = sample95), fill = "grey70") +
-      geom_point(aes(x=Age,  y = DAT,      color="Data")) +
-      geom_line (aes(x=Age,  y = MAP,      color="MAP")) +
-      geom_line (aes(x=Age,  y = sample05, color="95% CrI")) +
-      labs(x = "", y = 'probability h_1',   color = "") + #Legend") + 
-      scale_color_manual(values = colors) +
-      theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_1) #+
-    #scale_x_date(breaks= breaks, date_labels= date_labels)
+    DF_0 <- tibble(Age=Age, s05=hsample95_0[,1], s95=hsample95_0[,3], MAP=parsE$h_0, DAT=pars$h_0)
+    DF_1 <- tibble(Age=Age, s05=hsample95_1[,1], s95=hsample95_1[,3], MAP=parsE$h_1, DAT=pars$h_1)
+    ph_0<-ggplot(data=DF_0, aes(x=Age, group=1)) + 
+      geom_ribbon(aes(ymin = s05, ymax = s95), fill = "grey70") +
+      geom_point(aes( y = DAT,      color="Data")) +
+      geom_line (aes( y = MAP,      color="MAP")) +
+      geom_line (aes( y = s05,      color="95% CrI")) +
+      labs(x = "", y = 'prob h_0',   color = "") + #Legend") + 
+      scale_color_manual(values = colors) + ylim(0, 1) + 
+      theme(axis.title = element_text(size = 12, face = "bold")) #+  ggtitle(Title_0) #+
+    ph_1<-ggplot(data=DF_1, aes(x=Age, group=1)) + 
+      geom_ribbon(aes(ymin = s05, ymax = s95), fill = "grey70") +
+      geom_point(aes( y = DAT,      color="Data")) +
+      geom_line (aes( y = MAP,      color="MAP")) +
+      geom_line (aes( y = s05,      color="95% CrI")) +
+      labs(x = "", y = 'prob h_1',   color = "") + #Legend") + 
+      scale_color_manual(values = colors) + ylim(0, 1) + 
+      theme(axis.title = element_text(size = 12, face = "bold")) #+  ggtitle(Title_0) #+
 
     #yh  #yhsample95_0[2] median
-    DF_0 <- tibble(Age=Age, sample05=yhsample95_0[,1], sample95=yhsample95_0[,3], MAP=parsE$yh_0, DAT=pars$yh_0)
-    DF_1 <- tibble(Age=Age, sample05=yhsample95_1[,1], sample95=yhsample95_1[,3], MAP=parsE$yh_1, DAT=pars$yh_1)
-    pyh_0<-ggplot(DF_0, aes(x=Age)) + 
-      geom_ribbon(aes(ymin = sample05, ymax = sample95), fill = "grey70") +
-      geom_point(aes(x=Age,  y = DAT,      color="Data")) +
-      geom_line (aes(x=Age,  y = MAP,      color="MAP")) +
-      geom_line (aes(x=Age,  y = sample05, color="95% CrI")) +
-      labs(x = "", y = 'probability yh_0',   color = "") + #Legend") + 
-      scale_color_manual(values = colors) +
-      theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_0) #+
-    #scale_x_date(breaks= breaks, date_labels= date_labels) 
-    pyh_1<-ggplot(DF_1, aes(x=Age)) + 
-      geom_ribbon(aes(ymin = sample05, ymax = sample95), fill = "grey70") +
-      geom_point(aes(x=Age,  y = DAT,      color="Data")) +
-      geom_line (aes(x=Age,  y = MAP,      color="MAP")) +
-      geom_line (aes(x=Age,  y = sample05, color="95% CrI")) +
-      labs(x = "", y = 'probability yh_1',   color = "") + #Legend") + 
-      scale_color_manual(values = colors) +
-      theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_1) #+
-    #scale_x_date(breaks= breaks, date_labels= date_labels)
+    DF_0 <- tibble(Age=Age, s05=yhsample95_0[,1], s95=yhsample95_0[,3], MAP=parsE$yh_0, DAT=pars$yh_0)
+    DF_1 <- tibble(Age=Age, s05=yhsample95_1[,1], s95=yhsample95_1[,3], MAP=parsE$yh_1, DAT=pars$yh_1)
+    pyh_0<-ggplot(data=DF_0, aes(x=Age, group=1)) + 
+      geom_ribbon(aes(ymin = s05, ymax = s95), fill = "grey70") +
+      geom_point(aes( y = DAT,      color="Data")) +
+      geom_line (aes( y = MAP,      color="MAP")) +
+      geom_line (aes( y = s05,      color="95% CrI")) +
+      labs(x = "", y = 'prob yh_0',   color = "") + #Legend") + 
+      scale_color_manual(values = colors) + ylim(0, 1) + 
+      theme(axis.title = element_text(size = 12, face = "bold")) #+  ggtitle(Title_0) #+
+    pyh_1<-ggplot(data=DF_1, aes(x=Age, group=1)) + 
+      geom_ribbon(aes(ymin = s05, ymax = s95), fill = "grey70") +
+      geom_point(aes( y = DAT,      color="Data")) +
+      geom_line (aes( y = MAP,      color="MAP")) +
+      geom_line (aes( y = s05,      color="95% CrI")) +
+      labs(x = "", y = 'prob yh_1',   color = "") + #Legend") + 
+      scale_color_manual(values = colors) + ylim(0, 1) + 
+      theme(axis.title = element_text(size = 12, face = "bold")) #+   ggtitle(Title_0) #+
     
     #d   #dample95_0[2] median
-    DF_0 <- tibble(Age=Age, sample05=dsample95_0[,1], sample95=dsample95_0[,3], MAP=parsE$d_0, DAT=pars$d_0)
-    DF_1 <- tibble(Age=Age, sample05=dsample95_1[,1], sample95=dsample95_1[,3], MAP=parsE$d_1, DAT=pars$d_1)
-    pd_0<-ggplot(DF_0, aes(x=Age)) + 
-      geom_ribbon(aes(ymin = sample05, ymax = sample95), fill = "grey70") +
-      geom_point(aes(x=Age,  y = DAT,      color="Data")) +
-      geom_line (aes(x=Age,  y = MAP,      color="MAP")) +
-      geom_line (aes(x=Age,  y = sample05, color="95% CrI")) +
-      labs(x = "", y = 'probability h_0',   color = "") + #Legend") + 
-      scale_color_manual(values = colors) +
-      theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_0) #+
-    #scale_x_date(breaks= breaks, date_labels= date_labels) 
-    pd_1<-ggplot(DF_1, aes(x=Age)) + 
-      geom_ribbon(aes(ymin = sample05, ymax = sample95), fill = "grey70") +
-      geom_point(aes(x=Age,  y = DAT,      color="Data")) +
-      geom_line (aes(x=Age,  y = MAP,      color="MAP")) +
-      geom_line (aes(x=Age,  y = sample05, color="95% CrI")) +
-      labs(x = "", y = 'probability h_1',   color = "") + #Legend") + 
-      scale_color_manual(values = colors) +
-      theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_1) #+
-    #scale_x_date(breaks= breaks, date_labels= date_labels)
+    DF_0 <- tibble(Age=Age, s05=dsample95_0[,1], s95=dsample95_0[,3], MAP=parsE$d_0, DAT=pars$d_0)
+    DF_1 <- tibble(Age=Age, s05=dsample95_1[,1], s95=dsample95_1[,3], MAP=parsE$d_1, DAT=pars$d_1)
+    pd_0<-ggplot(data=DF_0, aes(x=Age, group=1)) + 
+      geom_ribbon(aes(ymin = s05, ymax = s95), fill = "grey70") +
+      geom_point(aes( y = DAT,      color="Data")) +
+      geom_line (aes( y = MAP,      color="MAP")) +
+      geom_line (aes( y = s05,      color="95% CrI")) +
+      labs(x = "", y = 'prob d_0',   color = "") + #Legend") + 
+      scale_color_manual(values = colors) + ylim(0, 1) + 
+      theme(axis.title = element_text(size = 12, face = "bold")) #+   ggtitle(Title_0) #+
+    pd_1<-ggplot(data=DF_1, aes(x=Age, group=1)) + 
+      geom_ribbon(aes(ymin = s05, ymax = s95), fill = "grey70") +
+      geom_point(aes( y = DAT,      color="Data")) +
+      geom_line (aes( y = MAP,      color="MAP")) +
+      geom_line (aes( y = s05,      color="95% CrI")) +
+      labs(x = "", y = 'prob d_1',   color = "") + #Legend") + 
+      scale_color_manual(values = colors) + ylim(0, 1) + 
+      theme(axis.title = element_text(size = 12, face = "bold")) #+   ggtitle(Title_0) #+
     
     #m  
     DF_0 <- tibble(Age=Age, DAT=pars$m_0, DATa=pars$ma_0, DATb=pars$mb_0)
     DF_1 <- tibble(Age=Age, DAT=pars$m_1, DATa=pars$ma_1, DATb=pars$mb_1)
-    pm_0<-ggplot(DF_0, aes(x=Age)) + 
+    pm_0<-ggplot(data=DF_0, aes(x=Age, group=1)) + 
       geom_point(aes(x=Age,  y = DATa,     color="Period 1")) +
       geom_point(aes(x=Age,  y = DATb,     color="Period 2")) +
       geom_line (aes(x=Age,  y = DATa,     color="Period 1")) +
       geom_line (aes(x=Age,  y = DATb,     color="Period 2")) +
-      labs(x = "", y = 'probability m_0',   color = "") + #Legend") + 
+      labs(x = "", y = 'prob m_0',   color = "") + #Legend") + 
       scale_color_manual(values = colors) +
-      theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_0) #+
-    #scale_x_date(breaks= breaks, date_labels= date_labels) 
-    pd_1<-ggplot(DF_1, aes(x=Age)) + 
+      theme(axis.title = element_text(size = 12, face = "bold")) #+   ggtitle(Title_0) #+
+    pm_1<-ggplot(data=DF_1, aes(x=Age, group=1)) + 
       geom_point(aes(x=Age,  y = DATa,     color="Period 1")) +
       geom_point(aes(x=Age,  y = DATb,     color="Period 2")) +
       geom_line (aes(x=Age,  y = DATa,     color="Period 1")) +
       geom_line (aes(x=Age,  y = DATb,     color="Period 2")) +
-      labs(x = "", y = 'probability m_1',   color = "") + #Legend") + 
+      labs(x = "", y = 'prob m_1',   color = "") + #Legend") + 
       scale_color_manual(values = colors) +
-      theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_1) #+
-    #scale_x_date(breaks= breaks, date_labels= date_labels)
-    
+      theme(axis.title = element_text(size = 12, face = "bold")) #+   ggtitle(Title_1) #+
+
     gridExtra::grid.arrange(py_0, py_1, ph_0, ph_1, pyh_0, pyh_1, pd_0, pd_1, pm_0, pm_1, nrow = 5, ncol = 2)
     
     svglite(paste0(filenamepath,".svg")); 
