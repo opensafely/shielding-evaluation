@@ -477,27 +477,17 @@ LogLikelihood <- function(theta){
   dM_1=      f10(theta[10])
   dR_0=      f11(theta[11])
   dR_1=      f12(theta[12])
-  #pars$ad_0= f9(theta[9])  
-  #pars$ad_1= f10(theta[10]) 
-  #yR0_0=     f11(theta[11]) 
-  #yR0_1=     f12(theta[12])
   #pars$R0  = f11(theta[11])
   #pars$kDH = f12(theta[12])
   yM1_0=     f13(theta[13])
   yM1_1=     f14(theta[14])
   yR1_0=     f15(theta[15])
   yR1_1=     f16(theta[16])
-  # liny = yM0 + yR0*(age3-age[1:3])
-  # expy = yM1*exp((age[3:9]-age9)*yR1)
-  # liny[3] = expy[1] =>
-  #yM0_0=     yM1_0*exp((age3-age9)*yR1_0)
-  #yM0_1=     yM1_1*exp((age3-age9)*yR1_1)
   sdH =      pars$sdH #0.67 #theta[8]
   kH  =      pars$kH  #1
   kDH =      pars$kDH
   kDO =      pars$kDO #kDH
   #Dependent parameters
-  #pars$rODb = pars$rODa*pars$rODboa
   pars$h_0 = hM_0*exp((age-age9)*hR_0)
   pars$h_1 = hM_1*exp((age-age9)*hR_1)
   pars$d_0 = dM_0*exp((age-age9)*dR_0) #0.2*pars$h_0*pars$m_0  *pars$ad (default=1)
@@ -513,19 +503,9 @@ LogLikelihood <- function(theta){
   pars$beta  = BETA(pars) #BETA_0(pars)
   #pars$R0  = fs(theta[3])
   #pars$fu  = fs(theta[5])
-  #mM_0=      fs(theta[14])
-  #mM_1=      fs(theta[15])
-  #mR_0=      fi(theta[16])
-  #mR_1=      fi(theta[17])
   #kH =       fp(theta[8])  #pk = theta = 1/sqrt(k) => k = 1/pk^2
   #kDH =      fp(theta[24])
   #kDO =      fp(theta[3])
-  #Dependent parameters
-  #pars$h     = hA*pars$h
-  #pars$y     = yA*pars$y
-  #pars$m     = mA*pars$m
-  #pars$m_0 = mM_0*exp((age-age9)*mR_0)
-  #pars$m_1 = mM_1*exp((age-age9)*mR_1)
 
   ### Model outputs (from Rcpp, given the above proposed parameters)
   m <- model(pars)
@@ -876,24 +856,16 @@ dME_0     <- f9(as.vector(MAPE$parametersMAP[9]))
 dME_1     <- f10(as.vector(MAPE$parametersMAP[10]))
 dRE_0     <- f11(as.vector(MAPE$parametersMAP[11]))
 dRE_1     <- f12(as.vector(MAPE$parametersMAP[12]))
-#parsE$ad_0<- f9(as.vector(MAPE$parametersMAP[9]))
-#parsE$ad_1<- f10(as.vector(MAPE$parametersMAP[10]))
-#yR0E_0    <- f11(as.vector(MAPE$parametersMAP[11]))
-#yR0E_1    <- f12(as.vector(MAPE$parametersMAP[12]))
 #parsE$R0  <- f11(as.vector(MAPE$parametersMAP[11]))
 #parsE$kDH <- f12(as.vector(MAPE$parametersMAP[12]))
 yM1E_0    <- f13(as.vector(MAPE$parametersMAP[13]))
 yM1E_1    <- f14(as.vector(MAPE$parametersMAP[14]))
 yR1E_0    <- f15(as.vector(MAPE$parametersMAP[15]))
 yR1E_1    <- f16(as.vector(MAPE$parametersMAP[16]))
-#yM0E_0    <- yM1E_0*exp((age3-age9)*yR1E_0)
-#yM0E_1    <- yM1E_1*exp((age3-age9)*yR1E_1)
-#sdHE      <- pars$sdH #0.67 #theta[8]
 #kHE       <- pars$kH  #1
 #kDHE      <- pars$kDH #1
 #kDOE      <- pars$kDO #1
 #Dependent parameters
-#parsE$rODb= parsE$rODa*pars$rODboa
 parsE$h_0 = hME_0*exp((age-age9)*hRE_0)
 parsE$h_1 = hME_1*exp((age-age9)*hRE_1)
 parsE$d_0 = dME_0*exp((age-age9)*dRE_0) #2*parsE$h_0*pars$m_0
@@ -985,6 +957,18 @@ wsample_1 = matrix(0,ntimes,nsample)
 vsample_1 = matrix(0,ntimes,nsample)
 Psample   = matrix(0,ntimes,nsample)
 csample   = matrix(0,ntimes,nsample)
+### probs
+y12_0 = pars$y_0[1:2]
+y12_1 = pars$y_1[1:2]
+ysample_0 = matrix(0,na,nsample)
+ysample_1 = matrix(0,na,nsample)
+hsample_0 = matrix(0,na,nsample)
+hsample_1 = matrix(0,na,nsample)
+yhsample_0= matrix(0,na,nsample)
+yhsample_1= matrix(0,na,nsample)
+dsample_0 = matrix(0,na,nsample)
+dsample_1 = matrix(0,na,nsample)
+###
 parsES    = pars #parsE
 ### beta - function of other parameters
 betasample= rep(0,times=nsample)
@@ -1018,24 +1002,16 @@ for(i in 1:nsample){
   dMES_1     <- f10(as.vector(psample[i,10]))
   dRES_0     <- f11(as.vector(psample[i,11]))
   dRES_1     <- f12(as.vector(psample[i,12]))
-  #parsES$ad_0<- f9(as.vector(psample[i,9]))
-  #parsES$ad_1<- f10(as.vector(psample[i,10]))
   #parsES$R0  <- f11(as.vector(psample[i,11]))
   #parsES$kDH <- f12(as.vector(psample[i,12]))
-  #yR0ES_0    <- f11(as.vector(psample[i,11]))
-  #yR0ES_1    <- f12(as.vector(psample[i,12]))
   yM1ES_0    <- f13(as.vector(psample[i,13]))
   yM1ES_1    <- f14(as.vector(psample[i,14]))
   yR1ES_0    <- f15(as.vector(psample[i,15]))
   yR1ES_1    <- f16(as.vector(psample[i,16]))
-  #yM0ES_0    <- yM1ES_0*exp((age3-age9)*yR1ES_0)
-  #yM0ES_1    <- yM1ES_1*exp((age3-age9)*yR1ES_1)
-  #sdHES      <- pars$sdH #0.67 #theta[8]
   #kHES       <- pars$kH  #1
   #kDHES      <- pars$kDH #1
   #kDOES      <- pars$kDO #1
   #Dependent parameters
-  #parsES$rODb = parsES$rODa*pars$rODboa
   parsES$h_0  = hMES_0*exp((age-age9)*hRES_0)
   parsES$h_1  = hMES_1*exp((age-age9)*hRES_1)
   parsES$d_0  = dMES_0*exp((age-age9)*dRES_0) #2*parsES$h_0*pars$m_0
@@ -1046,6 +1022,8 @@ for(i in 1:nsample){
   #parsES$db_1 = parsES$h_1*pars$mb_1
   parsES$y_0[3:9] = yM1ES_0*exp((age[3:9]-age9)*yR1ES_0)
   parsES$y_1[3:9] = yM1ES_1*exp((age[3:9]-age9)*yR1ES_1)
+  parsES$yh_0 = parsES$y_0*parsES$h_0
+  parsES$yh_1 = parsES$y_1*parsES$h_1
   parsES$Ea0  = parsES$Na0*parsES$pE0
   parsES$Sa0  = parsES$Na0 - parsES$Ea0 - parsES$Ia0 - parsES$Ua0 - parsES$Ha0 - parsES$Oa0 - parsES$Ra0 - parsES$Da0 
   parsES$beta = BETA(parsES) #BETA_0(parsES)
@@ -1059,6 +1037,15 @@ for(i in 1:nsample){
   vsample_1[,i] = outs$byw_1$DOw[imodelH] 
   Psample[,i]   = (outs$byw_0$It[imodelH] + outs$byw_1$It[imodelH] + outs$byw_0$Ut[imodelH] + outs$byw_1$Ut[imodelH])*oN
   csample[,i]   = (outs$byw_0$Ct[imodelH] + outs$byw_1$Ct[imodelH])*oN
+  ### probs
+  ysample_0[,i] = c(y12_0, parsES$y_0[3:9])
+  ysample_1[,i] = c(y12_1, parsES$y_1[3:9])
+  hsample_0[,i] = parsES$h_0
+  hsample_1[,i] = parsES$h_1
+  yhsample_0[,i]= parsES$yh_0
+  yhsample_1[,i]= parsES$yh_1
+  dsample_0[,i] = parsES$d_0
+  dsample_1[,i] = parsES$d_1
   ### scenario b
   parsES_b      = parsES
   parsES_b$cm_1 = parsES_b$cm_0
@@ -1092,7 +1079,18 @@ vsample95_0 = matrix(0,ntimes,3)
 vsample95_1 = matrix(0,ntimes,3)
 Psample95   = matrix(0,ntimes,3)
 csample95   = matrix(0,ntimes,3)
+### probs
+ysample95_0 = matrix(0,na,3)
+ysample95_1 = matrix(0,na,3)
+hsample95_0 = matrix(0,na,3)
+hsample95_1 = matrix(0,na,3)
+yhsample95_0= matrix(0,na,3)
+yhsample95_1= matrix(0,na,3)
+dsample95_0 = matrix(0,na,3)
+dsample95_1 = matrix(0,na,3)
+###
 betasample95= rep(0,times=3)
+###
 dHosp95_0   = rep(0,times=3)
 dHosp95_1   = rep(0,times=3)
 dHosp95     = rep(0,times=3)
@@ -1127,7 +1125,47 @@ dHosp95[2]   = quantile(dHosp,0.5,na.rm=T)[[1]]
 dMort95[2]   = quantile(dMort,0.5,na.rm=T)[[1]]
 dHosp95[3]   = quantile(dHosp,q2,na.rm=T)[[1]]
 dMort95[3]   = quantile(dMort,q2,na.rm=T)[[1]]
+for(ia in 1:na){
+  ### probs
+  #y
+  samp_ia <- ysample_0[ia,]
+  ysample95_0[ia,1] = quantile(samp_ia,q1,na.rm=T)[[1]]
+  ysample95_0[ia,2] = quantile(samp_ia,0.5,na.rm=T)[[1]]
+  ysample95_0[ia,3] = quantile(samp_ia,q2,na.rm=T)[[1]]
+  samp_ia <- ysample_1[ia,]
+  ysample95_1[ia,1] = quantile(samp_ia,q1,na.rm=T)[[1]]
+  ysample95_1[ia,2] = quantile(samp_ia,0.5,na.rm=T)[[1]]
+  ysample95_1[ia,3] = quantile(samp_ia,q2,na.rm=T)[[1]]
+  #h
+  samp_ia <- hsample_0[ia,]
+  hsample95_0[ia,1] = quantile(samp_ia,q1,na.rm=T)[[1]]
+  hsample95_0[ia,2] = quantile(samp_ia,0.5,na.rm=T)[[1]]
+  hsample95_0[ia,3] = quantile(samp_ia,q2,na.rm=T)[[1]]
+  samp_ia <- hsample_1[ia,]
+  hsample95_1[ia,1] = quantile(samp_ia,q1,na.rm=T)[[1]]
+  hsample95_1[ia,2] = quantile(samp_ia,0.5,na.rm=T)[[1]]
+  hsample95_1[ia,3] = quantile(samp_ia,q2,na.rm=T)[[1]]
+  #yh
+  samp_ia <- yhsample_0[ia,]
+  yhsample95_0[ia,1]= quantile(samp_ia,q1,na.rm=T)[[1]]
+  yhsample95_0[ia,2]= quantile(samp_ia,0.5,na.rm=T)[[1]]
+  yhsample95_0[ia,3]= quantile(samp_ia,q2,na.rm=T)[[1]]
+  samp_ia <- yhsample_1[ia,]
+  yhsample95_1[ia,1]= quantile(samp_ia,q1,na.rm=T)[[1]]
+  yhsample95_1[ia,2]= quantile(samp_ia,0.5,na.rm=T)[[1]]
+  yhsample95_1[ia,3]= quantile(samp_ia,q2,na.rm=T)[[1]]
+  #d
+  samp_ia <- dsample_0[ia,]
+  dsample95_0[ia,1] = quantile(samp_ia,q1,na.rm=T)[[1]]
+  dsample95_0[ia,2] = quantile(samp_ia,0.5,na.rm=T)[[1]]
+  dsample95_0[ia,3] = quantile(samp_ia,q2,na.rm=T)[[1]]   
+  samp_ia <- dsample_1[ia,]
+  dsample95_1[ia,1] = quantile(samp_ia,q1,na.rm=T)[[1]]
+  dsample95_1[ia,2] = quantile(samp_ia,0.5,na.rm=T)[[1]]
+  dsample95_1[ia,3] = quantile(samp_ia,q2,na.rm=T)[[1]]   
+}
 for(it in 1:ntimes){
+  #z
   samp_it <- zsample_0[it,]
   zsample95_0[it,1] = quantile(samp_it,q1,na.rm=T)[[1]]
   zsample95_0[it,2] = quantile(samp_it,0.5,na.rm=T)[[1]]
@@ -1136,6 +1174,7 @@ for(it in 1:ntimes){
   zsample95_1[it,1] = quantile(samp_it,q1,na.rm=T)[[1]]
   zsample95_1[it,2] = quantile(samp_it,0.5,na.rm=T)[[1]]
   zsample95_1[it,3] = quantile(samp_it,q2,na.rm=T)[[1]]
+  #w
   samp_it <- wsample_0[it,]
   wsample95_0[it,1] = quantile(samp_it,q1,na.rm=T)[[1]]
   wsample95_0[it,2] = quantile(samp_it,0.5,na.rm=T)[[1]]
@@ -1144,6 +1183,7 @@ for(it in 1:ntimes){
   wsample95_1[it,1] = quantile(samp_it,q1,na.rm=T)[[1]]
   wsample95_1[it,2] = quantile(samp_it,0.5,na.rm=T)[[1]]
   wsample95_1[it,3] = quantile(samp_it,q2,na.rm=T)[[1]]
+  #v
   samp_it <- vsample_0[it,]
   vsample95_0[it,1] = quantile(samp_it,q1,na.rm=T)[[1]]
   vsample95_0[it,2] = quantile(samp_it,0.5,na.rm=T)[[1]]
@@ -1152,10 +1192,12 @@ for(it in 1:ntimes){
   vsample95_1[it,1] = quantile(samp_it,q1,na.rm=T)[[1]]
   vsample95_1[it,2] = quantile(samp_it,0.5,na.rm=T)[[1]]
   vsample95_1[it,3] = quantile(samp_it,q2,na.rm=T)[[1]]
+  #P
   samp_it <- Psample[it,]
   Psample95[it,1] = quantile(samp_it,q1,na.rm=T)[[1]]
   Psample95[it,2] = quantile(samp_it,0.5,na.rm=T)[[1]]
   Psample95[it,3] = quantile(samp_it,q2,na.rm=T)[[1]]
+  #C
   samp_it <- csample[it,]
   csample95[it,1] = quantile(samp_it,q1,na.rm=T)[[1]]
   csample95[it,2] = quantile(samp_it,0.5,na.rm=T)[[1]]
@@ -1183,24 +1225,16 @@ for(i in 1:nsampleR0){
   dMES_1     <- f10(as.vector(psample[i,10]))
   dRES_0     <- f11(as.vector(psample[i,11]))
   dRES_1     <- f12(as.vector(psample[i,12]))
-  #parsES$ad_0<- f9(as.vector(psample[i,9]))
-  #parsES$ad_1<- f10(as.vector(psample[i,10]))
   #parsES$R0  <- f11(as.vector(psample[i,11]))
   #parsES$kDH <- f12(as.vector(psample[i,12]))
-  #yR0ES_0    <- f11(as.vector(psample[i,11]))
-  #yR0ES_1    <- f12(as.vector(psample[i,12]))
   yM1ES_0    <- f13(as.vector(psample[i,13]))
   yM1ES_1    <- f14(as.vector(psample[i,14]))
   yR1ES_0    <- f15(as.vector(psample[i,15]))
   yR1ES_1    <- f16(as.vector(psample[i,16]))
-  #yM0ES_0    <- yM1ES_0*exp((age3-age9)*yR1ES_0)
-  #yM0ES_1    <- yM1ES_1*exp((age3-age9)*yR1ES_1)
-  #sdHES      <- pars$sdH #0.67 #theta[8]
   #kHES       <- pars$kH  #1
   #kDHES      <- pars$kDH #1
   #kDOES      <- pars$kDO #1
   #Dependent parameters
-  #parsES$rODb = parsES$rODa*pars$rODboa
   parsES$h_0  = hMES_0*exp((age-age9)*hRES_0)
   parsES$h_1  = hMES_1*exp((age-age9)*hRES_1)
   parsES$d_0  = dMES_0*exp((age-age9)*dRES_0) #2*parsES$h_0*pars$m_0
@@ -1211,6 +1245,8 @@ for(i in 1:nsampleR0){
   #parsES$db_1 = parsES$h_1*pars$mb_1
   parsES$y_0[3:9]  = yM1ES_0*exp((age[3:9]-age9)*yR1ES_0) #pars$y = c(liny[1:2],expy[1:7])
   parsES$y_1[3:9]  = yM1ES_1*exp((age[3:9]-age9)*yR1ES_1)
+  parsES$yh_0 = parsES$y_0*parsES$h_0
+  parsES$yh_1 = parsES$y_1*parsES$h_1
   parsES$Ea0  = parsES$Na0*parsES$pE0
   parsES$Sa0  = parsES$Na0 - parsES$Ea0 - parsES$Ia0 - parsES$Ua0 - parsES$Ha0 - parsES$Oa0 - parsES$Ra0 - parsES$Da0 
   parsES$beta = BETA(parsES) #BETA_0(parsES)
@@ -1261,7 +1297,8 @@ cat("\n")
 ## MAP and quantile estimates
 #print(paste0("sdH Fixed: ", round(parsE$sdH,   3),    ". Expected: ", round(  pars$sdH,     3))) #sdH
 print(paste0("kH  Fixed: ", round(parsE$kH,    3),    ". Expected: ", round(  pars$kH,      3))) #kH
-print(paste0("kDH,kDO fix:",round(parsE$kDH,   3),    ". Expected: ", round(  pars$kDH,     3))) #kD
+print(paste0("kDH Fixed: ", round(parsE$kDH,   3),    ". Expected: ", round(  pars$kDH,     3))) #kD
+print(paste0("kDO Fixed: ", round(parsE$kDO,   3),    ". Expected: ", round(  pars$kDO,     3))) #kD
 print(paste0("R0    fix: ", round(parsE$R0,    3),    ". Expected: ", round(  pars$R0,      3))) #R0
 print(paste0("fu    fix: ", round(parsE$fu,    3),    ". Expected: ", round(  pars$fu,      3))) #pE0 #fu #yA
 
@@ -1332,23 +1369,26 @@ print(out$X)
 sink()
 
 #0 Probability-age plots 
-filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_plots_probs")
-svglite(paste0(filenamepath,".svg")); 
-par(mfrow = c(4,2))
-par(mar = c(4, 4, 1, 4))  #bottom, left, top, right
-#h
-plot(pars$h, ylim=c(0,1),ylab="h_0",xlab=""); lines(parsE$h_0, col=2, lwd=2) #plot(pars$h_0,
-plot(pars$h, ylim=c(0,1),ylab="h_1",xlab=""); lines(parsE$h_1, col=2, lwd=2) #plot(pars$h_1
-#y  
-plot(pars$y, ylim=c(0,1),ylab="y_0",xlab=""); lines(parsE$y_0, col=2, lwd=2) #plot(pars$y_0
-plot(pars$y, ylim=c(0,1),ylab="y_1",xlab=""); lines(parsE$y_1, col=2, lwd=2) #plot(pars$y_1
-#d
-plot(0.2*pars$h*pars$m_0, ylim=c(0,1),ylab="d_0",xlab=""); lines(parsE$d_0*parsE$ad, col=2, lwd=2)  #plot(pars$d_0*pars$ad
-plot(0.2*pars$h*pars$m_1, ylim=c(0,1),ylab="d_1",xlab=""); lines(parsE$d_1*parsE$ad, col=2, lwd=2)  #plot(pars$d_1*pars$ad
-#m
-plot(pars$m_0, ylim=c(0,1),ylab="m_0",xlab="age group"); lines(parsE$m_0, col=2, lwd=2)
-plot(pars$m_1, ylim=c(0,1),ylab="m_1",xlab="age group"); lines(parsE$m_1, col=2, lwd=2)
-invisible(dev.off())
+#filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_plots_probs")
+#svglite(paste0(filenamepath,".svg")); 
+#par(mfrow = c(5,2))
+#par(mar = c(4, 4, 1, 4))  #bottom, left, top, right
+##h
+#plot(pars$h, ylim=c(0,1),ylab="h_0",xlab=""); lines(parsE$h_0, col=2, lwd=2) #plot(pars$h_0,
+#plot(pars$h, ylim=c(0,1),ylab="h_1",xlab=""); lines(parsE$h_1, col=2, lwd=2) #plot(pars$h_1
+##y  
+#plot(pars$y, ylim=c(0,1),ylab="y_0",xlab=""); lines(parsE$y_0, col=2, lwd=2) #plot(pars$y_0
+#plot(pars$y, ylim=c(0,1),ylab="y_1",xlab=""); lines(parsE$y_1, col=2, lwd=2) #plot(pars$y_1
+##yh  
+#plot(pars$yh, ylim=c(0,1),ylab="yh_0",xlab=""); lines(parsE$yh_0, col=2, lwd=2) #plot(pars$y_0
+#plot(pars$yh, ylim=c(0,1),ylab="yh_1",xlab=""); lines(parsE$yh_1, col=2, lwd=2) #plot(pars$y_1
+##d
+#plot(0.2*pars$h*pars$m_0, ylim=c(0,1),ylab="d_0",xlab=""); lines(parsE$d_0*parsE$ad, col=2, lwd=2)  #plot(pars$d_0*pars$ad
+#plot(0.2*pars$h*pars$m_1, ylim=c(0,1),ylab="d_1",xlab=""); lines(parsE$d_1*parsE$ad, col=2, lwd=2)  #plot(pars$d_1*pars$ad
+##m
+#plot(pars$m_0, ylim=c(0,1),ylab="m_0",xlab="age group"); lines(parsE$m_0, col=2, lwd=2)
+#plot(pars$m_1, ylim=c(0,1),ylab="m_1",xlab="age group"); lines(parsE$m_1, col=2, lwd=2)
+#invisible(dev.off())
 
 #0 Probability-age plots - log-lin
 #filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_plots_probs_log")
@@ -1946,7 +1986,137 @@ invisible(dev.off())
 }
 
 
-##7 age profiles
+#8 probs - prob plots
+    ##
+    filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_plots_probs")
+    #par(mfrow = c(5,2))
+    #par(mar = c(4, 4, 1, 4))  #bottom, left, top, right
+    colors <- c("Data" = 1,  "MAP" = 2, "95% CrI" = "grey70", "Period 1" = 1, "Period 2" = 2)
+    Age <- c("0-4", "05-11",  "12-17", "18-29", "30-39", "40-49", "50-59", "60-69", "70+")
+    
+    #breaks=seq(min(as.POSIXct(Datessample)), max(as.POSIXct(Datessample)), length=6)
+    #breaks=seq(min((Datessample)), max((Datessample)), length=6)
+    #date_labels = "%d/%m/%y" # "%D") # "%M-%Y")
+
+    #y   #ysample95_0[2] median
+    DF_0 <- tibble(Age=Age, sample05=ysample95_0[,1], sample95=ysample95_0[,3], MAP=parsE$y_0, DAT=pars$y_0)
+    DF_1 <- tibble(Age=Age, sample05=ysample95_1[,1], sample95=ysample95_1[,3], MAP=parsE$y_1, DAT=pars$y_1)
+    py_0<-ggplot(DF_0, aes(x=Age)) + 
+      geom_ribbon(aes(ymin = sample05, ymax = sample95), fill = "grey70") +
+      geom_point(aes(x=Age,  y = DAT,      color="Data")) +
+      geom_line (aes(x=Age,  y = MAP,      color="MAP")) +
+      geom_line (aes(x=Age,  y = sample05, color="95% CrI")) +
+      labs(x = "", y = 'probability y_0',   color = "") + #Legend") + 
+      scale_color_manual(values = colors) +
+      theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_0) #+
+      #scale_x_date(breaks= breaks, date_labels= date_labels) 
+    py_1<-ggplot(DF_1, aes(x=Age)) + 
+      geom_ribbon(aes(ymin = sample05, ymax = sample95), fill = "grey70") +
+      geom_point(aes(x=Age,  y = DAT,      color="Data")) +
+      geom_line (aes(x=Age,  y = MAP,      color="MAP")) +
+      geom_line (aes(x=Age,  y = sample05, color="95% CrI")) +
+      labs(x = "", y = 'probability y_1',   color = "") + #Legend") + 
+      scale_color_manual(values = colors) +
+      theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_1) #+
+      #scale_x_date(breaks= breaks, date_labels= date_labels)
+
+    #h   #hsample95_0[2] median
+    DF_0 <- tibble(Age=Age, sample05=hsample95_0[,1], sample95=hsample95_0[,3], MAP=parsE$h_0, DAT=pars$h_0)
+    DF_1 <- tibble(Age=Age, sample05=hsample95_1[,1], sample95=hsample95_1[,3], MAP=parsE$h_1, DAT=pars$h_1)
+    ph_0<-ggplot(DF_0, aes(x=Age)) + 
+      geom_ribbon(aes(ymin = sample05, ymax = sample95), fill = "grey70") +
+      geom_point(aes(x=Age,  y = DAT,      color="Data")) +
+      geom_line (aes(x=Age,  y = MAP,      color="MAP")) +
+      geom_line (aes(x=Age,  y = sample05, color="95% CrI")) +
+      labs(x = "", y = 'probability h_0',   color = "") + #Legend") + 
+      scale_color_manual(values = colors) +
+      theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_0) #+
+    #scale_x_date(breaks= breaks, date_labels= date_labels) 
+    ph_1<-ggplot(DF_1, aes(x=Age)) + 
+      geom_ribbon(aes(ymin = sample05, ymax = sample95), fill = "grey70") +
+      geom_point(aes(x=Age,  y = DAT,      color="Data")) +
+      geom_line (aes(x=Age,  y = MAP,      color="MAP")) +
+      geom_line (aes(x=Age,  y = sample05, color="95% CrI")) +
+      labs(x = "", y = 'probability h_1',   color = "") + #Legend") + 
+      scale_color_manual(values = colors) +
+      theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_1) #+
+    #scale_x_date(breaks= breaks, date_labels= date_labels)
+
+    #yh  #yhsample95_0[2] median
+    DF_0 <- tibble(Age=Age, sample05=yhsample95_0[,1], sample95=yhsample95_0[,3], MAP=parsE$yh_0, DAT=pars$yh_0)
+    DF_1 <- tibble(Age=Age, sample05=yhsample95_1[,1], sample95=yhsample95_1[,3], MAP=parsE$yh_1, DAT=pars$yh_1)
+    pyh_0<-ggplot(DF_0, aes(x=Age)) + 
+      geom_ribbon(aes(ymin = sample05, ymax = sample95), fill = "grey70") +
+      geom_point(aes(x=Age,  y = DAT,      color="Data")) +
+      geom_line (aes(x=Age,  y = MAP,      color="MAP")) +
+      geom_line (aes(x=Age,  y = sample05, color="95% CrI")) +
+      labs(x = "", y = 'probability yh_0',   color = "") + #Legend") + 
+      scale_color_manual(values = colors) +
+      theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_0) #+
+    #scale_x_date(breaks= breaks, date_labels= date_labels) 
+    pyh_1<-ggplot(DF_1, aes(x=Age)) + 
+      geom_ribbon(aes(ymin = sample05, ymax = sample95), fill = "grey70") +
+      geom_point(aes(x=Age,  y = DAT,      color="Data")) +
+      geom_line (aes(x=Age,  y = MAP,      color="MAP")) +
+      geom_line (aes(x=Age,  y = sample05, color="95% CrI")) +
+      labs(x = "", y = 'probability yh_1',   color = "") + #Legend") + 
+      scale_color_manual(values = colors) +
+      theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_1) #+
+    #scale_x_date(breaks= breaks, date_labels= date_labels)
+    
+    #d   #dample95_0[2] median
+    DF_0 <- tibble(Age=Age, sample05=dsample95_0[,1], sample95=dsample95_0[,3], MAP=parsE$d_0, DAT=pars$d_0)
+    DF_1 <- tibble(Age=Age, sample05=dsample95_1[,1], sample95=dsample95_1[,3], MAP=parsE$d_1, DAT=pars$d_1)
+    pd_0<-ggplot(DF_0, aes(x=Age)) + 
+      geom_ribbon(aes(ymin = sample05, ymax = sample95), fill = "grey70") +
+      geom_point(aes(x=Age,  y = DAT,      color="Data")) +
+      geom_line (aes(x=Age,  y = MAP,      color="MAP")) +
+      geom_line (aes(x=Age,  y = sample05, color="95% CrI")) +
+      labs(x = "", y = 'probability h_0',   color = "") + #Legend") + 
+      scale_color_manual(values = colors) +
+      theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_0) #+
+    #scale_x_date(breaks= breaks, date_labels= date_labels) 
+    pd_1<-ggplot(DF_1, aes(x=Age)) + 
+      geom_ribbon(aes(ymin = sample05, ymax = sample95), fill = "grey70") +
+      geom_point(aes(x=Age,  y = DAT,      color="Data")) +
+      geom_line (aes(x=Age,  y = MAP,      color="MAP")) +
+      geom_line (aes(x=Age,  y = sample05, color="95% CrI")) +
+      labs(x = "", y = 'probability h_1',   color = "") + #Legend") + 
+      scale_color_manual(values = colors) +
+      theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_1) #+
+    #scale_x_date(breaks= breaks, date_labels= date_labels)
+    
+    #m  
+    DF_0 <- tibble(Age=Age, DAT=pars$m_0, DATa=pars$ma_0, DATb=pars$mb_0)
+    DF_1 <- tibble(Age=Age, DAT=pars$m_1, DATa=pars$ma_1, DATb=pars$mb_1)
+    pm_0<-ggplot(DF_0, aes(x=Age)) + 
+      geom_point(aes(x=Age,  y = DATa,     color="Period 1")) +
+      geom_point(aes(x=Age,  y = DATb,     color="Period 2")) +
+      geom_line (aes(x=Age,  y = DATa,     color="Period 1")) +
+      geom_line (aes(x=Age,  y = DATb,     color="Period 2")) +
+      labs(x = "", y = 'probability m_0',   color = "") + #Legend") + 
+      scale_color_manual(values = colors) +
+      theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_0) #+
+    #scale_x_date(breaks= breaks, date_labels= date_labels) 
+    pd_1<-ggplot(DF_1, aes(x=Age)) + 
+      geom_point(aes(x=Age,  y = DATa,     color="Period 1")) +
+      geom_point(aes(x=Age,  y = DATb,     color="Period 2")) +
+      geom_line (aes(x=Age,  y = DATa,     color="Period 1")) +
+      geom_line (aes(x=Age,  y = DATb,     color="Period 2")) +
+      labs(x = "", y = 'probability m_1',   color = "") + #Legend") + 
+      scale_color_manual(values = colors) +
+      theme(axis.title = element_text(size = 12, face = "bold")) +  ggtitle(Title_1) #+
+    #scale_x_date(breaks= breaks, date_labels= date_labels)
+    
+    gridExtra::grid.arrange(py_0, py_1, ph_0, ph_1, pyh_0, pyh_1, pd_0, pd_1, pm_0, pm_1, nrow = 5, ncol = 2)
+    
+    svglite(paste0(filenamepath,".svg")); 
+    gridExtra::grid.arrange(py_0, py_1, ph_0, ph_1, pyh_0, pyh_1, pd_0, pd_1, pm_0, pm_1, nrow = 5, ncol = 2)
+    invisible(dev.off())
+    
+
+    
+##9 age profiles
 if (!is.element(pset$iplatform,1) & length(zd)==length(wd) ){
 colors <- c("0-4" = 1, "05-11" = 2,  "12-17" = 3, "18-29" = 4, "30-39" = 5, 
             "40-49" = 6, "50-59" = 7,  "60-69" = 8, "70+" = 9)
