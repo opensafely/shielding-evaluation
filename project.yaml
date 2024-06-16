@@ -144,7 +144,8 @@ actions:
         txt04: output/HDsynthesis/JDat16_HDdata_questions_answered_Hospital.txt
         txt05: output/HDsynthesis/JDat16_HDdata_questions_answered_Deaths.txt
         txt06: output/HDsynthesis/JDat16_HDdata_questions_answered_Shielding.txt
-
+        txt07: output/HDsynthesis/JDat16_HDdata_questions_stats.txt
+                                  
   HD_data:
     run: > 
       r:latest

@@ -2269,7 +2269,6 @@ print(paste0("Non-shieldA patients died in hosp 1 total:     ",  nP_DH_sum_sA0a,
 
 cat("\n")
 cat("ShieldA/Not deaths in hospital by age - after 30-06-2020 \n")
-mfraction_00_sA1b = rd3(nP_DH_00_sA1b/nP_Hosp_00_sA1b) #frt2(nP_DH_00_sA1,nP_Hosp_00_sA1)
 print(paste0("ShieldA patients died in hosp 2 age 0-4:       ", (nP_DH_00_sA1b), ", %hosp shA deaths: ", pct1(nP_DH_00_sA1b,nP_DH_sum_sA1b) ))
 print(paste0("ShieldA patients died in hosp 2 age 5-11:      ", (nP_DH_05_sA1b), ", %hosp shA deaths: ", pct1(nP_DH_05_sA1b,nP_DH_sum_sA1b) ))
 print(paste0("ShieldA patients died in hosp 2 age 12-17:     ", (nP_DH_12_sA1b), ", %hosp shA deaths: ", pct1(nP_DH_12_sA1b,nP_DH_sum_sA1b) ))
