@@ -146,13 +146,13 @@ actions:
     needs: [clean_the_data]
     outputs:
       moderately_sensitive:
-        txt01: output/HDsynthesis/JDat16_HDdata_questions_answered_Hospital_wCH.txt
-        txt02: output/HDsynthesis/JDat16_HDdata_questions_answered_Deaths_wCH.txt
-        txt03: output/HDsynthesis/JDat16_HDdata_questions_answered_Shielding_wCH.txt
-        txt04: output/HDsynthesis/JDat16_HDdata_questions_answered_Hospital.txt
-        txt05: output/HDsynthesis/JDat16_HDdata_questions_answered_Deaths.txt
-        txt06: output/HDsynthesis/JDat16_HDdata_questions_answered_Shielding.txt
-        txt07: output/HDsynthesis/JDat16_HDdata_questions_stats.txt
+        txt01: output/HDsynthesis/JDat17_HDdata_questions_answered_Hospital_wCH.txt
+        txt02: output/HDsynthesis/JDat17_HDdata_questions_answered_Deaths_wCH.txt
+        txt03: output/HDsynthesis/JDat17_HDdata_questions_answered_Shielding_wCH.txt
+        txt04: output/HDsynthesis/JDat17_HDdata_questions_answered_Hospital.txt
+        txt05: output/HDsynthesis/JDat17_HDdata_questions_answered_Deaths.txt
+        txt06: output/HDsynthesis/JDat17_HDdata_questions_answered_Shielding.txt
+        txt07: output/HDsynthesis/JDat17_HDdata_questions_stats.txt
                                   
   HD_data:
     run: > 
