@@ -710,7 +710,7 @@ LogLikelihood <- function(theta){
 
 
 ## Likelihood definition, parameter ranges  ####################################
-niter = 30000#120000#30000#6000#60000#15000#6000#3000#30000#60000
+niter = 3000#30000#120000#6000#60000#15000#6000#3000#30000#60000
 if (pset$iplatform==2){niter=200000} #150000} #120000}
 
         #1/rIR,     1/rIH,       1/rOD,       pE0,          hM,                         hR,                
@@ -960,6 +960,7 @@ csample   = matrix(0,ntimes,nsample)
 ### probs
 y12_0 = pars$y_0[1:2]
 y12_1 = pars$y_1[1:2]
+na = pars$na
 ysample_0 = matrix(0,na,nsample)
 ysample_1 = matrix(0,na,nsample)
 hsample_0 = matrix(0,na,nsample)
