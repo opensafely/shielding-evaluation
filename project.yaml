@@ -131,6 +131,15 @@ actions:
         svg038: output/modelling/J6_n8_NoPfuO_m6_Fit_MCMC_plots_probs.svg
  
   
+  HD_data_questions_OC:
+    run: > 
+      r:latest
+        analysis/HDdata_questions_OC.r
+    needs: [clean_the_data]
+    outputs:
+      moderately_sensitive:
+        txt77: output/HDsynthesis/JDat17_HDdata_questions_stats_ROUNDED.txt
+
   HD_data_questions:
     run: > 
       r:latest
