@@ -90,6 +90,14 @@ nP_tot_sA1    = sum(!is.na(DAT$patient_id) & DAT$shieldA=="1", na.rm = T)
 nP_tot_sA0    = nP_tot - nP_tot_sA1
 
 
+#cat("Patients by NHS region \n")
+region = unique(DAT$practice_nuts[which(!is.na(DAT$practice_nuts))])
+
+nP_by_region <- vector()
+for (i in seq_along(region)) {
+  nP_by_region[i] = sum(!is.na(DAT$patient_id) & DAT$practice_nuts==region[i], na.rm = T) }
+
+
 
 ######## TEXT OUTPUT STARTS ####################################################
 
@@ -111,6 +119,14 @@ print(paste0("Filter 0: has age:                                     ", nP_tot_f
 print(paste0("Filter 0: has patient id:                              ", nP_tot_f0_id))
 print(paste0("Filter 0: patient shieldA (High Risk by 2020-12-01):   ", nP_tot_sA1))
 print(paste0("Filter 0: patient not shieldA:                         ", nP_tot_sA0))
+
+#NHS regions
+cat(" \n")
+cat("Patients by NHS region \n")
+for (i in seq_along(region)) {
+  print(paste0("No. patients (%) in ", region[i], " : ", r5(nP_by_region[i]), "(",pc1(r5(nP_by_region[i])/nP_tot), "%)" ))
+}
+
 cat("\n")
 sink()
 ######## OC file ###############################################################
