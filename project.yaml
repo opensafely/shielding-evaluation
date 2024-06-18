@@ -137,7 +137,7 @@ actions:
     needs: [clean_the_data]
     outputs:
       moderately_sensitive:
-        txt77: output/HDsynthesis/JDat17_HDdata_questions_stats_ROUNDED.txt
+        txt77: output/HDsynthesis/JDat18_HDdata_questions_stats_ROUNDED.txt
 
   HD_data_questions:
     run: > 

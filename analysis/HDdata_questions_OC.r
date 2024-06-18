@@ -2,7 +2,7 @@
 ## Population and strata stats
 ## Severe event data (H, D) and shielding status linked at ID level
 ## see HDdata_test.R for tests using simulated data
-##
+
 library(arrow)
 library(here)
 library(lubridate)
@@ -18,7 +18,7 @@ Date1="2020-01-01"
 Date2="2020-12-01"
 
 #
-jobno = "JDat17_"
+jobno = "JDat18_"
 
 #output names
 filename0  = "HDdata_questions_stats_ROUNDED"
@@ -38,29 +38,18 @@ DAT  <- arrow::read_parquet(file = here::here("output/data_edited.gz.parquet"),
 ### Data rounding/truncation ###################################################
 ##mid-6 rounding
 rm6  <- function(x){ ceiling(x/6)*6 - (floor(6/2)*(x!=0))   }
-frm6 <- function(n,d){ n6=ceiling(n/6)*6 - (floor(6/2)*(n!=0));  
-d6=ceiling(d/6)*6 - (floor(6/2)*(d!=0));  
-return(n6/d6)}
+frm6 <- function(n,d){ 
+  n6=ceiling(n/6)*6 - (floor(6/2)*(n!=0));  
+  d6=ceiling(d/6)*6 - (floor(6/2)*(d!=0));  
+  return(n6/d6)}
 prm6 <- function(n,d) { frm6(n,d)*100}
 
 ##whole 5 rounding
 r5  <- function(x)  { return( round(x/5)*5)}
 ##decimal rounding 
-rd1 <- function(x)  { return(round(x,1))}
+#rd1 <- function(x)  { return(round(x,1))}
 rd2 <- function(x)  { return(round(x,2))}
 rd3 <- function(x)  { return(round(x,3))}
-##decimal rounding - percentages
-pc1 <- function(x)  { return(round(100*x,1))}
-pc2 <- function(x)  { return(round(100*x,2))}
-##truncation for <8
-tr   <- function(x)  {x = if(x<8) "<8" else x; return(x)}
-##truncation - percentage, 1 decimal rounded
-pct1 <- function(n,d)
-{x = if(n<8 & d>7) as.character(paste0("<",eval(round(100*(8/d),1)),"%")) else if(n<8 & d<8) as.character(paste0("NA")) else paste0(pc1(n/d),'%'); return(x)}
-##truncation - fraction, 2 decimal rounded
-frt2 <- function(n,d)
-{x = if(n<8 & d>7) as.character(paste0("<",eval(round((8/d),1)))) else if(n<8 & d<8) as.character(paste0("NA")) else paste0(rd2(n/d)); return(x)}
-
 
 
 ################################################################################
@@ -90,11 +79,11 @@ DAT <- DAT %>%
 nP_tot_f0     = dim(DAT)[1]
 nP_tot_f0_age = sum(!is.na(DAT$age_cat), na.rm = T)
 nP_tot_f0_id  = sum(!is.na(DAT$patient_id), na.rm = T)
-nP_tot        = sum(!is.na(DAT$patient_id), na.rm = T)                               #used below with this name
+nP_tot        = sum(!is.na(DAT$patient_id), na.rm = T)                                
 #
-nP_tot_s1     = sum(!is.na(DAT$patient_id) & DAT$shielding=="High Risk", na.rm = T)  #used below with this name
+nP_tot_s1     = sum(!is.na(DAT$patient_id) & DAT$shielding=="High Risk", na.rm = T)   
 nP_tot_s0     = nP_tot - nP_tot_s1
-nP_tot_sA1    = sum(!is.na(DAT$patient_id) & DAT$shieldA=="1", na.rm = T)            #used below with this name
+nP_tot_sA1    = sum(!is.na(DAT$patient_id) & DAT$shieldA=="1", na.rm = T)             
 nP_tot_sA0    = nP_tot - nP_tot_sA1
 
 
@@ -284,9 +273,9 @@ cat("\n")
 cat("\n")
 cat("Patients & Hospitalisations - wCH \n")
 cat("\n")
-print(paste0("Date range: ", Date1," to ", Date2))
+print(paste0("Date range:   ", Date1," to ", Date2))
 cat("\n")
-print(paste0("Dataset rows ", dim(DAT)[1], " and columns ", dim(DAT)[2] ))
+print(paste0("Dataset rows: ", dim(DAT)[1], " and columns ", dim(DAT)[2] ))
 cat("\n")
 cat("Patients \n")
 sink()
@@ -299,9 +288,9 @@ nP = sum(!is.na(DAT$patient_id), na.rm = T)
 nP_HorD    = sum(!is.na(DAT$ons_death_date) |  DAT$all_covid_hosp>0)       #NOTE: excluded non-covid deaths (filter 1)
 nP_noHorD  = sum( is.na(DAT$ons_death_date) & (DAT$all_covid_hosp==0 | is.na(DAT$all_covid_hosp)) )
 nP_CH_HorD = sum( (!is.na(DAT$ons_death_date) |  DAT$all_covid_hosp>0)
-                  & (DAT$care_home==TRUE | DAT$care_home_nursing==TRUE))
+                     & (DAT$care_home==TRUE | DAT$care_home_nursing==TRUE))
 nP_CH_noHorD = sum( is.na(DAT$ons_death_date) & (DAT$all_covid_hosp==0 | is.na(DAT$all_covid_hosp))
-                    & (DAT$care_home==TRUE | DAT$care_home_nursing==TRUE))
+                     & (DAT$care_home==TRUE | DAT$care_home_nursing==TRUE))
 
 #cat("Patients by age \n")
 nP_00 = sum(!is.na(DAT$patient_id) & DAT$age_cat=="0-4", na.rm = T)
@@ -381,16 +370,17 @@ nP_Hosp6NCH = nP_Hosp6 - nP_Hosp6CH
 ######## OC file ###############################################################
 sink(file = paste0(output_dir, "/", jobno, filename0, ".txt"),append=T,split=F)
 cat("\n")
-print(paste0("Patient entries:        ", nP ))
-print(paste0("Unique patients:        ", length(unique(DAT$patient_id)) )) #=> row <> one patient
-print(paste0("Missing patient id:     ", sum(is.na(DAT$patient_id)) ))
-print(paste0("Cohort1 inc >2020-12-01 ", nP_all_dates, ", patient1 inc hosp/deaths Dec-2020 to Sep-2021" ))
-print(paste0("Cohort0 inc other-death ", nP_tot,       ", patient0 inc also non-covid deaths Jan-20 to Sep-21" ))
-print(paste0("Patients with covid hosp or death events: ", nP_HorD,   ", %patients:  ", rd2(100*nP_HorD/   nP) ))
-print(paste0("Patients with covid hosp or death events: ", nP_HorD,   ", %cohort1:   ", rd2(100*nP_HorD/   nP_all_dates) ))
-print(paste0("Patients with covid hosp or death events: ", nP_HorD,   ", %cohort0:   ", rd2(100*nP_HorD/   nP_tot) ))
-print(paste0("Patients w cov hosp or death events in CH ", nP_CH_HorD,", %events:    ", rd2(100*nP_CH_HorD/nP_HorD) ))
-print(paste0("Patients wout cov hosp or death events:   ", nP_noHorD, ", %patients:  ", rd2(100*nP_noHorD/ nP) ))
+print(paste0("Patient entries:          ", nP ))
+print(paste0("Unique patients:          ", length(unique(DAT$patient_id)) )) #=> row <> one patient
+print(paste0("Missing patient id:       ", sum(is.na(DAT$patient_id)) ))
+print(paste0("Cohort1 inc >2020-12-01:  ", nP_all_dates, ", patient1 inc hosp/deaths Dec-2020 to Sep-2021" ))
+print(paste0("Cohort0 inc other-deaths: ", nP_tot,       ", patient0 inc also non-covid deaths Jan-20 to Sep-21" ))
+cat("\n")
+print(paste0("Patients with covid hosp or death events:  _5-ronded ", r5(nP_HorD),   ", %patients:  ", rd2(100*nP_HorD/   nP) ))
+print(paste0("Patients with covid hosp or death events:  _5-ronded ", r5(nP_HorD),   ", %cohort1:   ", rd2(100*nP_HorD/   nP_all_dates) ))
+print(paste0("Patients with covid hosp or death events:  _5-ronded ", r5(nP_HorD),   ", %cohort0:   ", rd2(100*nP_HorD/   nP_tot) ))
+print(paste0("Patients w cov hosp or death events in CH: _5-ronded ", r5(nP_CH_HorD),", %events:    ", rd2(100*nP_CH_HorD/nP_HorD) ))
+print(paste0("Patients wout cov hosp or death events:    _5-ronded ", r5(nP_noHorD), ", %patients:  ", rd2(100*nP_noHorD/ nP) ))
 cat("\n")
 cat("Cohort0 by age \n")
 print(paste0("Cohort0 % age 0-4:   _1-decimal-rounded ", pc1(nP_00_tot/nP_tot) )); 
@@ -464,8 +454,8 @@ nP_DH_70 = sum(!is.na(DAT$ons_death_date) & DAT$all_covid_hosp>0 & DAT$age_cat==
 nP_DH_sum = (nP_DH_00+nP_DH_05+nP_DH_12+nP_DH_18+nP_DH_30+nP_DH_40+nP_DH_50+nP_DH_60+nP_DH_70)
 
 ###Mortality fraction
-mfraction_00 = rd3(nP_DH_00/nP_Hosp_00) #frt23(nP_DH_00,nP_Hosp_00)
-mfraction_05 = rd3(nP_DH_05/nP_Hosp_05) # frt2(nP_DH_05,nP_Hosp_05)
+mfraction_00 = rd3(nP_DH_00/nP_Hosp_00)  
+mfraction_05 = rd3(nP_DH_05/nP_Hosp_05)  
 mfraction_12 = rd3(nP_DH_12/nP_Hosp_12)
 mfraction_18 = rd3(nP_DH_18/nP_Hosp_18)
 mfraction_30 = rd3(nP_DH_30/nP_Hosp_30)
@@ -474,8 +464,8 @@ mfraction_50 = rd3(nP_DH_50/nP_Hosp_50)
 mfraction_60 = rd3(nP_DH_60/nP_Hosp_60)
 mfraction_70 = rd3(nP_DH_70/nP_Hosp_70)
 
-mfractio6_00 = rd3(frm6(nP_DH_00, nP_Hosp_00)) #frt23(nP_DH_00,nP_Hosp_00)
-mfractio6_05 = rd3(frm6(nP_DH_05, nP_Hosp_05)) # frt2(nP_DH_05,nP_Hosp_05)
+mfractio6_00 = rd3(frm6(nP_DH_00, nP_Hosp_00))  
+mfractio6_05 = rd3(frm6(nP_DH_05, nP_Hosp_05))  
 mfractio6_12 = rd3(frm6(nP_DH_12, nP_Hosp_12))
 mfractio6_18 = rd3(frm6(nP_DH_18, nP_Hosp_18))
 mfractio6_30 = rd3(frm6(nP_DH_30, nP_Hosp_30))
@@ -665,7 +655,7 @@ nP_DH_70_sA1   = length( which(DAT$shieldA=="1" & !is.na(DAT$ons_death_date) & D
 nP_DH_sum_sA1  = (nP_DH_00_sA1+nP_DH_05_sA1+nP_DH_12_sA1+nP_DH_18_sA1+nP_DH_30_sA1+nP_DH_40_sA1+nP_DH_50_sA1+nP_DH_60_sA1+nP_DH_70_sA1)
 
 #cat("ShieldA deaths in hospital - fatality proportion by age \n")
-mfraction_00_sA1 = rd3(nP_DH_00_sA1/nP_Hosp_00_sA1) #frt2(nP_DH_00_sA1,nP_Hosp_00_sA1)
+mfraction_00_sA1 = rd3(nP_DH_00_sA1/nP_Hosp_00_sA1)  
 mfraction_05_sA1 = rd3(nP_DH_05_sA1/nP_Hosp_05_sA1)
 mfraction_12_sA1 = rd3(nP_DH_12_sA1/nP_Hosp_12_sA1)
 mfraction_18_sA1 = rd3(nP_DH_18_sA1/nP_Hosp_18_sA1)
@@ -675,7 +665,7 @@ mfraction_50_sA1 = rd3(nP_DH_50_sA1/nP_Hosp_50_sA1)
 mfraction_60_sA1 = rd3(nP_DH_60_sA1/nP_Hosp_60_sA1)
 mfraction_70_sA1 = rd3(nP_DH_70_sA1/nP_Hosp_70_sA1)
 #
-mfractio6_00_sA1 = rd3(frm6(nP_DH_00_sA1, nP_Hosp_00_sA1)) #frt2(nP_DH_00_sA1,nP_Hosp_00_sA1)
+mfractio6_00_sA1 = rd3(frm6(nP_DH_00_sA1, nP_Hosp_00_sA1))  
 mfractio6_05_sA1 = rd3(frm6(nP_DH_05_sA1, nP_Hosp_05_sA1))
 mfractio6_12_sA1 = rd3(frm6(nP_DH_12_sA1, nP_Hosp_12_sA1))
 mfractio6_18_sA1 = rd3(frm6(nP_DH_18_sA1, nP_Hosp_18_sA1))
@@ -697,12 +687,12 @@ cat("\n")
 cat("Shielding \n")
 cat("shieldA: inc High Risk flags up to 2020-12-01 \n")
 cat("\n")
-print(paste0("Patients shieldA: ", nP_sA1,           ", %patients: ", rd2(100*nP_sA1/nP) ))
-print(paste0("Patients not shA: ", nP_sA0,           ", %patients: ", rd2(100*nP_sA0/nP) ))
-print(paste0("Patient0 shieldA: ", nP_tot_sA1,       ", %cohort0:  ", rd2(100*nP_tot_sA1/nP_tot) ))
-print(paste0("Patient0 not shA: ", nP_tot_sA0,       ", %cohort0:  ", rd2(100*nP_tot_sA0/nP_tot) ))
-print(paste0("Patient1 shieldA: ", nP_all_dates_sA1, ", %cohort1:  ", rd2(100*nP_all_dates_sA1/nP_all_dates) ))
-print(paste0("Patient1 not shA: ", nP_all_dates_sA0, ", %cohort1:  ", rd2(100*nP_all_dates_sA0/nP_all_dates) ))
+print(paste0("Patients shieldA: _5-round ", r5(nP_sA1),           ", %patients: ", rd2(100*nP_sA1/nP) ))
+print(paste0("Patients not shA: _5-round ", r5(nP_sA0),           ", %patients: ", rd2(100*nP_sA0/nP) ))
+print(paste0("Patient0 shieldA: _5-round ", r5(nP_tot_sA1),       ", %cohort0:  ", rd2(100*nP_tot_sA1/nP_tot) ))
+print(paste0("Patient0 not shA: _5-round ", r5(nP_tot_sA0),       ", %cohort0:  ", rd2(100*nP_tot_sA0/nP_tot) ))
+print(paste0("Patient1 shieldA: _5-round ", r5(nP_all_dates_sA1), ", %cohort1:  ", rd2(100*nP_all_dates_sA1/nP_all_dates) ))
+print(paste0("Patient1 not shA: _5-round ", r5(nP_all_dates_sA0), ", %cohort1:  ", rd2(100*nP_all_dates_sA0/nP_all_dates) ))
 print(paste0("Patient0 inc CH, covid deaths Dec-2020-Sep-2021, non-covid deaths Jan-2020-Sep-2021"))
 print(paste0("Patient1 inc CH, covid deaths Dec-2020-Sep-2021"))
 cat("\n")
@@ -712,26 +702,26 @@ print(paste0("Patients not shA with hosp/death events: _5-rounded ", r5(nP_HorD_
 print(paste0("Patients not shA w/o hosp/death events:  _5-rounded ", r5(nP_noHorD_sA0), ", %nshA patients: ", rd2(100*r5(nP_noHorD_sA0)/ nP_sA0) ))
 cat("\n")
 cat("ShieldA by age \n")
-print(paste0("Patient age 0-4   % shieldA: 1-decimal-rounded ", pc1(nP_00_sA1/nP_00) ))
-print(paste0("Patient age 5-11  % shieldA: 1-decimal-rounded ", pc1(nP_05_sA1/nP_05) ))
-print(paste0("Patient age 12-17 % shieldA: 1-decimal-rounded ", pc1(nP_12_sA1/nP_12) ))
-print(paste0("Patient age 18-29 % shieldA: 1-decimal-rounded ", pc1(nP_18_sA1/nP_18) ))
-print(paste0("Patient age 30-39 % shieldA: 1-decimal-rounded ", pc1(nP_30_sA1/nP_30) ))
-print(paste0("Patient age 40-49 % shieldA: 1-decimal-rounded ", pc1(nP_40_sA1/nP_40) ))
-print(paste0("Patient age 50-59 % shieldA: 1-decimal-rounded ", pc1(nP_50_sA1/nP_50) ))
-print(paste0("Patient age 60-69 % shieldA: 1-decimal-rounded ", pc1(nP_60_sA1/nP_60) ))
-print(paste0("Patient age 70+   % shieldA: 1-decimal-rounded ", pc1(nP_70_sA1/nP_70) ))
+print(paste0("Patient age 0-4   % shieldA: _1-decimal-rounded ", pc1(nP_00_sA1/nP_00) ))
+print(paste0("Patient age 5-11  % shieldA: _1-decimal-rounded ", pc1(nP_05_sA1/nP_05) ))
+print(paste0("Patient age 12-17 % shieldA: _1-decimal-rounded ", pc1(nP_12_sA1/nP_12) ))
+print(paste0("Patient age 18-29 % shieldA: _1-decimal-rounded ", pc1(nP_18_sA1/nP_18) ))
+print(paste0("Patient age 30-39 % shieldA: _1-decimal-rounded ", pc1(nP_30_sA1/nP_30) ))
+print(paste0("Patient age 40-49 % shieldA: _1-decimal-rounded ", pc1(nP_40_sA1/nP_40) ))
+print(paste0("Patient age 50-59 % shieldA: _1-decimal-rounded ", pc1(nP_50_sA1/nP_50) ))
+print(paste0("Patient age 60-69 % shieldA: _1-decimal-rounded ", pc1(nP_60_sA1/nP_60) ))
+print(paste0("Patient age 70+   % shieldA: _1-decimal-rounded ", pc1(nP_70_sA1/nP_70) ))
 cat("\n")
 cat("ShieldA by age, in cohort0 (all deaths, all dates) \n")
-print(paste0("Patient age 0-4   % shieldA: 1-dec-rounded ", pc1(nP_00_tot_sA1/nP_00_tot) ))
-print(paste0("Patient age 5-11  % shieldA: 1-dec-rounded ", pc1(nP_05_tot_sA1/nP_05_tot) ))
-print(paste0("Patient age 12-17 % shieldA: 1-dec-rounded ", pc1(nP_12_tot_sA1/nP_12_tot) ))
-print(paste0("Patient age 18-29 % shieldA: 1-dec-rounded ", pc1(nP_18_tot_sA1/nP_18_tot) ))
-print(paste0("Patient age 30-39 % shieldA: 1-dec-rounded ", pc1(nP_30_tot_sA1/nP_30_tot) ))
-print(paste0("Patient age 40-49 % shieldA: 1-dec-rounded ", pc1(nP_40_tot_sA1/nP_40_tot) ))
-print(paste0("Patient age 50-59 % shieldA: 1-dec-rounded ", pc1(nP_50_tot_sA1/nP_50_tot) ))
-print(paste0("Patient age 60-69 % shieldA: 1-dec-rounded ", pc1(nP_60_tot_sA1/nP_60_tot) ))
-print(paste0("Patient age 70+   % shieldA: 1-dec-rounded ", pc1(nP_70_tot_sA1/nP_70_tot) ))
+print(paste0("Patient age 0-4   % shieldA: _1-decimal-rounded ", pc1(nP_00_tot_sA1/nP_00_tot) ))
+print(paste0("Patient age 5-11  % shieldA: _1-decimal-rounded ", pc1(nP_05_tot_sA1/nP_05_tot) ))
+print(paste0("Patient age 12-17 % shieldA: _1-decimal-rounded ", pc1(nP_12_tot_sA1/nP_12_tot) ))
+print(paste0("Patient age 18-29 % shieldA: _1-decimal-rounded ", pc1(nP_18_tot_sA1/nP_18_tot) ))
+print(paste0("Patient age 30-39 % shieldA: _1-decimal-rounded ", pc1(nP_30_tot_sA1/nP_30_tot) ))
+print(paste0("Patient age 40-49 % shieldA: _1-decimal-rounded ", pc1(nP_40_tot_sA1/nP_40_tot) ))
+print(paste0("Patient age 50-59 % shieldA: _1-decimal-rounded ", pc1(nP_50_tot_sA1/nP_50_tot) ))
+print(paste0("Patient age 60-69 % shieldA: _1-decimal-rounded ", pc1(nP_60_tot_sA1/nP_60_tot) ))
+print(paste0("Patient age 70+   % shieldA: _1-decimal-rounded ", pc1(nP_70_tot_sA1/nP_70_tot) ))
 
 cat("\n")
 cat("ShieldA patients in hospital \n")
@@ -785,7 +775,8 @@ nP_tot_f3_sA0   = nP_tot_f3 - nP_tot_f3_sA1
 
 ######## OC file ###############################################################
 sink(file = paste0(output_dir, "/", jobno, filename0, ".txt"),append=T,split=F)
-#
+cat("\n")
+cat("\n")
 print(paste0("Filter 3 - exclude patients with non-covid death - Cohort2"))
 print(paste0("Filter 3: data rows:                                   ", nP_tot_f3))
 print(paste0("Filter 3: has patient id:                              ", nP_tot_f3_id))
@@ -898,19 +889,19 @@ cat("Patients \n")
 print(paste0("Patient entries:     ", nP ))
 print(paste0("Unique patients:     ", length(unique(DAT$patient_id)) )) #=> row <> one patient
 print(paste0("Missing patient id:  ", sum(is.na(DAT$patient_id)) ))
-print(paste0("Patients with covid hosp or death events:  ", nP_HorD,   ", %all patients: ", pc1(nP_HorD/  nP) ))
-print(paste0("Patients wout covid hosp or death events:  ", nP_noHorD, ", %all patients: ", pc1(nP_noHorD/nP) ))
+print(paste0("Patients with covid hosp or death events: _5-round ", r5(nP_HorD),   ", %all patients: ", pc1(nP_HorD/  nP) ))
+print(paste0("Patients wout covid hosp or death events: _5-round ", r5(nP_noHorD), ", %all patients: ", pc1(nP_noHorD/nP) ))
 cat("\n")
 cat("Patients by age \n")
-print(paste0("Patient % age 0-4:   1-decimal-rounded ", pc1(nP_00/nP) )); 
-print(paste0("Patient % age 5-11:  1-decimal-rounded ", pc1(nP_05/nP) ));
-print(paste0("Patient % age 12-17: 1-decimal-rounded ", pc1(nP_12/nP) ));
-print(paste0("Patient % age 18-29: 1-decimal-rounded ", pc1(nP_18/nP) ));
-print(paste0("Patient % age 30-39: 1-decimal-rounded ", pc1(nP_30/nP) ));
-print(paste0("Patient % age 40-49: 1-decimal-rounded ", pc1(nP_40/nP) ));
-print(paste0("Patient % age 50-59: 1-decimal-rounded ", pc1(nP_50/nP) ));
-print(paste0("Patient % age 60-69: 1-decimal-rounded ", pc1(nP_60/nP) ));
-print(paste0("Patient % age 70+:   1-decimal-rounded ", pc1(nP_70/nP) ));
+print(paste0("Patient % age 0-4:   _1-decimal-rounded ", pc1(nP_00/nP) )); 
+print(paste0("Patient % age 5-11:  _1-decimal-rounded ", pc1(nP_05/nP) ));
+print(paste0("Patient % age 12-17: _1-decimal-rounded ", pc1(nP_12/nP) ));
+print(paste0("Patient % age 18-29: _1-decimal-rounded ", pc1(nP_18/nP) ));
+print(paste0("Patient % age 30-39: _1-decimal-rounded ", pc1(nP_30/nP) ));
+print(paste0("Patient % age 40-49: _1-decimal-rounded ", pc1(nP_40/nP) ));
+print(paste0("Patient % age 50-59: _1-decimal-rounded ", pc1(nP_50/nP) ));
+print(paste0("Patient % age 60-69: _1-decimal-rounded ", pc1(nP_60/nP) ));
+print(paste0("Patient % age 70+:   _1-decimal-rounded ", pc1(nP_70/nP) ));
 print(paste0("Patient % all:       ", pc1(nP_sum/nP) ));
 cat("\n")
 cat("Hospitalised patients \n")
@@ -931,10 +922,6 @@ print(paste0("Patients hospitalised age 50-59: _5-rounded ", r5(nP_Hosp_50), ", 
 print(paste0("Patients hospitalised age 60-69: _5-rounded ", r5(nP_Hosp_60), ", %patients hosp: ", pc1(r5(nP_Hosp_60)/nP_Hosp) ))
 print(paste0("Patients hospitalised age 70+:   _5-rounded ", r5(nP_Hosp_70), ", %patients hosp: ", pc1(r5(nP_Hosp_70)/nP_Hosp) ))
 print(paste0("Patients hospitalised total %:              ", pc1(nP_Hosp_sum/nP_Hosp) ))
-cat("\n")
-cat("Hospitalised patients (any no. admissions) by age - prior 2020-06-30 \n")
-cat("\n")
-cat("Hospitalised patients (any no. admissions) by age - after 2020-06-30 \n")
 cat("\n")
 cat("Hospitalised patients by number of admissions \n")
 print(paste0("Hospitalised with 1 admission:  _5-rounded ", r5(nP_Hosp1),   ", %patients hosp: ", pc1(r5(nP_Hosp1)/  nP_Hosp) ))
@@ -983,7 +970,7 @@ nP_DH_70 = sum(!is.na(DAT$ons_death_date) & DAT$all_covid_hosp>0 & DAT$age_cat==
 nP_DH_sum = (nP_DH_00+nP_DH_05+nP_DH_12+nP_DH_18+nP_DH_30+nP_DH_40+nP_DH_50+nP_DH_60+nP_DH_70)
 
 ###Mortality fraction 
-mfraction_00 = rd3(nP_DH_00/nP_Hosp_00) # frt2(nP_DH_00,nP_Hosp_00)
+mfraction_00 = rd3(nP_DH_00/nP_Hosp_00)  
 mfraction_05 = rd3(nP_DH_05/nP_Hosp_05)
 mfraction_12 = rd3(nP_DH_12/nP_Hosp_12)
 mfraction_18 = rd3(nP_DH_18/nP_Hosp_18)
@@ -993,7 +980,7 @@ mfraction_50 = rd3(nP_DH_50/nP_Hosp_50)
 mfraction_60 = rd3(nP_DH_60/nP_Hosp_60)
 mfraction_70 = rd3(nP_DH_70/nP_Hosp_70)
 #
-mfractio6_00 = rd3(frm6(nP_DH_00, nP_Hosp_00)) # frt2(nP_DH_00,nP_Hosp_00)
+mfractio6_00 = rd3(frm6(nP_DH_00, nP_Hosp_00))  
 mfractio6_05 = rd3(frm6(nP_DH_05, nP_Hosp_05))
 mfractio6_12 = rd3(frm6(nP_DH_12, nP_Hosp_12))
 mfractio6_18 = rd3(frm6(nP_DH_18, nP_Hosp_18))
@@ -1144,41 +1131,41 @@ print(paste0("Deaths upon 3rd admission: _5-rounded ", r5(nP_DH3),    ", %hosp d
 
 cat("\n")
 cat("Case fatality rate in hospital by age \n")
-print(paste0("Hospital mfractio6 age 0-4:   mid-6-rounded ", mfractio6_00 ))
-print(paste0("Hospital mfractio6 age 5-11:  mid-6-rounded ", mfractio6_05 ))
-print(paste0("Hospital mfractio6 age 12-17: mid-6-rounded ", mfractio6_12 ))
-print(paste0("Hospital mfractio6 age 18-29: mid-6-rounded ", mfractio6_18 ))
-print(paste0("Hospital mfractio6 age 30-39: mid-6-rounded ", mfractio6_30 ))
-print(paste0("Hospital mfractio6 age 40-49: mid-6-rounded ", mfractio6_40 ))
-print(paste0("Hospital mfractio6 age 50-59: mid-6-rounded ", mfractio6_50 ))
-print(paste0("Hospital mfractio6 age 60-69: mid-6-rounded ", mfractio6_60 ))
-print(paste0("Hospital mfractio6 age 70+:   mid-6-rounded ", mfractio6_70 ))
+print(paste0("Hospital mfractio6 age 0-4:   _mid-6-rounded ", mfractio6_00 ))
+print(paste0("Hospital mfractio6 age 5-11:  _mid-6-rounded ", mfractio6_05 ))
+print(paste0("Hospital mfractio6 age 12-17: _mid-6-rounded ", mfractio6_12 ))
+print(paste0("Hospital mfractio6 age 18-29: _mid-6-rounded ", mfractio6_18 ))
+print(paste0("Hospital mfractio6 age 30-39: _mid-6-rounded ", mfractio6_30 ))
+print(paste0("Hospital mfractio6 age 40-49: _mid-6-rounded ", mfractio6_40 ))
+print(paste0("Hospital mfractio6 age 50-59: _mid-6-rounded ", mfractio6_50 ))
+print(paste0("Hospital mfractio6 age 60-69: _mid-6-rounded ", mfractio6_60 ))
+print(paste0("Hospital mfractio6 age 70+:   _mid-6-rounded ", mfractio6_70 ))
 cat("\n")
 cat("Case fatality rate in hospital by age prior 2020-06-30 \n")
-print(paste0("Hospital prior 2020-06-30 mfractio6 age 0-4:   mid-6-rounded ", mfractio6_00a ))
-print(paste0("Hospital prior 2020-06-30 mfractio6 age 5-11:  mid-6-rounded ", mfractio6_05a ))
-print(paste0("Hospital prior 2020-06-30 mfractio6 age 12-17: mid-6-rounded ", mfractio6_12a ))
-print(paste0("Hospital prior 2020-06-30 mfractio6 age 18-29: mid-6-rounded ", mfractio6_18a ))
-print(paste0("Hospital prior 2020-06-30 mfractio6 age 30-39: mid-6-rounded ", mfractio6_30a ))
-print(paste0("Hospital prior 2020-06-30 mfractio6 age 40-49: mid-6-rounded ", mfractio6_40a ))
-print(paste0("Hospital prior 2020-06-30 mfractio6 age 50-59: mid-6-rounded ", mfractio6_50a ))
-print(paste0("Hospital prior 2020-06-30 mfractio6 age 60-69: mid-6-rounded ", mfractio6_60a ))
-print(paste0("Hospital prior 2020-06-30 mfractio6 age 70+:   mid-6-rounded ", mfractio6_70a ))
+print(paste0("Hospital prior 2020-06-30 mfractio6 age 0-4:   _mid-6-rounded ", mfractio6_00a ))
+print(paste0("Hospital prior 2020-06-30 mfractio6 age 5-11:  _mid-6-rounded ", mfractio6_05a ))
+print(paste0("Hospital prior 2020-06-30 mfractio6 age 12-17: _mid-6-rounded ", mfractio6_12a ))
+print(paste0("Hospital prior 2020-06-30 mfractio6 age 18-29: _mid-6-rounded ", mfractio6_18a ))
+print(paste0("Hospital prior 2020-06-30 mfractio6 age 30-39: _mid-6-rounded ", mfractio6_30a ))
+print(paste0("Hospital prior 2020-06-30 mfractio6 age 40-49: _mid-6-rounded ", mfractio6_40a ))
+print(paste0("Hospital prior 2020-06-30 mfractio6 age 50-59: _mid-6-rounded ", mfractio6_50a ))
+print(paste0("Hospital prior 2020-06-30 mfractio6 age 60-69: _mid-6-rounded ", mfractio6_60a ))
+print(paste0("Hospital prior 2020-06-30 mfractio6 age 70+:   _mid-6-rounded ", mfractio6_70a ))
 cat("\n")
 cat("Case fatality rate in hospital by age after 2020-06-30 \n")
-print(paste0("Hospital after 2020-06-30 mfractio6 age 0-4:   mid-6-rounded ", mfractio6_00b ))
-print(paste0("Hospital after 2020-06-30 mfractio6 age 5-11:  mid-6-rounded ", mfractio6_05b ))
-print(paste0("Hospital after 2020-06-30 mfractio6 age 12-17: mid-6-rounded ", mfractio6_12b ))
-print(paste0("Hospital after 2020-06-30 mfractio6 age 18-29: mid-6-rounded ", mfractio6_18b ))
-print(paste0("Hospital after 2020-06-30 mfractio6 age 30-39: mid-6-rounded ", mfractio6_30b ))
-print(paste0("Hospital after 2020-06-30 mfractio6 age 40-49: mid-6-rounded ", mfractio6_40b ))
-print(paste0("Hospital after 2020-06-30 mfractio6 age 50-59: mid-6-rounded ", mfractio6_50b ))
-print(paste0("Hospital after 2020-06-30 mfractio6 age 60-69: mid-6-rounded ", mfractio6_60b ))
-print(paste0("Hospital after 2020-06-30 mfractio6 age 70+:   mid-6-rounded ", mfractio6_70b ))
+print(paste0("Hospital after 2020-06-30 mfractio6 age 0-4:   _mid-6-rounded ", mfractio6_00b ))
+print(paste0("Hospital after 2020-06-30 mfractio6 age 5-11:  _mid-6-rounded ", mfractio6_05b ))
+print(paste0("Hospital after 2020-06-30 mfractio6 age 12-17: _mid-6-rounded ", mfractio6_12b ))
+print(paste0("Hospital after 2020-06-30 mfractio6 age 18-29: _mid-6-rounded ", mfractio6_18b ))
+print(paste0("Hospital after 2020-06-30 mfractio6 age 30-39: _mid-6-rounded ", mfractio6_30b ))
+print(paste0("Hospital after 2020-06-30 mfractio6 age 40-49: _mid-6-rounded ", mfractio6_40b ))
+print(paste0("Hospital after 2020-06-30 mfractio6 age 50-59: _mid-6-rounded ", mfractio6_50b ))
+print(paste0("Hospital after 2020-06-30 mfractio6 age 60-69: _mid-6-rounded ", mfractio6_60b ))
+print(paste0("Hospital after 2020-06-30 mfractio6 age 70+:   _mid-6-rounded ", mfractio6_70b ))
 
 cat("\n")
 cat("Deaths outside hospital \n")
-print(paste0("Patients died outside hosp: _5-rounded", r5(nP_DO), ", %all deaths:     ", pc1(r5(nP_DO)/nP_D) ))
+print(paste0("Patients died outside hosp: _5-rounded ", r5(nP_DO), ", %all deaths:  ", pc1(r5(nP_DO)/nP_D) ))
 cat("\n")
 cat("Deaths in hospital - average time to death since 1st admission (the admission_date) \n")
 cat("                   - assumption: merging with duration any subsequent admissions \n")
@@ -1383,7 +1370,7 @@ nP_DH_sum_sA0b  = (nP_DH_00_sA0b+nP_DH_05_sA0b+nP_DH_12_sA0b+nP_DH_18_sA0b+nP_DH
 
 #cat("ShieldA/Not deaths in hospital - fatality proportion by age \n")
 ##NOTE: NOT NEC FOR SHIELD: men_time_to_death_1, men_time_to_recover_1 (time to death since last admission 1x) - assume are shielding independent
-mfraction_00_sA1 = rd3(nP_DH_00_sA1/nP_Hosp_00_sA1) #frt2(nP_DH_00_sA1,nP_Hosp_00_sA1)
+mfraction_00_sA1 = rd3(nP_DH_00_sA1/nP_Hosp_00_sA1)  
 mfraction_05_sA1 = rd3(nP_DH_05_sA1/nP_Hosp_05_sA1)
 mfraction_12_sA1 = rd3(nP_DH_12_sA1/nP_Hosp_12_sA1)
 mfraction_18_sA1 = rd3(nP_DH_18_sA1/nP_Hosp_18_sA1)
@@ -1393,7 +1380,7 @@ mfraction_50_sA1 = rd3(nP_DH_50_sA1/nP_Hosp_50_sA1)
 mfraction_60_sA1 = rd3(nP_DH_60_sA1/nP_Hosp_60_sA1)
 mfraction_70_sA1 = rd3(nP_DH_70_sA1/nP_Hosp_70_sA1)
 #
-mfraction_00_sA0 = rd3(nP_DH_00_sA0/nP_Hosp_00_sA0) #frt2(nP_DH_00_sA1,nP_Hosp_00_sA1)
+mfraction_00_sA0 = rd3(nP_DH_00_sA0/nP_Hosp_00_sA0)  
 mfraction_05_sA0 = rd3(nP_DH_05_sA0/nP_Hosp_05_sA0)
 mfraction_12_sA0 = rd3(nP_DH_12_sA0/nP_Hosp_12_sA0)
 mfraction_18_sA0 = rd3(nP_DH_18_sA0/nP_Hosp_18_sA0)
@@ -1403,7 +1390,7 @@ mfraction_50_sA0 = rd3(nP_DH_50_sA0/nP_Hosp_50_sA0)
 mfraction_60_sA0 = rd3(nP_DH_60_sA0/nP_Hosp_60_sA0)
 mfraction_70_sA0 = rd3(nP_DH_70_sA0/nP_Hosp_70_sA0)
 #
-mfractio6_00_sA1 = rd3(frm6(nP_DH_00_sA1, nP_Hosp_00_sA1)) #frt2(nP_DH_00_sA0,nP_Hosp_00_sA0)
+mfractio6_00_sA1 = rd3(frm6(nP_DH_00_sA1, nP_Hosp_00_sA1))  
 mfractio6_05_sA1 = rd3(frm6(nP_DH_05_sA1, nP_Hosp_05_sA1))
 mfractio6_12_sA1 = rd3(frm6(nP_DH_12_sA1, nP_Hosp_12_sA1))
 mfractio6_18_sA1 = rd3(frm6(nP_DH_18_sA1, nP_Hosp_18_sA1))
@@ -1413,7 +1400,7 @@ mfractio6_50_sA1 = rd3(frm6(nP_DH_50_sA1, nP_Hosp_50_sA1))
 mfractio6_60_sA1 = rd3(frm6(nP_DH_60_sA1, nP_Hosp_60_sA1))
 mfractio6_70_sA1 = rd3(frm6(nP_DH_70_sA1, nP_Hosp_70_sA1))
 ##
-mfractio6_00_sA0 = rd3(frm6(nP_DH_00_sA0, nP_Hosp_00_sA0)) #frt2(nP_DH_00_sA0,nP_Hosp_00_sA0)
+mfractio6_00_sA0 = rd3(frm6(nP_DH_00_sA0, nP_Hosp_00_sA0))  
 mfractio6_05_sA0 = rd3(frm6(nP_DH_05_sA0, nP_Hosp_05_sA0))
 mfractio6_12_sA0 = rd3(frm6(nP_DH_12_sA0, nP_Hosp_12_sA0))
 mfractio6_18_sA0 = rd3(frm6(nP_DH_18_sA0, nP_Hosp_18_sA0))
@@ -1425,7 +1412,7 @@ mfractio6_70_sA0 = rd3(frm6(nP_DH_70_sA0, nP_Hosp_70_sA0))
 
 #cat("ShieldA/Not deaths in hospital - fatality proportion by age - prior 2020-06-30 \n")
 ##NOTE: NOT NEC FOR SHIELD: men_time_to_death_1, men_time_to_recover_1 (time to death since last admission 1x) - assume are shielding independent
-mfraction_00_sA1a = rd3(nP_DH_00_sA1a/nP_Hosp_00_sA1a) #frt2(nP_DH_00_sA1,nP_Hosp_00_sA1)
+mfraction_00_sA1a = rd3(nP_DH_00_sA1a/nP_Hosp_00_sA1a)  
 mfraction_05_sA1a = rd3(nP_DH_05_sA1a/nP_Hosp_05_sA1a)
 mfraction_12_sA1a = rd3(nP_DH_12_sA1a/nP_Hosp_12_sA1a)
 mfraction_18_sA1a = rd3(nP_DH_18_sA1a/nP_Hosp_18_sA1a)
@@ -1435,7 +1422,7 @@ mfraction_50_sA1a = rd3(nP_DH_50_sA1a/nP_Hosp_50_sA1a)
 mfraction_60_sA1a = rd3(nP_DH_60_sA1a/nP_Hosp_60_sA1a)
 mfraction_70_sA1a = rd3(nP_DH_70_sA1a/nP_Hosp_70_sA1a)
 #
-mfraction_00_sA0a = rd3(nP_DH_00_sA0a/nP_Hosp_00_sA0a) #frt2(nP_DH_00_sA0,nP_Hosp_00_sA0)
+mfraction_00_sA0a = rd3(nP_DH_00_sA0a/nP_Hosp_00_sA0a)  
 mfraction_05_sA0a = rd3(nP_DH_05_sA0a/nP_Hosp_05_sA0a)
 mfraction_12_sA0a = rd3(nP_DH_12_sA0a/nP_Hosp_12_sA0a)
 mfraction_18_sA0a = rd3(nP_DH_18_sA0a/nP_Hosp_18_sA0a)
@@ -1445,7 +1432,7 @@ mfraction_50_sA0a = rd3(nP_DH_50_sA0a/nP_Hosp_50_sA0a)
 mfraction_60_sA0a = rd3(nP_DH_60_sA0a/nP_Hosp_60_sA0a)
 mfraction_70_sA0a = rd3(nP_DH_70_sA0a/nP_Hosp_70_sA0a)
 #
-mfractio6_00_sA1a = rd3(frm6(nP_DH_00_sA1a, nP_Hosp_00_sA1a)) #frt2(nP_DH_00_sA1,nP_Hosp_00_sA1)
+mfractio6_00_sA1a = rd3(frm6(nP_DH_00_sA1a, nP_Hosp_00_sA1a))  
 mfractio6_05_sA1a = rd3(frm6(nP_DH_05_sA1a, nP_Hosp_05_sA1a))
 mfractio6_12_sA1a = rd3(frm6(nP_DH_12_sA1a, nP_Hosp_12_sA1a))
 mfractio6_18_sA1a = rd3(frm6(nP_DH_18_sA1a, nP_Hosp_18_sA1a))
@@ -1455,7 +1442,7 @@ mfractio6_50_sA1a = rd3(frm6(nP_DH_50_sA1a, nP_Hosp_50_sA1a))
 mfractio6_60_sA1a = rd3(frm6(nP_DH_60_sA1a, nP_Hosp_60_sA1a))
 mfractio6_70_sA1a = rd3(frm6(nP_DH_70_sA1a, nP_Hosp_70_sA1a))
 #
-mfractio6_00_sA0a = rd3(frm6(nP_DH_00_sA0a, nP_Hosp_00_sA0a)) #frt2(nP_DH_00_sA0,nP_Hosp_00_sA0)
+mfractio6_00_sA0a = rd3(frm6(nP_DH_00_sA0a, nP_Hosp_00_sA0a))  
 mfractio6_05_sA0a = rd3(frm6(nP_DH_05_sA0a, nP_Hosp_05_sA0a))
 mfractio6_12_sA0a = rd3(frm6(nP_DH_12_sA0a, nP_Hosp_12_sA0a))
 mfractio6_18_sA0a = rd3(frm6(nP_DH_18_sA0a, nP_Hosp_18_sA0a))
@@ -1467,7 +1454,7 @@ mfractio6_70_sA0a = rd3(frm6(nP_DH_70_sA0a, nP_Hosp_70_sA0a))
 
 #cat("ShieldA/Not deaths in hospital - fatality proportion by age - after 2020-06-30 \n")
 ##NOTE: NOT NEC FOR SHIELD: men_time_to_death_1, men_time_to_recover_1 (time to death since last admission 1x) - assume are shielding independent
-mfraction_00_sA1b = rd3(nP_DH_00_sA1b/nP_Hosp_00_sA1b) #frt2(nP_DH_00_sA1,nP_Hosp_00_sA1)
+mfraction_00_sA1b = rd3(nP_DH_00_sA1b/nP_Hosp_00_sA1b)  
 mfraction_05_sA1b = rd3(nP_DH_05_sA1b/nP_Hosp_05_sA1b)
 mfraction_12_sA1b = rd3(nP_DH_12_sA1b/nP_Hosp_12_sA1b)
 mfraction_18_sA1b = rd3(nP_DH_18_sA1b/nP_Hosp_18_sA1b)
@@ -1477,7 +1464,7 @@ mfraction_50_sA1b = rd3(nP_DH_50_sA1b/nP_Hosp_50_sA1b)
 mfraction_60_sA1b = rd3(nP_DH_60_sA1b/nP_Hosp_60_sA1b)
 mfraction_70_sA1b = rd3(nP_DH_70_sA1b/nP_Hosp_70_sA1b)
 #
-mfraction_00_sA0b = rd3(nP_DH_00_sA0b/nP_Hosp_00_sA0b) #frt2(nP_DH_00_sA0,nP_Hosp_00_sA0)
+mfraction_00_sA0b = rd3(nP_DH_00_sA0b/nP_Hosp_00_sA0b)  
 mfraction_05_sA0b = rd3(nP_DH_05_sA0b/nP_Hosp_05_sA0b)
 mfraction_12_sA0b = rd3(nP_DH_12_sA0b/nP_Hosp_12_sA0b)
 mfraction_18_sA0b = rd3(nP_DH_18_sA0b/nP_Hosp_18_sA0b)
@@ -1487,7 +1474,7 @@ mfraction_50_sA0b = rd3(nP_DH_50_sA0b/nP_Hosp_50_sA0b)
 mfraction_60_sA0b = rd3(nP_DH_60_sA0b/nP_Hosp_60_sA0b)
 mfraction_70_sA0b = rd3(nP_DH_70_sA0b/nP_Hosp_70_sA0b)
 #
-mfractio6_00_sA1b = rd3(frm6(nP_DH_00_sA1b, nP_Hosp_00_sA1b)) #frt2(nP_DH_00_sA1,nP_Hosp_00_sA1)
+mfractio6_00_sA1b = rd3(frm6(nP_DH_00_sA1b, nP_Hosp_00_sA1b))  
 mfractio6_05_sA1b = rd3(frm6(nP_DH_05_sA1b, nP_Hosp_05_sA1b))
 mfractio6_12_sA1b = rd3(frm6(nP_DH_12_sA1b, nP_Hosp_12_sA1b))
 mfractio6_18_sA1b = rd3(frm6(nP_DH_18_sA1b, nP_Hosp_18_sA1b))
@@ -1497,7 +1484,7 @@ mfractio6_50_sA1b = rd3(frm6(nP_DH_50_sA1b, nP_Hosp_50_sA1b))
 mfractio6_60_sA1b = rd3(frm6(nP_DH_60_sA1b, nP_Hosp_60_sA1b))
 mfractio6_70_sA1b = rd3(frm6(nP_DH_70_sA1b, nP_Hosp_70_sA1b))
 #
-mfractio6_00_sA0b = rd3(frm6(nP_DH_00_sA0b, nP_Hosp_00_sA0b)) #frt2(nP_DH_00_sA0,nP_Hosp_00_sA0)
+mfractio6_00_sA0b = rd3(frm6(nP_DH_00_sA0b, nP_Hosp_00_sA0b))  
 mfractio6_05_sA0b = rd3(frm6(nP_DH_05_sA0b, nP_Hosp_05_sA0b))
 mfractio6_12_sA0b = rd3(frm6(nP_DH_12_sA0b, nP_Hosp_12_sA0b))
 mfractio6_18_sA0b = rd3(frm6(nP_DH_18_sA0b, nP_Hosp_18_sA0b))
