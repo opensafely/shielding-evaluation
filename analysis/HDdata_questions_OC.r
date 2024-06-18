@@ -50,6 +50,9 @@ r5  <- function(x)  { return( round(x/5)*5)}
 #rd1 <- function(x)  { return(round(x,1))}
 rd2 <- function(x)  { return(round(x,2))}
 rd3 <- function(x)  { return(round(x,3))}
+##decimal rounding - percentages
+pc1 <- function(x)  { return(round(100*x,1))}
+pc2 <- function(x)  { return(round(100*x,2))}
 
 
 ################################################################################
