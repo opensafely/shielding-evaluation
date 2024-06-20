@@ -1470,20 +1470,28 @@ print(paste0("#H  model pts used,  #: ", length(imodelH),  ", list: ", range(imo
 print(paste0("#DH model pts used,  #: ", length(imodelDH), ", list: ", range(imodelDH)[1],"...",range(imodelDH)[2]))  #41, 8...48
 print(paste0("#DO model pts used,  #: ", length(imodelDO), ", list: ", range(imodelDO)[1],"...",range(imodelDO)[2]))  #41, 8...48
 
-cat("\n")
-print(names(out[[1]]))
-cat("\n")
-print(names(out[[2]]))
+
 cat("\n")
 #print("Priors")
 print(out$setup$prior)
 cat("\n")
-print("Parameters (doesn't aply to those estimated)"); cat("\n")
+print("Parameters (doesn't apply to those estimated)"); cat("\n")
 print(pars[-c(1:3)]) #"cm, cm_0, cm_1"
 cat("\n"); 
 print("Parameters (with MAP estimated)"); cat("\n")
 print(parsE[-(1:3)]) #"cm, cm_0, cm_1
 cat("\n"); 
+cat("\n")
+print("names(out$setup)")
+print(names(out[[1]]))
+cat("\n")
+print("names(out$settings)")
+print(names(out[[2]]))
+cat("\n")
+print("out$settings"); 
+cat("\n")
+print(out$settings)
+
 sink()
 
 
