@@ -24,6 +24,9 @@ pars <- within(pars, {
     #ma_1 <- c(0,     0,     0, 0.020, 0.025, 0.112, 0.150, 0.256, 0.451) #derived
     #mb_1 <- c(0,     0,     0, 0.012, 0.041, 0.081, 0.123, 0.181, 0.376) #derived
     #rm6
+    #m   <- c(0, 0.013, 0.008, 0.004, 0.019, 0.049, 0.094, 0.192, 0.411) #derived y
+    #ma  <- 
+    #mb  <- 
     m_0  <- c(0, 0.015, 0.009, 0.005, 0.016, 0.040, 0.084, 0.182, 0.409) #derived y
     ma_0 <- c(0,     0, 0.026, 0.004, 0.025, 0.050, 0.122, 0.249, 0.498) #derived y
     mb_0 <- c(0, 0.027,     0, 0.003, 0.010, 0.027, 0.039, 0.108, 0.292) #derived y
@@ -113,7 +116,7 @@ pars <- within(pars, {
     k      <- 1#10#1#5#1           #dispersion/shape parameter of NB likelihood (and noise if simulating) 
     kH     <- k               #dispersion/shape parameter - hospitalisations
     kDH    <- k               #dispersion/shape parameter - deaths in hospital 
-    kDO    <- 2#k               #dispersion/shape parameter - deaths outside hospital 
+    kDO    <- 1#k               #dispersion/shape parameter - deaths outside hospital 
     sdH    <- 0.67 #jobs est  #scaling factor of sd for H across age groups
     cmdim1 <- na
     cmdim2 <- na
