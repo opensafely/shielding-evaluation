@@ -409,15 +409,7 @@ g15 <- function(par)   { gI(par)}    #l
 #yR1_1
 f16 <- function(theta) { fI(theta)}; #l #e
 g16 <- function(par)   { gI(par)}    #l
-#kDO
-f17 <- function(theta) { fp(theta)}; #
-g17 <- function(par)   { gp(par)}    #
-#rEI
-f18 <- function(theta) { fi(theta)}; #
-g18 <- function(par)   { gi(par)}    #
-#kDH
-#f19 <- function(theta) { fp(theta)}; #
-#g19 <- function(par)   { gp(par)}    #
+
 
 ### Parameter bounds
 age  = c(mean(0:4),mean(5:11),mean(12:17),mean(18:29),mean(30:39),mean(40:49),mean(50:59),mean(60:69),mean(70:90)) #85))
@@ -489,10 +481,7 @@ LogLikelihood <- function(theta){
   yM1_1=     f14(theta[14])
   yR1_0=     f15(theta[15])
   yR1_1=     f16(theta[16])
-  pars$kDO = f17(theta[17])
-  pars$rEI = f18(theta[18])
-  #pars$kDH = f19(theta[19])
-  #sdH =      pars$sdH #0.67 #theta[8]
+  sdH =      pars$sdH #0.67 #theta[8]
   kH  =      pars$kH  #1
   kDH =      pars$kDH
   kDO =      pars$kDO #kDH
@@ -501,10 +490,6 @@ LogLikelihood <- function(theta){
   pars$h_1 = hM_1*exp((age-age9)*hR_1)
   pars$d_0 = dM_0*exp((age-age9)*dR_0) #0.2*pars$h_0*pars$m_0  *pars$ad (default=1)
   pars$d_1 = dM_1*exp((age-age9)*dR_0) #0.2*pars$h_1*pars$m_1  *pars$ad (default=1)
-  #pars$da_0 = pars$h_0*pars$ma_0
-  #pars$da_1 = pars$h_1*pars$ma_1
-  #pars$db_0 = pars$h_0*pars$mb_0
-  #pars$db_1 = pars$h_1*pars$mb_1
   pars$y_0[3:9] = yM1_0*exp((age[3:9]-age9)*yR1_0)
   pars$y_1[3:9] = yM1_1*exp((age[3:9]-age9)*yR1_1)
   pars$Ea0   = pars$Na0*pars$pE0
@@ -710,31 +695,27 @@ LogLikelihood <- function(theta){
    sum(  dnbinom(x = vd8w_1, size = kDO,        mu   = MeanDO8_1,  log = T)) +
    sum(  dnbinom(x = vd9w_1, size = kDO,        mu   = MeanDO9_1,  log = T))
   
- ll = ll_0 + ll_1 #+
+ ll = ll_0 + ll_1 +
  ###Prevalence
-    #0.25*sum(  dnorm(x = posi_data_perc*posi_d_to_m, sd = posi_sd_percT*posi_d_to_m, mean = MeanPosi_perc, log = T))
+    0.25*sum(  dnorm(x = posi_data_perc*posi_d_to_m, sd = posi_sd_percT*posi_d_to_m, mean = MeanPosi_perc, log = T))
 
     return(ll)
 } #Likelihood
 
 
 ## Likelihood definition, parameter ranges  ####################################
-niter = 30000#3000#120000#6000#60000#15000#6000#3000#30000#60000
+niter = 30000#120000#6000#60000#15000#6000#3000#30000#60000
 if (pset$iplatform==2){niter=200000} #150000} #120000}
 
         #1/rIR,     1/rIH,       1/rOD,       pE0,          hM,                         hR,                
 LOWER = c(tMin,     tMin2,       tMin2,       g4(pE0Min),   g5(hMMin),    g6(hMMin),    g7(hRMin),    g8(hRMin),
         #dM,                     dR,                        yM1,                        yR1,
-        g9(hMMin),  g10(hMMin),  g11(hRMin),  g12(hRMin),   g13(yM1Min),  g14(yM1Min),  g15(yR1Min),  g16(yR1Min),
-        #kDO        #rEI        kDH
-        pkMin,      tMin)            #,pkMin);
+        g9(hMMin),  g10(hMMin),  g11(hRMin),  g12(hRMin),   g13(yM1Min),  g14(yM1Min),  g15(yR1Min),  g16(yR1Min));
 
         #1/rIR,     1/rIH,       1/rOD,       pE0,          hM,                         hR,                
 UPPER = c(tMax,     tMax2,       tMax2,       g4(pE0Max),   g5(hMMax),    g6(hMMax),    g7(hRMax),    g8(hRMax),
-        #dM,                     dR                         yM1,                        yR1,
-        g9(hMMax),  g10(hMMax),  g11(hRMax),  g12(hRMax),   g13(yM1Max),  g14(yM1Max),  g15(yR1Max),  g16(yR1Max),
-        #kDO        #1/rEI              kDH
-        pkMax,      tMax)           #, pkMax);
+        #dM,                     dR,                        yM1,                       yR1,
+        g9(hMMax),  g10(hMMax),  g11(hRMax),  g12(hRMax),   g13(yM1Max),  g14(yM1Max),  g15(yR1Max),  g16(yR1Max));
 
 ######### parameters_J6_24apr24_rev
 hMbest_0= pars$hM_0 #0.3796 #0.3068 #0.4755 #0.3567 #pars$h[9]=0.4755
@@ -755,21 +736,18 @@ yRbest_1= pars$yR1_1 #0.0151 #0.0115 #0.019
 #adbest_0= 0.2 #pars$ad_0
 #adbest_1= 0.2 #pars$ad_1
 #R0best  = pars$R0
-rEIbest = pars$rEI
+#rEIbest = pars$rEI
 #kDHbest = pars$kDH
-kDObest = pars$kDO
-
+#kDObest = pars$kDO
 BEST0 = c(1/pars$rIR, 1/pars$rIH, 1/pars$rOD, pars$pE0, #1/pars$rODa
          hMbest_0, hMbest_1, hRbest_0, hRbest_1,
-         dMbest_0, dMbest_1, dRbest_0, dRbest_1, # adbest_0, adbest_1, R0best,   kDHbest,         # 
-         yMbest_0, yMbest_1, yRbest_0, yRbest_1,
-         kDObest, 1/rEIbest) 
+         dMbest_0, dMbest_1, dRbest_0, dRbest_1, 
+         yMbest_0, yMbest_1, yRbest_0, yRbest_1)
 
-BEST = c( g1(pars$rIR),  g2(pars$rIH),  g3(pars$rOD),  g4(pars$pE0),  #g3(pars$rODa) #currently: g() only affects par 4
+BEST = c( g1(pars$rIR),  g2(pars$rIH),  g3(pars$rOD),  g4(pars$pE0),
           g5(hMbest_0),  g6(hMbest_1),  g7(hRbest_0),  g8(hRbest_1),
-          g9(dMbest_0), g10(dMbest_1), g11(dRbest_0), g12(dRbest_1),  #g9(adbest_0), g10(adbest_1), g11(R0best),   g12(kDHbest),  # 
-         g13(yMbest_0), g14(yMbest_1), g15(yRbest_0), g16(yRbest_1),
-         g17(kDObest), g18(rEIbest))
+          g9(dMbest_0), g10(dMbest_1), g11(dRbest_0), g12(dRbest_1), 
+         g13(yMbest_0), g14(yMbest_1), g15(yRbest_0), g16(yRbest_1))
          
 #Uniform priors
   #PARSTART = 0.5*UPPER
@@ -817,11 +795,8 @@ tout3 <- system.time(out3 <- runMCMC(bayesianSetup=setup, settings=settings) )
 library(coda)
 filenamepath = paste0(output_dir,"/",pset$File_fit_output0,"_mcmcChain")
 # thinned indices
-npar = length(LOWER)
-if (npar==16) {thin=7}
-if (npar==18) {thin=8}
 y  <- out$chain[[1]]
-i7 <- seq(seq_along(y[,1])[1]+thin-1,seq_along(y[,1])[length(y[,1])],thin)
+i7 <- seq(seq_along(y[,1])[1]+6,seq_along(y[,1])[length(y[,1])],7)
 # thinned mcmc object and csv writing
 out2=out
 for (ic in 1:3) { #default: nchain=3
@@ -838,10 +813,9 @@ if (pset$iplatform<2) {pdf(paste0(filenamepathAll,".pdf"))}
 
 # parname=paste0("p",1:npar)
 # column sets
-npar2=npar+2 #inc: LP, LL
-J=unique(ceiling((1:npar2)/4)) ## 4=no. rows in output
-Ja=unique(4*(floor((1:npar2-1)/4))+1)   
-Jb=unique(4*(ceiling((1:npar2)/4)))     
+J=unique(ceiling((1:npar)/4))
+Ja=unique(4*(floor((1:npar-1)/4))+1)  #npar external
+Jb=unique(4*(ceiling((1:npar)/4)))    #npar external
 
 # narrower-column mcmc object
 out3=out2
@@ -854,9 +828,6 @@ for (icolset in seq_along(J)){
   plot(out3$chain); 
   svg(paste0(filenamepath,icolset,".svg")); plot(out3$chain); dev.off() }
 #if (pset$iplatform<2) {dev.off()}; #dev.off()
-
-
-
 ## MAP Estimates  ##############################################################
 print("MAP..."); cat("\n")
 parsE     <- pars     #pars setup initially
@@ -877,15 +848,10 @@ dME_0     <- f9(as.vector(MAPE$parametersMAP[9]))
 dME_1     <- f10(as.vector(MAPE$parametersMAP[10]))
 dRE_0     <- f11(as.vector(MAPE$parametersMAP[11]))
 dRE_1     <- f12(as.vector(MAPE$parametersMAP[12]))
-#parsE$R0  <- f11(as.vector(MAPE$parametersMAP[11]))
-#parsE$kDH <- f12(as.vector(MAPE$parametersMAP[12]))
 yM1E_0    <- f13(as.vector(MAPE$parametersMAP[13]))
 yM1E_1    <- f14(as.vector(MAPE$parametersMAP[14]))
 yR1E_0    <- f15(as.vector(MAPE$parametersMAP[15]))
 yR1E_1    <- f16(as.vector(MAPE$parametersMAP[16]))
-parsE$kDO <- f17(as.vector(MAPE$parametersMAP[17]))
-parsE$rEI <- f18(as.vector(MAPE$parametersMAP[18]))
-#parsE$kDH <- f19(as.vector(MAPE$parametersMAP[19]))
 #kHE       <- pars$kH  #1
 #kDHE      <- pars$kDH #1
 #kDOE      <- pars$kDO #1
@@ -894,10 +860,6 @@ parsE$h_0 = hME_0*exp((age-age9)*hRE_0)
 parsE$h_1 = hME_1*exp((age-age9)*hRE_1)
 parsE$d_0 = dME_0*exp((age-age9)*dRE_0) #2*parsE$h_0*pars$m_0
 parsE$d_1 = dME_1*exp((age-age9)*dRE_1) #2*parsE$h_1*pars$m_1
-#parsE$da_0 = parsE$h_0*pars$ma_0
-#parsE$da_1 = parsE$h_1*pars$ma_1
-#parsE$db_0 = parsE$h_0*pars$mb_0
-#parsE$db_1 = parsE$h_1*pars$mb_1
 parsE$y_0[3:9] = yM1E_0*exp((age[3:9]-age9)*yR1E_0)
 parsE$y_1[3:9] = yM1E_1*exp((age[3:9]-age9)*yR1E_1)
 parsE$Ea0   = parsE$Na0*parsE$pE0
@@ -947,9 +909,9 @@ psample = getSample(out, parametersOnly = T, start=StartSampChainPostBurn, end= 
 # Parameter stats
 Pname=c("rIR  ",  "rIH  ",  "rOD  ", "pE0  ",
         "hM_0 ",  "hM_1 ",  "hR_0 ", "hR_1 ",  
-        "dM_0 ",  "dM_1 ",  "dR_0 ", "dR_1 ", #"ad_0 ",  "ad_1 ",  "R0 ",   "kDO ",
-        "yM1_0",  "yM1_1",  "yR1_0", "yR1_1", "kDO", "rEI")
-Pnamei=c("1/rIR", "1/rIH",  "1/rOD",  Pname[4:(npar-1)],"1/rEI")
+        "dM_0 ",  "dM_1 ",  "dR_0 ", "dR_1 ",
+        "yM1_0",  "yM1_1",  "yR1_0", "yR1_1")
+Pnamei=c("1/rIR", "1/rIH",  "1/rOD",  Pname[4:npar])
 
 ##Full sample quantiles
 Pq=matrix(0,npar,3)
@@ -967,7 +929,7 @@ Pr=round(Pq,3)
 ##MAPE are already transformed
 for (ip in 1:npar) {
   PMAP[ip] = eval(parse(text = paste0("f",eval(ip),"(MAPE[[1]][[",eval(ip),"]])")))
-  if(ip<=3 | ip==18) PMAP[ip] = 1/PMAP[ip] #1/rate as MAPE are transformed
+  if(ip<=3) PMAP[ip] = 1/PMAP[ip] #1/rate as MAPE are transformed
 }
 ##rounding
 PMAPr=round(PMAP,3)
@@ -1027,15 +989,10 @@ for(i in 1:nsample){
   dMES_1     <- f10(as.vector(psample[i,10]))
   dRES_0     <- f11(as.vector(psample[i,11]))
   dRES_1     <- f12(as.vector(psample[i,12]))
-  #parsES$R0  <- f11(as.vector(psample[i,11]))
-  #parsES$kDH <- f12(as.vector(psample[i,12]))
   yM1ES_0    <- f13(as.vector(psample[i,13]))
   yM1ES_1    <- f14(as.vector(psample[i,14]))
   yR1ES_0    <- f15(as.vector(psample[i,15]))
   yR1ES_1    <- f16(as.vector(psample[i,16]))
-  #parsES$rEI <- f17(as.vector(psample[i,17]))
-  #parsES$kDO <- f18(as.vector(psample[i,18]))
-  #parsES$kDH <- f19(as.vector(psample[i,19]))
   #kHES       <- pars$kH  #1
   #kDHES      <- pars$kDH #1
   #kDOES      <- pars$kDO #1
@@ -1044,10 +1001,6 @@ for(i in 1:nsample){
   parsES$h_1  = hMES_1*exp((age-age9)*hRES_1)
   parsES$d_0  = dMES_0*exp((age-age9)*dRES_0) #2*parsES$h_0*pars$m_0
   parsES$d_1  = dMES_1*exp((age-age9)*dRES_1) #2*parsES$h_1*pars$m_1
-  #parsES$da_0 = parsES$h_0*pars$ma_0
-  #parsES$da_1 = parsES$h_1*pars$ma_1
-  #parsES$db_0 = parsES$h_0*pars$mb_0
-  #parsES$db_1 = parsES$h_1*pars$mb_1
   parsES$y_0[3:9] = yM1ES_0*exp((age[3:9]-age9)*yR1ES_0)
   parsES$y_1[3:9] = yM1ES_1*exp((age[3:9]-age9)*yR1ES_1)
   parsES$yh_0 = parsES$y_0*parsES$h_0
@@ -1253,15 +1206,10 @@ for(i in 1:nsampleR0){
   dMES_1     <- f10(as.vector(psample[i,10]))
   dRES_0     <- f11(as.vector(psample[i,11]))
   dRES_1     <- f12(as.vector(psample[i,12]))
-  #parsES$R0  <- f11(as.vector(psample[i,11]))
-  #parsES$kDH <- f12(as.vector(psample[i,12]))
   yM1ES_0    <- f13(as.vector(psample[i,13]))
   yM1ES_1    <- f14(as.vector(psample[i,14]))
   yR1ES_0    <- f15(as.vector(psample[i,15]))
   yR1ES_1    <- f16(as.vector(psample[i,16]))
-  #parsES$rEI <- f17(as.vector(psample[i,17]))
-  #parsES$kDO <- f18(as.vector(psample[i,18]))
-  #parsES$kDH <- f19(as.vector(psample[i,19]))
   #kHES       <- pars$kH  #1
   #kDHES      <- pars$kDH #1
   #kDOES      <- pars$kDO #1
@@ -1270,10 +1218,6 @@ for(i in 1:nsampleR0){
   parsES$h_1  = hMES_1*exp((age-age9)*hRES_1)
   parsES$d_0  = dMES_0*exp((age-age9)*dRES_0) #2*parsES$h_0*pars$m_0
   parsES$d_1  = dMES_1*exp((age-age9)*dRES_1) #2*parsES$h_1*pars$m_1
-  #parsES$da_0 = parsES$h_0*pars$ma_0
-  #parsES$da_1 = parsES$h_1*pars$ma_1
-  #parsES$db_0 = parsES$h_0*pars$mb_0
-  #parsES$db_1 = parsES$h_1*pars$mb_1
   parsES$y_0[3:9]  = yM1ES_0*exp((age[3:9]-age9)*yR1ES_0) #pars$y = c(liny[1:2],expy[1:7])
   parsES$y_1[3:9]  = yM1ES_1*exp((age[3:9]-age9)*yR1ES_1)
   parsES$yh_0 = parsES$y_0*parsES$h_0
@@ -1328,8 +1272,8 @@ cat("\n")
 ## MAP and quantile estimates
 #print(paste0("sdH Fixed: ", round(parsE$sdH,   3),    ". Expected: ", round(  pars$sdH,     3))) #sdH
 print(paste0("kH  Fixed: ", round(parsE$kH,    3),    ". Expected: ", round(  pars$kH,      3))) #kH
-#print(paste0("kDH Fixed: ", round(parsE$kDH,   3),    ". Expected: ", round(  pars$kDH,     3))) #kD
-#print(paste0("kDO Fixed: ", round(parsE$kDO,   3),    ". Expected: ", round(  pars$kDO,     3))) #kD
+print(paste0("kDH Fixed: ", round(parsE$kDH,   3),    ". Expected: ", round(  pars$kDH,     3))) #kD
+print(paste0("kDO Fixed: ", round(parsE$kDO,   3),    ". Expected: ", round(  pars$kDO,     3))) #kD
 print(paste0("R0    fix: ", round(parsE$R0,    3),    ". Expected: ", round(  pars$R0,      3))) #R0
 print(paste0("fu    fix: ", round(parsE$fu,    3),    ". Expected: ", round(  pars$fu,      3))) #pE0 #fu #yA
 
@@ -1340,8 +1284,8 @@ for(i in 1:npar){
         ". Expected: ", round(Expect,3))) }
 print(paste0("beta dep: ",", MAP: ", round(parsE$beta,3),", Med: ", round(betasample95[2],3),", CI: [",round(betasample95[1],3),",",round(betasample95[3],3),"]",
         ". Expected: ", round(pars$beta,3)))
-#print(paste0("R0 fixed: ",", MAP: ", round(parsE$R0,3),  ", Med: ", round(R0sample95[2],3),  ", CI: [",round(R0sample95[1],3),  ",",round(R0sample95[3],3),"]",
-#        ". Expected: ", round(pars$R0,3)))
+print(paste0("R0 fixed: ",", MAP: ", round(parsE$R0,3),  ", Med: ", round(R0sample95[2],3),  ", CI: [",round(R0sample95[1],3),  ",",round(R0sample95[3],3),"]",
+        ". Expected: ", round(pars$R0,3)))
 print(paste0("E0   dep: ", round(sum(parsE$Ea0), 0), ". Expected: ", round(sum(pars$Na0*pars$pE0)) ))
 print(paste0("Estimated proportion deaths outside hospital = ", round(parsE$ad/(1+parsE$ad),3)))
 print(paste0("Ha0_sum - input: ", sum(pars$Ha0)))
@@ -1440,7 +1384,6 @@ sink()
 #plot(log10(eps+pars$m_0), ylim=log(c(eps,1)),ylab="log10 m_0",xlab="age group"); lines(log10(eps+parsE$m_0), col=2, lwd=2)
 #plot(log10(eps+pars$m_1), ylim=log(c(eps,1)),ylab="log10 m_1",xlab="age group");  lines(log10(eps+parsE$m_1), col=2, lwd=2)
 #invisible(dev.off())
-
 ##screen
 par(mfrow = c(4,2))
 par(mar = c(4, 4, 1, 4))  #bottom, left, top, right
@@ -1459,6 +1402,8 @@ plot(0.2*pars$h*pars$m_1, ylim=c(0,1),ylab="d_1",xlab=""); lines(parsE$d_1*parsE
 plot(pars$m_0, ylim=c(0,1),ylab="m_0",xlab="age group"); lines(parsE$m_0, col=2, lwd=2)
 plot(pars$m_1, ylim=c(0,1),ylab="m_1",xlab="age group"); lines(parsE$m_1, col=2, lwd=2)
 
+
+
 print("Summary 2..."); cat("\n")
 sink(file = paste0(output_dir,"/",pset$File_fit_summary_2),append=FALSE,split=FALSE) #append=TRUE,split=FALSE)
 #cat("\n")
@@ -1469,7 +1414,6 @@ print(paste0("#DO data pts fitted, #: ", length(idataDO),  ", list: ", range(ida
 print(paste0("#H  model pts used,  #: ", length(imodelH),  ", list: ", range(imodelH)[1], "...",range(imodelH)[2]))   #41, 8...48
 print(paste0("#DH model pts used,  #: ", length(imodelDH), ", list: ", range(imodelDH)[1],"...",range(imodelDH)[2]))  #41, 8...48
 print(paste0("#DO model pts used,  #: ", length(imodelDO), ", list: ", range(imodelDO)[1],"...",range(imodelDO)[2]))  #41, 8...48
-
 
 cat("\n")
 #print("Priors")
@@ -1491,7 +1435,6 @@ cat("\n")
 print("out$settings"); 
 cat("\n")
 print(out$settings)
-
 sink()
 
 
