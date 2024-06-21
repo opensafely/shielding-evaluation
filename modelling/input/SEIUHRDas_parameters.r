@@ -33,19 +33,24 @@ pars <- within(pars, {
     m_1  <- c(0,     0,     0, 0.016, 0.029, 0.096, 0.136, 0.221, 0.417) #derived y
     ma_1 <- c(0,     0,     0, 0.030, 0.019, 0.104, 0.148, 0.257, 0.450) #derived y
     mb_1 <- c(0,     0,     0, 0.034, 0.020, 0.074, 0.126, 0.181, 0.375) #derived y
-
+    
     h_0  <- h
     h_1  <- h
+    
     ad_0 <- ad            #need for R0, BETA
     ad_1 <- ad
+    
     d_0  <- 0.2*h_0*m_0   #need for R0, BETA
     d_1  <- 0.2*h_1*m_1
+    
     da_0 <- 0.2*h_0*ma_0
     db_0 <- 0.2*h_0*mb_0
     da_1 <- 0.2*h_1*ma_1
     db_1 <- 0.2*h_1*mb_1
+
     y_0  <- y
     y_1  <- y
+
     #full prob hosp
     yh_0  <- y_0*h_0
     yh_1  <- y_1*h_1
@@ -73,12 +78,15 @@ pars <- within(pars, {
     rIR    <- 1/3 #J5h3 est   #1/5 #recovery, Davies Nat Med
     rUR    <- rIR             #recovery
     rIH    <- 1/8.5           #hospitalisation, Davies Lancet PH
+    
     rHR    <- 1/12.00         #recovery rate in hospital
     rHRa   <- 1/10.07 #1/12.00 #recovery rate in hospital
     rHRb   <- 1/14.20 #1/12.00 #recovery rate in hospital
+
     rHD    <- 1/13.91         #death rate in hospital	
     rHDa   <- 1/12.50 #1/13.91 #death rate in hospital	
     rHDb   <- 1/16.78 #1/13.91 #death rate in hospital	
+
     #rHD    <- rHR            #death rate in hospital, RE - varied during pandemic; 7d in Davies Lancet PH
     #rID    <- 1/(1/rIH+1/rHD)#death rate outside hospital - assumed here
     rIO    <- rIH             #death rate outside hospital - assumed here
@@ -108,7 +116,7 @@ pars <- within(pars, {
     k      <- 1#10#1#5#1           #dispersion/shape parameter of NB likelihood (and noise if simulating) 
     kH     <- k               #dispersion/shape parameter - hospitalisations
     kDH    <- k               #dispersion/shape parameter - deaths in hospital 
-    kDO    <- k               #dispersion/shape parameter - deaths outside hospital 
+    kDO    <- 2#k               #dispersion/shape parameter - deaths outside hospital 
     sdH    <- 0.67 #jobs est  #scaling factor of sd for H across age groups
     cmdim1 <- na
     cmdim2 <- na
@@ -121,7 +129,8 @@ pars <- within(pars, {
 #pars <- within(pars, {
   #update
   #input_dir  <- getwd() #paste0(getwd(),"/modelling/input"))#
-  #source(paste0(input_dir,"/parameters_J6_10jun24.r"))
-  source(paste0(input_dir,"/parameters_J6_24apr24_rev.r"))
+   source(paste0(input_dir,"/parameters_J6_10jun24.r"))
+  #source(paste0(input_dir,"/parameters_J6_24apr24_rev.r"))
   #source(paste0(input_dir,"/parameters_J6_23may24.r"))
 #})
+#pars$rOD = 1/(10.606+5)
