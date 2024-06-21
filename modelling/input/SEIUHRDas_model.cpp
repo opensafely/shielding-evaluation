@@ -51,6 +51,12 @@ List SEIUHRD(List pars){
     NumericMatrix H4_1(na,nt);
     NumericMatrix H5_0(na,nt);
     NumericMatrix H5_1(na,nt);
+    NumericMatrix H6_0(na,nt);
+    NumericMatrix H6_1(na,nt);
+    NumericMatrix H7_0(na,nt);
+    NumericMatrix H7_1(na,nt);
+    NumericMatrix H8_0(na,nt);
+    NumericMatrix H8_1(na,nt);
     NumericMatrix O1_0(na,nt);
     NumericMatrix O1_1(na,nt);
     NumericMatrix O2_0(na,nt);
@@ -61,6 +67,12 @@ List SEIUHRD(List pars){
     NumericMatrix O4_1(na,nt);
     NumericMatrix O5_0(na,nt);
     NumericMatrix O5_1(na,nt);
+    NumericMatrix O6_0(na,nt);
+    NumericMatrix O6_1(na,nt);
+    NumericMatrix O7_0(na,nt);
+    NumericMatrix O7_1(na,nt);
+    NumericMatrix O8_0(na,nt);
+    NumericMatrix O8_1(na,nt);
     NumericMatrix R_0(na,nt);
     NumericMatrix R_1(na,nt);
     NumericMatrix D_0(na,nt);	
@@ -214,15 +226,14 @@ List SEIUHRD(List pars){
     //const double ps   = pars["pscoh"];
     const double beta_infectivity = pars["beta"];
     const double fu   = pars["fu"];
+    const double fuO  = pars["fuO"];
     const double ad_0 = pars["ad_0"];
     const double ad_1 = pars["ad_1"];
     const double rEI  = pars["rEI"];
     const double rEU  = pars["rEU"];
     const double rIR  = pars["rIR"];
     const double rIO  = pars["rIO"];
-    const double rOD  = pars["rOD"];  //change  
-    //const double rODa = pars["rODa"];  //change  
-    //const double rODb = pars["rODb"];  //change  
+    const double rOD  = pars["rOD"]; 
     const double rUR  = pars["rUR"];
     const double rIH  = pars["rIH"];
     const double rHRa = pars["rHRa"];
@@ -233,7 +244,7 @@ List SEIUHRD(List pars){
     const double rC   = pars["rC"];
     const double rCi  = 5*rC;
     //const double rHi  = 5*rHD;
-    const double rOi  = 5*rOD; //change
+    const double rOi  = 8*rOD; //5*rOD; 
     const double dt   = pars["dt"];
 
     // age group and population states initialised
@@ -268,6 +279,12 @@ List SEIUHRD(List pars){
         H4_1(ia,0) = 0;
         H5_0(ia,0) = 0;
         H5_1(ia,0) = 0;
+        H6_0(ia,0) = 0;
+        H6_1(ia,0) = 0;
+        H7_0(ia,0) = 0;
+        H7_1(ia,0) = 0;
+        H8_0(ia,0) = 0;
+        H8_1(ia,0) = 0;
         O1_0(ia,0) = Ua0[ia]*pa_0;        Ot_0[0] += O1_0(ia,0);
         O1_1(ia,0) = Ua0[ia]*pa_1;        Ot_1[0] += O1_1(ia,0);
         O2_0(ia,0) = 0;
@@ -278,6 +295,12 @@ List SEIUHRD(List pars){
         O4_1(ia,0) = 0;
         O5_0(ia,0) = 0;
         O5_1(ia,0) = 0;
+        O6_0(ia,0) = 0;
+        O6_1(ia,0) = 0;
+        O7_0(ia,0) = 0;
+        O7_1(ia,0) = 0;
+        O8_0(ia,0) = 0;
+        O8_1(ia,0) = 0;
         R_0(ia,0)  = Ra0[ia]*pa_0;        Rt_0[0] += R_0(ia,0);
         R_1(ia,0)  = Ra0[ia]*pa_1;        Rt_1[0] += R_1(ia,0);
         D_0(ia,0)  = Da0[ia]*pa_0;        Dt_0[0] += D_0(ia,0);   Dw_0[0] += 0; DHw_0[0] += 0; DOw_0[0] += 0;
@@ -291,19 +314,19 @@ List SEIUHRD(List pars){
     time[0] = 0;
     int  week  = 1;
     int  week0 = 1;
-    double seedon = 0;
+    double seedon = 1; //0;
     double  Hpw_0 = 0,   Hpw_1 = 0;
     double  Dpw_0 = 0,   Dpw_1 = 0;
     double DHpw_0 = 0,  DHpw_1 = 0;
     double DOpw_0 = 0,  DOpw_1 = 0;
     double rHR = rHRa;
-    double rHi = 5*rHDa;
+    double rHi = 8*rHDa; //5*rHDa;
     double qma = 1;
     for (int it = 0; it < (nt-1); it++) {	//Crucial: nt-1
         week0 = week;
         week  = 1 + (int) time[it]/7;
-        if (week <= 4) {seedon = 1;}; //floor(1/ceil(week/4));
-        if (week > 22) {rHR = rHRb;  rHi = 5*rHDb;  qma=0;}; //change: rOD = rODb;};
+      //if (week > 4) {seedon = 0;}; //floor(1/ceil(week/4));
+        if (week > 22) {rHR = rHRb;  rHi = 8*rHDb;  qma=0;}; //5*rHDb;  qma=0;};
         cmdtmean_0[it] = 0;
         cmdtmean_1[it] = 0;
         
@@ -338,6 +361,12 @@ List SEIUHRD(List pars){
         double H4at_1 = H4_1(ia,it);
         double H5at_0 = H5_0(ia,it);
         double H5at_1 = H5_1(ia,it);
+        double H6at_0 = H6_0(ia,it);
+        double H6at_1 = H6_1(ia,it);
+        double H7at_0 = H7_0(ia,it);
+        double H7at_1 = H7_1(ia,it);
+        double H8at_0 = H8_0(ia,it);
+        double H8at_1 = H8_1(ia,it);
         double O1at_0 = O1_0(ia,it);
         double O1at_1 = O1_1(ia,it);
         double O2at_0 = O2_0(ia,it);
@@ -348,6 +377,12 @@ List SEIUHRD(List pars){
         double O4at_1 = O4_1(ia,it);
         double O5at_0 = O5_0(ia,it);
         double O5at_1 = O5_1(ia,it);
+        double O6at_0 = O6_0(ia,it);
+        double O6at_1 = O6_1(ia,it);
+        double O7at_0 = O7_0(ia,it);
+        double O7at_1 = O7_1(ia,it);
+        double O8at_0 = O8_0(ia,it);
+        double O8at_1 = O8_1(ia,it);
         double Rat_0 = R_0(ia,it);
         double Rat_1 = R_1(ia,it);
         double Dat_0 = D_0(ia,it);
@@ -364,18 +399,18 @@ List SEIUHRD(List pars){
         double ha_1 = h_1[ia];
         double ma_0 = m_a_0[ia]*qma + m_b_0[ia]*(1-qma);
         double ma_1 = m_a_1[ia]*qma + m_b_1[ia]*(1-qma);
-        double da_0 = d_0[ia]*ad_0;
-        double da_1 = d_1[ia]*ad_1;
+        double da_0 = d_0[ia]*ad_0;     //(d_a_0[ia]*qma + d_b_0[ia]*(1-qma))*ad_0;
+        double da_1 = d_1[ia]*ad_1;     //(d_a_1[ia]*qma + d_b_1[ia]*(1-qma))*ad_1;
         double rseeda = seedon*rseed[ia];
-        
+
         for (int ib = 0; ib < na; ib++) {
             int    icm = (week-1)*cmdim1*cmdim2 + ib*cmdim1 + ia;
             double cmi_0 = cm_0[icm];
             double cmi_1 = cm_1[icm];
             double O_sum_0   = O1_0(ib,it) + O2_0(ib,it) + O3_0(ib,it) + O4_0(ib,it) + O5_0(ib,it);
             double O_sum_1   = O1_1(ib,it) + O2_1(ib,it) + O3_1(ib,it) + O4_1(ib,it) + O5_1(ib,it);
-            double inffrom_0 =(1-psage_1[ib])*(I_0(ib,it)  + fu*O_sum_0  + fu*U_0(ib,it) )/N_0(ib,it);
-            double inffrom_1 =   psage_1[ib]*( I_1(ib,it)  + fu*O_sum_1  + fu*U_1(ib,it) )/N_1(ib,it);
+            double inffrom_0 =(1-psage_1[ib])*(I_0(ib,it)  + fuO*O_sum_0  + fu*U_0(ib,it) )/N_0(ib,it);
+            double inffrom_1 =   psage_1[ib]*( I_1(ib,it)  + fuO*O_sum_1  + fu*U_1(ib,it) )/N_1(ib,it);
             //Outside hospital delay to death (assume as infectious as U, i.e. partial isolation)
             //Force of infection on each stratum       
             lambda_0      += beta_ua*cmi_0*( inffrom_0 + inffrom_1 ); //check:   prob(contact=s)xprob(s infected)
@@ -419,7 +454,12 @@ List SEIUHRD(List pars){
         double dO4_1 = dt*( rOi*O3at_1   - rOi*O4at_1);
         double dO5_0 = dt*( rOi*O4at_0   - rOi*O5at_0); 
         double dO5_1 = dt*( rOi*O4at_1   - rOi*O5at_1);
-
+        double dO6_0 = dt*( rOi*O5at_0   - rOi*O6at_0); 
+        double dO6_1 = dt*( rOi*O5at_1   - rOi*O6at_1);
+        double dO7_0 = dt*( rOi*O6at_0   - rOi*O7at_0); 
+        double dO7_1 = dt*( rOi*O6at_1   - rOi*O7at_1);
+        double dO8_0 = dt*( rOi*O7at_0   - rOi*O8at_0); 
+        double dO8_1 = dt*( rOi*O7at_1   - rOi*O8at_1);
         //H, DH  - post-I delay in death or recovery in hospital         
         double dHin_0= dt*rIH*ha_0*Iat_0;  //hospitalisation incidence
         double dHin_1= dt*rIH*ha_1*Iat_1;
@@ -431,23 +471,31 @@ List SEIUHRD(List pars){
         double dH3_1 = dt*( rHi*H2at_1   - rHi*H3at_1);
         double dH4_0 = dt*( rHi*H3at_0   - rHi*H4at_0);
         double dH4_1 = dt*( rHi*H3at_1   - rHi*H4at_1);
-        double dH5_0 = dt*( rHi*H4at_0   - ((rHR*5)*(1-ma_0)+rHi*ma_0)*H5at_0); //rHi=5*rHD //Recovery time def could be different
-        double dH5_1 = dt*( rHi*H4at_1   - ((rHR*5)*(1-ma_1)+rHi*ma_1)*H5at_1);
+        double dH5_0 = dt*( rHi*H4at_0   - rHi*H5at_0);
+        double dH5_1 = dt*( rHi*H4at_1   - rHi*H5at_1);
+        double dH6_0 = dt*( rHi*H5at_0   - rHi*H6at_0);
+        double dH6_1 = dt*( rHi*H5at_1   - rHi*H6at_1);
+        double dH7_0 = dt*( rHi*H6at_0   - rHi*H7at_0);
+        double dH7_1 = dt*( rHi*H6at_1   - rHi*H7at_1);
+        double dH8_0 = dt*( rHi*H7at_0   - ((rHR*8)*(1-ma_0)+rHi*ma_0)*H8at_0); //rHi=8*rHD //Recovery time def could be different
+        double dH8_1 = dt*( rHi*H7at_1   - ((rHR*8)*(1-ma_1)+rHi*ma_1)*H8at_1);
+      //double dH5_0 = dt*( rHi*H4at_0   - ((rHR*5)*(1-ma_0)+rHi*ma_0)*H5at_0); //rHi=5*rHD //Recovery time def could be different
+      //double dH5_1 = dt*( rHi*H4at_1   - ((rHR*5)*(1-ma_1)+rHi*ma_1)*H5at_1);
 
         //R  - recovery from all infections inside or outside hospital         
-        double dR_0  = dt*( rUR*Uat_0 + rIR*(1-ha_0-da_0)*Iat_0 + (rHR*5)*(1-ma_0)*H5at_0 - rRS*Rat_0);
-        double dR_1  = dt*( rUR*Uat_1 + rIR*(1-ha_1-da_1)*Iat_1 + (rHR*5)*(1-ma_1)*H5at_1 - rRS*Rat_1);
+        double dR_0  = dt*( rUR*Uat_0 + rIR*(1-ha_0-da_0)*Iat_0 + (rHR*8)*(1-ma_0)*H8at_0 - rRS*Rat_0);
+        double dR_1  = dt*( rUR*Uat_1 + rIR*(1-ha_1-da_1)*Iat_1 + (rHR*8)*(1-ma_1)*H8at_1 - rRS*Rat_1);
         //D - deaths from I infections inside or outside hospital  
-        double dDin_0= dt*( rHi*ma_0*H5at_0 + rOi*O5at_0); //death incidence
-        double dDin_1= dt*( rHi*ma_1*H5at_1 + rOi*O5at_1);
-        double dDH_0 = dt*( rHi*ma_0*H5at_0 );             //death incidence inside hospital
-        double dDH_1 = dt*( rHi*ma_1*H5at_1 );
-        double dDO_0 = dt*( rOi*O5at_0    );               //death incidence outside hospital
-        double dDO_1 = dt*( rOi*O5at_1    );
+        double dDin_0= dt*( rHi*ma_0*H8at_0 + rOi*O8at_0); //death incidence
+        double dDin_1= dt*( rHi*ma_1*H8at_1 + rOi*O8at_1);
+        double dDH_0 = dt*( rHi*ma_0*H8at_0 );             //death incidence inside hospital
+        double dDH_1 = dt*( rHi*ma_1*H8at_1 );
+        double dDO_0 = dt*( rOi*O8at_0      );             //death incidence outside hospital
+        double dDO_1 = dt*( rOi*O8at_1      );
         double dD_0  = dDH_0 + dDO_0;                      //death change = incidence
         double dD_1  = dDH_1 + dDO_1;
-        double dN_0  = dS_0 + dE_0 + dU_0 + dI_0 + (dH1_0 + dH2_0 + dH3_0 + dH4_0 + dH5_0) + (dO1_0 + dO2_0 + dO3_0 + dO4_0 + dO5_0) + dR_0 + dD_0;
-        double dN_1  = dS_1 + dE_1 + dU_1 + dI_1 + (dH1_1 + dH2_1 + dH3_1 + dH4_1 + dH5_1) + (dO1_1 + dO2_1 + dO3_1 + dO4_1 + dO5_1) + dR_1 + dD_1;
+        double dN_0  = dS_0 + dE_0 + dU_0 + dI_0 + (dH1_0 + dH2_0 + dH3_0 + dH4_0 + dH5_0 + dH6_0 + dH7_0 + dH8_0) + (dO1_0 + dO2_0 + dO3_0 + dO4_0 + dO5_0 + dO6_0 + dO7_0 + dO8_0) + dR_0 + dD_0;
+        double dN_1  = dS_1 + dE_1 + dU_1 + dI_1 + (dH1_1 + dH2_1 + dH3_1 + dH4_1 + dH5_1 + dH6_1 + dH7_1 + dH8_1) + (dO1_1 + dO2_1 + dO3_1 + dO4_1 + dO5_1 + dO6_1 + dO7_1 + dO8_1) + dR_1 + dD_1;
 
         S_0(ia,it+1)  = Sat_0  + dS_0;
         S_1(ia,it+1)  = Sat_1  + dS_1;
@@ -477,6 +525,12 @@ List SEIUHRD(List pars){
         H4_1(ia,it+1) = H4at_1 + dH4_1;
         H5_0(ia,it+1) = H5at_0 + dH5_0;
         H5_1(ia,it+1) = H5at_1 + dH5_1;
+        H6_0(ia,it+1) = H6at_0 + dH6_0;
+        H6_1(ia,it+1) = H6at_1 + dH6_1;
+        H7_0(ia,it+1) = H7at_0 + dH7_0;
+        H7_1(ia,it+1) = H7at_1 + dH7_1;
+        H8_0(ia,it+1) = H8at_0 + dH8_0;
+        H8_1(ia,it+1) = H8at_1 + dH8_1;
         O1_0(ia,it+1) = O1at_0 + dO1_0;
         O1_1(ia,it+1) = O1at_1 + dO1_1;
         O2_0(ia,it+1) = O2at_0 + dO2_0;
@@ -487,6 +541,12 @@ List SEIUHRD(List pars){
         O4_1(ia,it+1) = O4at_1 + dO4_1;
         O5_0(ia,it+1) = O5at_0 + dO5_0;
         O5_1(ia,it+1) = O5at_1 + dO5_1;
+        O6_0(ia,it+1) = O6at_0 + dO6_0;
+        O6_1(ia,it+1) = O6at_1 + dO6_1;
+        O7_0(ia,it+1) = O7at_0 + dO7_0;
+        O7_1(ia,it+1) = O7at_1 + dO7_1;
+        O8_0(ia,it+1) = O8at_0 + dO8_0;
+        O8_1(ia,it+1) = O8at_1 + dO8_1;
         R_0(ia,it+1)  = Rat_0  + dR_0;
         R_1(ia,it+1)  = Rat_1  + dR_1;
         D_0(ia,it+1)  = Dat_0  + dD_0; //DH(ia,it+1) = DHat + dDH; //DO(ia,it+1) = DOat + dDO; //not yet
@@ -506,10 +566,10 @@ List SEIUHRD(List pars){
         Ut_1[it+1]  += Uat_1 + dU_1;
         Ct_0[it+1]  += C1at_0 + C2at_0 + C3at_0 + C4at_0 + C5at_0 + dC1_0 + dC2_0 + dC3_0 + dC4_0 + dC5_0;
         Ct_1[it+1]  += C1at_1 + C2at_1 + C3at_1 + C4at_1 + C5at_1 + dC1_1 + dC2_1 + dC3_1 + dC4_1 + dC5_1;
-        Ht_0[it+1]  += H1at_0 + H2at_0 + H3at_0 + H4at_0 + H5at_0 + dH1_0 + dH2_0 + dH3_0 + dH4_0 + dH5_0;
-        Ht_1[it+1]  += H1at_1 + H2at_1 + H3at_1 + H4at_1 + H5at_1 + dH1_1 + dH2_1 + dH3_1 + dH4_1 + dH5_1;
-        Ot_0[it+1]  += O1at_0 + O2at_0 + O3at_0 + O4at_0 + O5at_0 + dO1_0 + dO2_0 + dO3_0 + dO4_0 + dO5_0;
-        Ot_1[it+1]  += O1at_1 + O2at_1 + O3at_1 + O4at_1 + O5at_1 + dO1_1 + dO2_1 + dO3_1 + dO4_1 + dO5_1;
+        Ht_0[it+1]  += H1at_0 + H2at_0 + H3at_0 + H4at_0 + H5at_0 + dH1_0 + dH2_0 + dH3_0 + dH4_0 + dH5_0 + dH6_0 + dH7_0 + dH8_0;
+        Ht_1[it+1]  += H1at_1 + H2at_1 + H3at_1 + H4at_1 + H5at_1 + dH1_1 + dH2_1 + dH3_1 + dH4_1 + dH5_1 + dH6_1 + dH7_1 + dH8_1;
+        Ot_0[it+1]  += O1at_0 + O2at_0 + O3at_0 + O4at_0 + O5at_0 + dO1_0 + dO2_0 + dO3_0 + dO4_0 + dO5_0 + dO6_0 + dO7_0 + dO8_0;
+        Ot_1[it+1]  += O1at_1 + O2at_1 + O3at_1 + O4at_1 + O5at_1 + dO1_1 + dO2_1 + dO3_1 + dO4_1 + dO5_1 + dO6_1 + dO7_1 + dO8_1;
         Rt_0[it+1]  += Rat_0 + dR_0;
         Rt_1[it+1]  += Rat_1 + dR_1;
         Dt_0[it+1]  += Dat_0 + dD_0;
