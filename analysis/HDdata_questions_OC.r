@@ -390,9 +390,9 @@ nP_Hosp6NCH = nP_Hosp6 - nP_Hosp6CH
 ######## OC file ###############################################################
 sink(file = paste0(output_dir, "/", jobno, filename0, ".txt"),append=T,split=F)
 cat("\n")
-print(paste0("Patient entries:          ", nP ))
-print(paste0("Unique patients:          ", length(unique(DAT$patient_id)) )) #=> row <> one patient
-print(paste0("Missing patient id:       ", sum(is.na(DAT$patient_id)) ))
+print(paste0("Patient entries:          _5-ronded ", r5(nP ) ))
+print(paste0("Unique patients:          _5-ronded ", r5(length(unique(DAT$patient_id) )) )) #=> row <> one patient
+print(paste0("Missing patient id:       _5-ronded ", r5(sum(is.na(DAT$patient_id) )) ))
 print(paste0("Cohort1 inc >2020-12-01:  ", nP_all_dates, ", patient1 inc hosp/deaths Dec-2020 to Sep-2021" ))
 print(paste0("Cohort0 inc other-deaths: ", nP_tot,       ", patient0 inc also non-covid deaths Jan-20 to Sep-21" ))
 cat("\n")
@@ -797,10 +797,10 @@ sink(file = paste0(output_dir, "/", jobno, filename0, ".txt"),append=T,split=F)
 cat("\n")
 cat("\n")
 print(paste0("Filter 3 - exclude patients with non-covid death - Cohort2"))
-print(paste0("Filter 3: data rows:                                   ", nP_tot_f3))
-print(paste0("Filter 3: has patient id:                              ", nP_tot_f3_id))
-print(paste0("Filter 3: patient shieldA (High Risk by 2020-12-01): _5-rounded  ", r5(nP_tot_f3_sA1)))
-print(paste0("Filter 3: patient not shieldA:                       _5-rounded  ", r5(nP_tot_f3_sA0)))
+print(paste0("Filter 3: data rows:                                 _5-ronded   ", r5(nP_tot_f3) ))
+print(paste0("Filter 3: has patient id:                            _5-ronded   ", r5(nP_tot_f3_id) ))
+print(paste0("Filter 3: patient shieldA (High Risk by 2020-12-01): _5-rounded  ", r5(nP_tot_f3_sA1) ))
+print(paste0("Filter 3: patient not shieldA:                       _5-rounded  ", r5(nP_tot_f3_sA0) ))
 sink()
 
 
