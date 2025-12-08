@@ -1,4 +1,4 @@
-## Analyse output of fitted transmission model: sample the posterior + make summaries & figures
+## Analysing the output of the fitted transmission model: sample the posterior + make summaries & figures
 
 library(arrow)
 library(BayesianTools)
@@ -18,9 +18,9 @@ library(fs)
 
 
 # Folders
-input_data  <- paste0(getwd(),"/data") #getwd() #
-input_code  <- paste0(getwd(),"/code") #getwd() #
-output_dir  <- paste0(getwd(),"/output") #getwd() #
+input_data  <- paste0(getwd(),"/data")
+input_code  <- paste0(getwd(),"/code")
+output_dir  <- paste0(getwd(),"/output")
 fs::dir_create(input_data)
 fs::dir_create(input_code)
 fs::dir_create(output_dir)
@@ -73,14 +73,13 @@ sink(file = paste0(output_dir,"/",pset$File_run_res,"_",TODAY,".txt"), append=FA
   cat(" \n")
   print(paste0("Date range of model,  ", Week1_Model, ", ", Week2_Model)); cat("\n")
   print("pars: \n ")
-  print(rev(pars[-1])); #exclude cm
+  print(rev(pars[-c(1:3)])); #exclude cm
   cat("\n \n")
 sink()
 
 ## R0 by week
 cat("R0...\n")
 source(file = paste0(input_code,"/R0_0.r"))
-beta_0    = pars$beta
 r0        = R0_0(pars,GetBeta=1,GetOutput=0) #R0_week not outputted 
 pars$beta = r0$pars$beta
 cat(paste0("... beta (based on input parameters): ", round(pars$beta,3)), "\n")

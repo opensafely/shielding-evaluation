@@ -11,8 +11,8 @@
 #library("posterior")
 
 # Imputs: 
-# 1) MCMC parameter posterior samples
-# 2) incidence data (aggregated EHR, rm6)
+# 1) parameter posterior MCMC samples
+# 2) incidence data (aggregated EHRs, rm6)
 # 3) ONS CSI data
 # Outputs
 # 1) posterior samples of parameters and model variables
@@ -225,13 +225,13 @@ age9 = age[9]
 ## MCMC Traces input
 cat("Reading traces...", "\n")
 #library(coda)
-out <- mcmc.list()
+out_res <- mcmc.list()
 for (i in 1:3) {
    c <- coda::as.mcmc(read.csv(paste0(input_data,"/","Fit_MCMC_mcmcChain",eval(i),".csv"),header=T))
    assign(paste0("c", eval(i)), coda::as.mcmc(as.matrix( c[,2:(dim(c)[2])])) ) #remove “x” col #NB: as.matrix() necessary
 } 
-out$chain <- as.mcmc.list(list(as.mcmc(c1),as.mcmc(c2),as.mcmc(c3)) )
-out$setup$numPars = 21
+out_res$chain <- as.mcmc.list(list(as.mcmc(c1),as.mcmc(c2),as.mcmc(c3)) )
+out_res$setup$numPars = 21
 npar = 21
 
 ## MCMC input without LP, LL, LPr
@@ -241,10 +241,10 @@ for (i in 1:3) {
   assign(paste0("d", eval(i)), coda::as.mcmc(as.matrix( d[,2:(dim(d)[2]-3)])) ) #remove “x” col #NB: as.matrix() necessary
 } 
 out21$chain <- as.mcmc.list(list(as.mcmc(d1),as.mcmc(d2),as.mcmc(d3)) )
-#class(out$chain[[1]])  #[1] "mcmc"
-#class(out$chain[[2]])  #[1] "mcmc"
-#class(out$chain[[3]])  #[1] "mcmc"
-#class(out)             #[1] "list"
+#class(out21$chain[[1]])  #[1] "mcmc"
+#class(out21$chain[[2]])  #[1] "mcmc"
+#class(out21$chain[[3]])  #[1] "mcmc"
+#class(out21)             #[1] "list"
 ### MCMC #################################################################################
 
 
@@ -253,8 +253,8 @@ out21$chain <- as.mcmc.list(list(as.mcmc(d1),as.mcmc(d2),as.mcmc(d3)) )
 ### (not using sample() defaults)
 nPars = npar
 Chains= 3
-lout  = dim(out$chain[[1]])[1]*Chains
-samples = getSample(out$chain,start=1,end=lout,thin=1) #dim = (3*xxxx, nPars+3) - each col merges chain rows
+lout  = dim(out_res$chain[[1]])[1]*Chains
+samples = getSample(out_res$chain,start=1,end=lout,thin=1) #dim = (3*xxxx, nPars+3) - each col merges chain rows
 ### Full sample of parameters ############################################################
 
 
@@ -273,15 +273,16 @@ ESS_mean_c=round(mean(essgc))
 
 
 ### Parameter names ######################################################################
-Pname=c("rIR  ",  "rUR  ",  "rOD  ", "pI0  ",
+## summary - inform parameter values
+Pname=c("tIR  ",  "tUR  ",  "tOD  ", "I0 ",
         "hA_0 ",  "hA_1 ",  "hr_0 ", "hr_1 ",  
         "dA_0 ",  "dA_1 ",  "dr_0 ", "dr_1 ",
 		"yA_0",   "yA_1",   "yr_0 ", "yr_1 ",
-		"1/kH^2 ",    "1/kDH^2 ",   "R0 ",   "rEI ", "f ")
-Pnamei=c("tIR", "tUR",  "tOD",  "log(pI0)", Pname[5:(npar-2)], "tEI", Pname[npar], "tID")
-varnames(out$chain)[1:npar]   = Pnamei[1:npar]
-varnames(out21$chain)[1:npar] = Pnamei[1:npar]
-Pnamei[4] = "I0"
+		"kH ",    "kDH ",   "R0 ",   "tEI ", "f ", "tID")
+## diagnostics - sampled, not yet back-transformed
+Pnamei=c(Pname[1:3],  "log(pI0)", Pname[5:(npar-5)], "1/kH^2 ", "1/kHD^2 ", Pname[(npar-2):(npar+1)]) 
+varnames(out_res$chain)[1:npar] = Pnamei[1:npar]
+varnames(out21$chain)[1:npar]   = Pnamei[1:npar]
 ### parameters - add rID - to be derived from other parameter's estimates
 pars <- within(pars, rID <- 1/(1/rIH + 1/rOD))
 ### Parameter names ###################################################################### 
@@ -399,7 +400,7 @@ set.seed(7777)
 #nPars  = npar
 Thin    = 1
 Chains  = 3
-nsample = lout/Thin #lout = dim(out$chain[[1]])[1]*Chains
+nsample = lout/Thin #lout = dim(out_res$chain[[1]])[1]*Chains
 psample = getSample(samples[,1:nPars], parametersOnly = T, start=1, end= lout, thin=Thin) # fit output was already thinned 1/7
 
 ### Aggregated groups
@@ -1035,7 +1036,7 @@ cat("Summary...", "\n")
   ## MAP & quantile estimates
   cat("Parameter estimates (MAP, quantiles) \n")
   for(i in 1:(npar+1)){
-  print(paste0(Pnamei[i],", MAP: ", PMAPr[[i]],", Med: ", Pr[i,2],", CI: [",Pr[i,1],",",Pr[i,3],"]")) }
+  print(paste0(Pname[i],", MAP: ", PMAPr[[i]],", Med: ", Pr[i,2],", CI: [",Pr[i,1],",",Pr[i,3],"]")) }
   print(paste0("beta dependent: ",", MAP: ", round(parsE$beta,3),", Med: ", round(betasample95[2],3),", CI: [",round(betasample95[1],3),",",round(betasample95[3],3),"]"))
   print(paste0("I0 dependent:   ",", MAP: ", round(sum(parsE$Ia0), 0)))
   print(paste0("E0      fixed:  ", round(sum(parsE$Ea0), 0)))
@@ -1044,7 +1045,7 @@ cat("Summary...", "\n")
   cat("\n");
   ## Chain statistics  
   cat("Parameters estimated (chain summary statistics) \n")
-  print(summary(out$chain)); 
+  print(summary(out_res$chain)); 
   cat("\n");
   ##
   cat("Cumulative events \n")
@@ -1198,13 +1199,13 @@ cat("Summary...", "\n")
   par(mfrow = c(5, 4))
   par(mar = c(2, 4, 2, 1)) #c(bottom, left, top, right))
   for (i in c(1:17,19:21)) {
-  coda::densplot( out$chain[,i], main = Pnamei[i], ylab="density", col="darkblue") } 
+  coda::densplot( out_res$chain[,i], main = Pnamei[i], ylab="density", col="darkblue") } 
 
   #FigS8 Traces
   par(mfrow = c(6, 4))
   par(mar = c(1, 4, 2, 1)) #c(bottom, left, top, right))  
   for (i in c(1:16)) {
-  coda::traceplot( out21$chain[,i], main = Pnamei[i], xlab = "iterations") }
+  coda::traceplot( out21$chain[,i], main = Pnamei[i], xlab = "iterations", xaxt='n') }
   par(mar = c(1.2, 4, 2, 1)) 
   for (i in c(17,19:21)) { #skipping par 18 (kDH) so total 20 panels - simpler plot
   coda::traceplot( out21$chain[,i], main = Pnamei[i], xlab = "iterations") }
