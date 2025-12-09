@@ -8,7 +8,7 @@ cat(paste0("... Date range of model run, ", Week1_Model, ", ", Week2_Model), "\n
 ### max length (weeks) of model run (pset$nw, pars$nw) and contacts (pars$cmdim3) 
 nd = pset$nw
 
-#### Read & build contact matrix
+#### Read contact matrix
 #### symmeterised, normalised contact vector
   Contact_file = paste0(input_data,"/",filecontacts)  #setup 6 options cm..._spsynv files
   vcmx3 <- read.csv(file = Contact_file)
