@@ -1,93 +1,18 @@
 ## Contact matrix
 ### Start of contact data and model
-Week1_Model = "2020-01-27" #"2020-02-24"
-Week2_Model = "2021-01-18" #"2021-02-15"
-print(paste0("Date range of contact data, ", Week1_Model, ", ", Week2_Model))
+Week1_Model = "2020-01-27"
+Week2_Model = "2020-12-01"
+print(paste0("Date range of model run, ", Week1_Model, ", ", Week2_Model))
 
-### max length (weeks) of contacts (pars$cmdim3) and model run (pset$nw)
+### max length (weeks) of model run (pset$nw, pars$nw) and contacts (pars$cmdim3) 
 nd = pset$nw
 
 
-#### Read & build contact matrix
-if (pset$DOcmREAD==1 & pset$iplatform==0) {
-#m = mean of contacts over 250 MCMC samples
-  #### file names with relevant weeks
-  imatrix=4
-  ##New output
-  if(imatrix==1) files <- list.files(path = "./m_9x9matrices_07feb24", pattern="Eng")
-  if(imatrix==2) files <- list.files(path = "./m_9x9matrices_19feb24", pattern="Eng")
-  if(imatrix==3) { 
-  files   <- list.files(path =  "./m_9x9matrices_08feb24", pattern="Eng")
-  files_0 <- list.files(path = "./mn_9x9matrices_08feb24", pattern="Eng")
-  files_1 <- list.files(path = "./ms_9x9matrices_08feb24", pattern="Eng") }
-  if(imatrix==4) {
-  files   <- list.files(path =  "./m_9x9matrices_22mar24", pattern="Eng")
-  files_0 <- list.files(path = "./mn_9x9matrices_22mar24", pattern="Eng")
-  files_1 <- list.files(path = "./ms_9x9matrices_22mar24", pattern="Eng") }
-  
-  cdate <- sort(substring(files,8,17)) #8th to 17th character
-  cdate <- cdate[1:nd] #### Select 52 weeks from 1st week (2020-01-27) to 2021-01-18") 
-  cl   = list()
-  cl_0 = list()
-  cl_1 = list()
-  for (i in seq_along(cdate)) {
-    if(imatrix==1)  cl[[i]]  =read.csv(paste0( "./m_9x9matrices_07feb24/England",cdate[i],"all.csv"),header=T)
-    if(imatrix==2)  cl[[i]]  =read.csv(paste0( "./m_9x9matrices_19feb24/England",cdate[i],"all.csv"),header=T)
-    if(imatrix==3){ cl[[i]]  =read.csv(paste0( "./m_9x9matrices_08feb24/England",cdate[i],"all.csv"),header=T) 
-                    cl_0[[i]]=read.csv(paste0("./mn_9x9matrices_08feb24/England",cdate[i],"all.csv"),header=T)
-                    cl_1[[i]]=read.csv(paste0("./ms_9x9matrices_08feb24/England",cdate[i],"all.csv"),header=T)}
-    if(imatrix==4){ cl[[i]]  =read.csv(paste0( "./m_9x9matrices_22mar24/England",cdate[i],"all.csv"),header=T) 
-                    cl_0[[i]]=read.csv(paste0("./mn_9x9matrices_22mar24/England",cdate[i],"all.csv"),header=T)
-                    cl_1[[i]]=read.csv(paste0("./ms_9x9matrices_22mar24/England",cdate[i],"all.csv"),header=T)}  }
-## Transition to shielding policy
-## Linear transition from n to s
-## 27-01-2020                        i=1   - m_1=mn
-## fortnight 02-03-2020, 09-03-2020  i=6:7 - m_1 = mn
-## fortnight 16-03-2020, 23-03-2020  i=8:9 - m_1 = mean(mn,ms) - shift to shielding behaviour in response to epidemic
-## 30-03-2020                        i=10  - m_1 = ms - official start of policy
-for (i in 1:7) { 
-  cl_1[[i]] = cl_0[[i]] #sh  = ns
-  cl[[i]]   = cl_0[[i]] #gen = ns bec sh=ns
-}
-for (i in 8:9) { 
-  cl_1[[i]] = (cl_1[[i]]+cl_0[[i]])*0.5 #mean at mid point bet start of policy and a month earlier when shielding behaviour started  
-  cl[[i]]   = (cl[[i]]  +cl_0[[i]])*0.5 #approximation - done precisely would be at end point of contacts regression
-}
-#### Build matrix
-  cm   <- array(0,dim=c(9,9,nd))            #9 age groups, 52 weeks
-  cm_0 <- array(0,dim=c(9,9,nd))            
-  cm_1 <- array(0,dim=c(9,9,nd))            
-  for (i in seq_along(cdate))          {
-    cm[,,i]   = as.matrix(cl[[i]])          #By week
-    cm_0[,,i] = as.matrix(cl_0[[i]])          
-    cm_1[,,i] = as.matrix(cl_1[[i]])   }
-  ##Symmetrisation of odd non-symmetric fortnights ######
-  ##i=51:52 (last fornight) - gives complex EVs for cm_0
-  #=> need symmetrise
-  for (i in 51:52) {cm_0[,,i] = (cm_0[,,i] + t(cm_0[,,i]))/2 }
-  ####################
-  maxEV1   = max(eigen(cm[,,1])[[1]])       #maximum EV in week 1
-  maxEV1_0 = max(eigen(cm_0[,,1])[[1]])     
-  maxEV1_1 = max(eigen(cm_1[,,1])[[1]])     
-  cm   = cm/maxEV1                          #Normalise by max EV of CoMix in week 1 (strongest contacts)
-  cm_0 = cm_0/maxEV1_0                     
-  cm_1 = cm_1/maxEV1_1                    
-#### write matrix as vector (c(cm),...)
-  dfcm = data.frame(cm=as.vector(cm), cm_0=as.vector(cm_0), cm_1=as.vector(cm_1))
-  #write.csv(c(cm),   row.names = F, file = paste0(output_dir,"/",pset$File_contact_data))
-  #write.csv(c(cm_0), row.names = F, file = paste0(output_dir,"/",pset$File_contact_data_0))
-  #write.csv(c(cm_1), row.names = F, file = paste0(output_dir,"/",pset$File_contact_data_1))
-  write.csv(dfcm, file = paste0(output_dir,"/",pset$File_contact_datax3))
-  
-} else {
-  
-  ####get normalised contact vector
-  vcmomaxEV1x3   <- read.csv(file = paste0(input_dir,"/",pset$File_contact_datax3)) #setup has options for other cm files
-  cm   <- array(vcmomaxEV1x3$cm,  dim=c(9,9,nd))
-  cm_0 <- array(vcmomaxEV1x3$cm_0,dim=c(9,9,nd))
-  cm_1 <- array(vcmomaxEV1x3$cm_1,dim=c(9,9,nd))
-  if (pset$DOcmONE==1) { cm = cm*0 + 1/9; cm_0 = cm_0*0 + 1/9; cm_1 = cm_1*0 + 1/9; }
-}
+#### Read contact matrix
+  vcmx3   <- read.csv(file = paste0(input_dir,"/Contact_matrix_year-from-27Jan20_vector-lenght-9x9x52_spsynv.csv")) #setup has options for other cm files
+  cm   <- array(vcmx3$cm,  dim=c(9,9,nd))
+  cm_0 <- array(vcmx3$cm_0,dim=c(9,9,nd))
+  cm_1 <- array(vcmx3$cm_1,dim=c(9,9,nd))
 
 
 ### Summary variables

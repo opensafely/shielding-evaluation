@@ -1,7 +1,7 @@
 # Shielding-evaluation project
 
 Code and data supporting the article “Hospitalisation and mortality impact of shielding during 2020 in England: a transmission modelling evaluation using the OpenSAFELY platform”, submitted.
-Available as preprint at https://www.medrxiv.org/
+Available as preprint at https://www.medrxiv.org/ ...
 
 
 # Project overview
@@ -14,8 +14,6 @@ https://github.com/opensafely/shielding-evaluation
 | Folder    | Function  |
 | :------------ | :----------------------------------------------------------------------------------------------------------------------------------------------- |
 |  /            | Main R scripts for running the pipelines to reproduce the results and to fit the trasnmission model.
-|  /code/       | Sripts sourced by the pipeline for settting the model, sampling posterior distributions, and outputing results.
+|  /code/       | Sripts sourced by the pipeline for setting the transmission model, sampling posterior distributions, and outputing results.
 |  /data/       | Aggregated (and rounded) incidence of COVID-19 severe outcomes, social contacts, and prevalence of positivity. |
 |  /output/     | Main result outputs. |
-
-# Model framework
