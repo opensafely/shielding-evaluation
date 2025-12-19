@@ -5,7 +5,7 @@ Available as a preprint at medRxiv 2025.12.12.25342168; doi: https://doi.org/10.
 
 
 # Project overview
-This project evaluates the shielding policy of 2020 in England using electronic health records accessed on the OpenSAFELY platform and a transmission model with survey-based dynamic social contacts.
+This project evaluated the shielding policy of 2020 in England using electronic health records accessed on the OpenSAFELY platform and a transmission model with survey-based dynamic social contacts.
 https://github.com/opensafely/shielding-evaluation
 
  
