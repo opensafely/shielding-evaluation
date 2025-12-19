@@ -1,7 +1,7 @@
 # Shielding-evaluation project
 
-Code and data supporting the article “Hospitalisation and mortality impact of shielding during 2020 in England: a transmission modelling evaluation using the OpenSAFELY platform”, submitted.
-Available as preprint at https://www.medrxiv.org/ ...
+Code and data supporting the article “Hospitalisation and mortality impact of shielding during 2020 in England: a transmission modelling evaluation using the OpenSAFELY platform”.
+Available as a preprint at medRxiv 2025.12.12.25342168; doi: https://doi.org/10.64898/2025.12.12.25342168
 
 
 # Project overview
